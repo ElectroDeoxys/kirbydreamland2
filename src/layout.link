@@ -1,0 +1,35 @@
+ROM0
+	org $0038
+	"RST38"
+	org $0040
+	"VBlank"
+	org $0048
+	"Stat"
+	org $0050
+	"Timer"
+	org $0058
+	"Serial"
+	org $0060
+	"Joypad"
+	org $0100
+	"Start"
+	org $0150
+	"Home"
+ROMX $07
+	"Bank 7"
+ROMX $08
+	"Bank 8"
+ROMX $1a
+	"Bank 1A"
+VRAM $00
+	"VRAM0"
+WRAM0
+	"WRAM0"
+WRAMX $1
+	"WRAM1"
+	org $dfc0
+	"Stack"
+HRAM
+	org $ff88
+	"DMA Transfer"
+	"HRAM"
