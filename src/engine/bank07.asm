@@ -18,34 +18,33 @@ Func_1c01d:
 
 SECTION "Func_1d7bc", ROMX[$57bc], BANK[$7]
 
-; fill some kind of RNG table?
+; fill in tables used by Multiply
 Func_1d7bc:
-	ld de, $d700
-	ld hl, 0 ; seed
+	ld de, wd700
+	ld hl, 0
 	jr .start
 .loop
 	ld a, e
 	add a ; *2
 	ld c, a
-	ld a, $00
-	adc $00
+	ld a, 0
+	adc 0
 	ld b, a
 	inc bc ; +1
 	add hl, bc
 	inc e
 .start
 	ld a, h
-	ld [de], a ; to $d700 table
+	ld [de], a ; to wd700 table
 	inc d
 	ld a, l
-	ld [de], a ; to $d800 table
+	ld [de], a ; to wd800 table
 	dec d
 	ld a, e
 	inc a
 	jr nz, .loop
 	ret
 ; 0x1d7da
-
 
 SECTION "Func_1dfee", ROMX[$5fee], BANK[$7]
 
@@ -102,15 +101,12 @@ Func_1dfee:
 	ld [hli], a
 	ld a, $e4
 	ld [hl], a
-	ld e, $ff
-	ld hl, $4299
-	ld a, $1e
-	call Farcall
 
-	ld e, $06
-	ld hl, $4232
-	ld a, $1f
-	call Farcall
+	ld e, SFX_NONE
+	farcall PlaySFX
+
+	ld e, MUSIC_06
+	farcall PlayMusic
 
 	call Func_1584
 

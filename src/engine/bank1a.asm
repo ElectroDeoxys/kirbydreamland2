@@ -63,7 +63,7 @@ Init::
 	ldh [rSTAT], a
 	ld a, $ff
 	ldh [rLYC], a
-	ld [$da29], a
+	ld [wda29], a
 
 	; initialise transfer OAM function in HRAM
 	ld a, BANK(TransferVirtualOAM) ; useless UnsafeBankswitch
@@ -73,24 +73,16 @@ Init::
 	ld bc, SIZEOF("DMA Transfer")
 	call CopyHLToDE
 
-	ld hl, $da21
+	ld hl, wda21
 	ld a, $02
 	ld [hld], a
 	ld [hl], $2b
 	xor a
-	ld [$da1c], a
+	ld [wda1c], a
 
-	ld a, $1e
-	ld hl, $4232
-	call UnsafeFarcall
-
-	ld a, BANK(Func_1d7bc)
-	ld hl, Func_1d7bc
-	call UnsafeFarcall
-
-	ld a, BANK(Func_1c01d)
-	ld hl, Func_1c01d
-	call UnsafeFarcall
+	farcall_unsafe InitAudio
+	farcall_unsafe Func_1d7bc
+	farcall_unsafe Func_1c01d
 
 	xor a
 	ldh [rBGP], a

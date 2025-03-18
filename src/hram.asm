@@ -1,10 +1,19 @@
-SECTION "HRAM", HRAM
+SECTION "HRAM 1", HRAM
+
+	ds $7
+
+hff87:: ; ff87
+	db
+
+SECTION "HRAM 2", HRAM
 
 	ds $5
 
 hff97:: dw ; ff97
 
-	ds $b
+wChannelConfigLowByte:: db ; ff99
+
+	ds $a
 
 hROMBank:: db ; ffa4
 

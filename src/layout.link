@@ -21,6 +21,10 @@ ROMX $08
 	"Bank 8"
 ROMX $1a
 	"Bank 1A"
+ROMX $1e
+	"Bank 1E"
+ROMX $1f
+	"Bank 1F"
 VRAM $00
 	"VRAM0"
 WRAM0
@@ -30,6 +34,7 @@ WRAMX $1
 	org $dfc0
 	"Stack"
 HRAM
+	"HRAM 1"
 	org $ff88
 	"DMA Transfer"
-	"HRAM"
+	"HRAM 2"
