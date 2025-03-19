@@ -187,8 +187,8 @@ InterruptRet:
 SECTION "_Timer", ROM0[$333]
 
 _Timer:
-	ld a, $01
-	ld [$da0d], a
+	ld a, TRUE
+	ld [wTimerExecuted], a
 	ldh a, [rLCDC]
 	bit LCDCB_ON, a
 	jp z, UpdateAudio ; lcd off
@@ -216,7 +216,7 @@ Func_343::
 ReadJoypad::
 	ld a, [wJoypad1Down]
 	ldh [$ff84], a
-	ld a, [$deed]
+	ld a, [wSGBEnabled]
 	or a
 	jr nz, .read_sgb_input
 ; only read GB input
@@ -391,7 +391,9 @@ Func_437::
 	ld hl, $5dff
 	ld a, $1e
 	call Farcall
+;	fallthrough
 
+Func_452::
 	ld a, TRUE
 	ldh [hRequestLCDOff], a
 .wait_lcd_off
@@ -411,7 +413,7 @@ Func_437::
 	ret
 
 Func_46d::
-	call Func_483
+	call StopTimerAndTurnLCDOn
 	ld hl, $5dff
 	ld a, $1e
 	call Farcall
@@ -421,14 +423,18 @@ Func_46d::
 	call Farcall
 	ret
 
-Func_483:
-	ld hl, $da0d
-	ld [hl], $00
+StopTimerAndTurnLCDOn::
+	ld hl, wTimerExecuted
+	ld [hl], FALSE
+
+	; stay in low power mode
+	; until timer is executed
 .wait_timer
 	halt
 	bit 0, [hl]
 	jr z, .wait_timer
-	xor a
+
+	xor a ; TACF_STOP
 	ldh [rTAC], a
 	ld hl, rLCDC
 	set LCDCB_ON, [hl]
@@ -823,7 +829,7 @@ Decompress::
 .continue_lookback_inverted
 	ld a, [hli]
 	push hl
-	ld h, $d9
+	ld h, HIGH(wd900)
 	ld l, a
 	ld a, [hl]
 	pop hl

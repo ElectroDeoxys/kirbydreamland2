@@ -133,7 +133,16 @@ wd700:: ; d700
 wd800:: ; d800
 	ds $100
 
-SECTION "WRAM1@da13", WRAMX[$da13], BANK[$1]
+wd900:: ; d900
+	ds $100
+
+SECTION "WRAM1@da0d", WRAMX[$da0d], BANK[$1]
+
+; whether Timer interrupt has occurred
+wTimerExecuted:: ; da0d
+	db
+
+	ds $13 - $e
 
 ; called during Stat interrupt handler
 ; has a jump instruction to some variable function
@@ -201,13 +210,25 @@ wChannel8Stack:: ; ddd4
 wCurMusic:: ; dde4
 	db
 
+; WaveSamples is copied here
 wWaveSamples:: ; dde5
 	ds NUM_WAVEFORMS * $10
 
 SECTION "WRAM1@de15", WRAMX[$de15], BANK[$1]
 
+; TempoModeDurations is copied here
 wTempoModeDurations:: ; de15
 	ds NUM_TEMPO_MODES * $6
+
+SECTION "WRAM1@deed", WRAMX[$deed], BANK[$1]
+
+; if TRUE, then SGB was detected
+wSGBEnabled:: ; deed
+	db
+
+; packet of data to send to SGB
+wSGBPacket:: ; deee
+	ds SGB_PACKET_SIZE
 
 SECTION "Stack", WRAMX
 

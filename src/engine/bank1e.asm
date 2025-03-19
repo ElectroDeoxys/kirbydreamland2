@@ -736,4 +736,330 @@ SFXPriorities:
 	db 11 ; SFX_60
 	db  0 ; SFX_61
 	assert_table_length NUM_SFX
-; 0x79dbd
+
+; input:
+; - hl = packets data
+SGBTransfer:
+	ld a, [hl]
+	and $07
+	ret z
+
+	ld b, a ; number of packets
+	ld c, LOW(rP1)
+.loop_packets
+	push bc
+
+	; start ICD2 packet
+	ld a, $00
+	ld [$ff00+c], a
+	ld a, P1F_4 | P1F_5
+	ld [$ff00+c], a
+
+	ld b, SGB_PACKET_SIZE
+.loop_packet_bytes
+	ld e, 8 ; number of bits
+	ld a, [hli]
+	ld d, a ; next byte data
+.loop_bits
+	; check LSB, if 1, use JOYP4,
+	; if 0, use JOYP5
+	bit 0, d
+	ld a, P1F_4 ; bit is 1
+	jr nz, .got_bit
+	ld a, P1F_5 ; bit is 0
+.got_bit
+	ld [$ff00+c], a
+	ld a, P1F_4 | P1F_5
+	ld [$ff00+c], a
+	rr d ; rotate byte for next bit
+	dec e
+	jr nz, .loop_bits
+	dec b
+	jr nz, .loop_packet_bytes
+
+	; stop bit
+	ld a, P1F_5
+	ld [$ff00+c], a
+	ld a, P1F_4 | P1F_5
+	ld [$ff00+c], a
+
+	pop bc
+	dec b
+	ret z ; no more packets
+	call SGBWait
+	jr .loop_packets
+
+; waits a total of about 70'000 cycles
+SGBWait:
+	ld de, 7000
+	; wastes 10 cycles per loop
+.loop_wait
+	nop      ; 1 cycle
+	nop      ; 1 cycle
+	nop      ; 1 cycle
+	dec de   ; 2 cycle
+	ld a, d  ; 1 cycle
+	or e     ; 1 cycle
+	jr nz, .loop_wait ; 3 cycles (taken)
+	ret
+; 0x79dff
+
+SECTION "_DetectSGB", ROMX[$5e0b], BANK[$1e]
+
+; detects SGB through MULT_REQ command
+; output:
+; - carry set if SGB detected
+_DetectSGB:
+	ld hl, .MltReq_Enable
+	call SGBTransfer
+	call SGBWait
+
+	ldh a, [rP1]
+	and P1F_0 | P1F_1
+	cp P1F_0 | P1F_1
+	jr nz, .detected
+	ld a, P1F_5
+	ldh [rP1], a
+	ldh a, [rP1]
+	ldh a, [rP1]
+	call SGBWait
+
+	ld a, P1F_4 | P1F_5
+	ldh [rP1], a
+	call SGBWait
+
+	ld a, P1F_4
+	ldh [rP1], a
+	ldh a, [rP1]
+	ldh a, [rP1]
+	ldh a, [rP1]
+	ldh a, [rP1]
+	ldh a, [rP1]
+	ldh a, [rP1]
+	call SGBWait
+
+	ld a, P1F_4 | P1F_5
+	ldh [rP1], a
+	ldh a, [rP1]
+	ldh a, [rP1]
+	ldh a, [rP1]
+	call SGBWait
+
+	ldh a, [rP1]
+	and P1F_0 | P1F_1
+	cp P1F_0 | P1F_1
+	jr nz, .detected
+	ld hl, .MltReq_Disable
+	call SGBTransfer
+	call SGBWait
+	sub a ; no carry
+	ret
+
+.detected
+	ld hl, .MltReq_Disable
+	call SGBTransfer
+	call SGBWait
+	scf
+	ret
+
+.MltReq_Disable:
+	sgb_mlt_req MLT_REQ_1P
+
+.MltReq_Enable:
+	sgb_mlt_req MLT_REQ_2P
+
+; input:
+; - hl = compressed data to transfer
+; - de = SGB packet to send
+SGBVRAMTransfer:
+	; store current BGP to stack
+	ld a, [wBGP]
+	push af
+
+	; overwrite BGP, needs to be set to $e4
+	ld a, $e4
+	ld [wBGP], a
+	ldh [rBGP], a
+
+	push de
+	ld de, vTiles1
+	call Decompress
+
+	; bg map needs to hold incremental values
+	; $80, $81, $82...
+	ld hl, vBGMap0
+	ld de, SCRN_VX_B - SCRN_X_B
+	ld a, $80
+	ld c, 13 ; number of rows to fill
+.loop_rows
+	ld b, SCRN_X_B
+.loop_bytes
+	ld [hli], a
+	inc a
+	dec b
+	jr nz, .loop_bytes
+	; next row
+	add hl, de
+	dec c
+	jr nz, .loop_rows
+
+	; turn on BG
+	ld a, LCDCF_BGON
+	ldh [rLCDC], a
+
+	call StopTimerAndTurnLCDOn
+	call SGBWait
+	pop hl
+
+	; hl= input SGB packet to send
+	call SGBTransfer
+	call SGBWait
+
+	call Func_452
+
+	; retrieve BGP from stack
+	pop af
+	ld [wBGP], a
+	ldh [rBGP], a
+	ret
+
+Func_79ece:
+	ld hl, .data
+	ld bc, SGB_PACKET_SIZE
+	ld e, 8 ; number of packets
+.loop
+	push hl
+	push bc
+	push de
+	call SGBTransfer
+	call SGBWait
+	pop de
+	pop bc
+	pop hl
+	add hl, bc
+	dec e
+	jr nz, .loop
+	ret
+
+	ret ; stray ret
+
+.data
+	sgb_data_snd $81b, $00, $ea, $ea, $ea, $ea, $ea, $a9, $01, $cd, $4f, $0c, $d0
+	sgb_data_snd $826, $00, $39, $cd, $48, $0c, $d0, $34, $a5, $c9, $c9, $80, $d0
+	sgb_data_snd $831, $00, $0c, $a5, $ca, $c9, $7e, $d0, $06, $a5, $cb, $c9, $7e
+	sgb_data_snd $83c, $00, $f0, $12, $a5, $c9, $c9, $c8, $d0, $1c, $a5, $ca, $c9
+	sgb_data_snd $847, $00, $c4, $d0, $16, $a5, $cb, $c9, $05, $d0, $10, $a2, $28
+	sgb_data_snd $852, $00, $a9, $e7, $9f, $01, $c0, $7e, $e8, $e8, $e8, $e8, $e0
+	sgb_data_snd $85d, $00, $8c, $d0, $f4, $60
+	sgb_data_snd $810, $00, $4c, $20, $08, $ea, $ea, $ea, $ea, $ea, $60, $ea, $ea
+
+SGBTransferBorder:
+	ld a, [wSGBEnabled]
+	or a
+	ret z ; no SGB
+
+	; init SGB packet to send
+	xor a
+	ld hl, wSGBPacket
+	ld bc, SGB_PACKET_SIZE
+	call FillHL
+	call SGBWait
+
+	; show black screen
+	ld d, MASK_EN_BLANK_COLOR0
+	call SGB_MaskEn
+
+	call Func_79ece
+
+	ld hl, SGBPacket_MltReq_2Players
+	call SGBTransfer
+	call SGBWait
+
+	; send pal data
+	ld hl, $7274
+	ld de, SGBPacket_PalTrn
+	call SGBVRAMTransfer
+
+	; send ATF data
+	ld hl, $6f8a
+	ld de, SGBPacket_AttrTrn
+	call SGBVRAMTransfer
+
+	; send character data
+	ld hl, wSGBPacket
+	ld a, CHR_TRN_CMD
+	inc a ; length 1
+	ld [hli], a
+	ld [hl], $0 ; tiles $00-$7F
+	inc hl
+	xor a
+	ld bc, SGB_PACKET_SIZE - 2
+	call FillHL
+	ld hl, $60d7
+	ld de, wSGBPacket
+	call SGBVRAMTransfer
+
+	ld hl, wSGBPacket
+	ld a, CHR_TRN_CMD
+	inc a ; length 1
+	ld [hli], a
+	ld [hl], $1 ; tiles $80-$FF
+	inc hl
+	xor a
+	ld bc, SGB_PACKET_SIZE - 2
+	call FillHL
+	ld hl, $6b24
+	ld de, wSGBPacket
+	call SGBVRAMTransfer
+
+	; border tile map and palette data
+	ld hl, $6cc1
+	ld de, SGBPacket_PctTrn
+	call SGBVRAMTransfer
+
+	ld hl, SGBPacket_PalPri_Enable
+	call SGBTransfer
+	ret
+
+DetectSGB:
+	call _DetectSGB
+	ld a, 0
+	rla
+	ld [wSGBEnabled], a
+	ret
+
+; input:
+; - d = MASK_EN_* constant
+SGB_MaskEn:
+	ld a, [wSGBEnabled]
+	or a
+	ret z ; no SGB
+
+	ld hl, wSGBPacket
+	ld a, MASK_EN_CMD
+	inc a ; length
+	ld [hli], a
+	ld [hl], d
+
+	ld hl, wSGBPacket
+	call SGBTransfer
+	call SGBWait
+	ret
+; 0x7a002
+
+SECTION "Func_7a087", ROMX[$6087], BANK[$1e]
+
+SGBPacket_MltReq_2Players:
+	sgb_mlt_req MLT_REQ_2P
+
+SGBPacket_PalPri_Enable:
+	sgb_pal_pri PAL_PRI_ENABLE
+
+SGBPacket_PalTrn:
+	sgb_pal_trn
+
+SGBPacket_PctTrn:
+	sgb_pct_trn
+
+SGBPacket_AttrTrn:
+	sgb_attr_trn

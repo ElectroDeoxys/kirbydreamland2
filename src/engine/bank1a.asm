@@ -139,7 +139,7 @@ ENDL
 SECTION "Func_681e0", ROMX[$41e0], BANK[$1a]
 
 Func_681e0:
-	ld a, [$deed]
+	ld a, [wSGBEnabled]
 	or a
 	ret z
 	pop hl
@@ -170,7 +170,7 @@ Func_681e0:
 	jr Func_68235
 
 Func_68205:
-	ld a, [$deed]
+	ld a, [wSGBEnabled]
 	or a
 	ret z
 	pop hl

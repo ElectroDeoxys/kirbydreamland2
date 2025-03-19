@@ -1,13 +1,8 @@
 SECTION "_GameLoop", ROMX[$4062], BANK[$8]
 
 _GameLoop::
-	ld hl, $5fe1
-	ld a, $1e
-	call Farcall
-
-	ld hl, $5f68
-	ld a, $1e
-	call Farcall
+	farcall DetectSGB
+	farcall SGBTransferBorder
 
 	xor a
 	ld [$deff], a

@@ -1,10 +1,10 @@
 SECTION "Func_1c01d", ROMX[$401d], BANK[$7]
 
-; fill some kind of RNG table?
+; fills some kind of look up table for Decompress
 Func_1c01d:
-	ld hl, $d900
+	ld hl, wd900
 .loop_entries
-	ld b, $08
+	ld b, 8
 .loop_rotate
 	rrc l
 	rla
