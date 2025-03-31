@@ -786,11 +786,11 @@ SGBTransfer:
 	pop bc
 	dec b
 	ret z ; no more packets
-	call SGBWait
+	call SGBWait_Long
 	jr .loop_packets
 
 ; waits a total of about 70'000 cycles
-SGBWait:
+SGBWait_Long:
 	ld de, 7000
 	; wastes 10 cycles per loop
 .loop_wait
@@ -802,9 +802,19 @@ SGBWait:
 	or e     ; 1 cycle
 	jr nz, .loop_wait ; 3 cycles (taken)
 	ret
-; 0x79dff
 
-SECTION "_DetectSGB", ROMX[$5e0b], BANK[$1e]
+; waits a total of about 17'500 cycles
+SGBWait_Short::
+	ld de, 1750
+.loop_wait
+	nop      ; 1 cycle
+	nop      ; 1 cycle
+	nop      ; 1 cycle
+	dec de   ; 2 cycle
+	ld a, d  ; 1 cycle
+	or e     ; 1 cycle
+	jr nz, .loop_wait ; 3 cycles (taken)
+	ret
 
 ; detects SGB through MULT_REQ command
 ; output:
@@ -812,7 +822,7 @@ SECTION "_DetectSGB", ROMX[$5e0b], BANK[$1e]
 _DetectSGB:
 	ld hl, .MltReq_Enable
 	call SGBTransfer
-	call SGBWait
+	call SGBWait_Long
 
 	ldh a, [rP1]
 	and P1F_0 | P1F_1
@@ -822,11 +832,11 @@ _DetectSGB:
 	ldh [rP1], a
 	ldh a, [rP1]
 	ldh a, [rP1]
-	call SGBWait
+	call SGBWait_Long
 
 	ld a, P1F_4 | P1F_5
 	ldh [rP1], a
-	call SGBWait
+	call SGBWait_Long
 
 	ld a, P1F_4
 	ldh [rP1], a
@@ -836,14 +846,14 @@ _DetectSGB:
 	ldh a, [rP1]
 	ldh a, [rP1]
 	ldh a, [rP1]
-	call SGBWait
+	call SGBWait_Long
 
 	ld a, P1F_4 | P1F_5
 	ldh [rP1], a
 	ldh a, [rP1]
 	ldh a, [rP1]
 	ldh a, [rP1]
-	call SGBWait
+	call SGBWait_Long
 
 	ldh a, [rP1]
 	and P1F_0 | P1F_1
@@ -851,14 +861,14 @@ _DetectSGB:
 	jr nz, .detected
 	ld hl, .MltReq_Disable
 	call SGBTransfer
-	call SGBWait
+	call SGBWait_Long
 	sub a ; no carry
 	ret
 
 .detected
 	ld hl, .MltReq_Disable
 	call SGBTransfer
-	call SGBWait
+	call SGBWait_Long
 	scf
 	ret
 
@@ -908,12 +918,12 @@ SGBVRAMTransfer:
 	ldh [rLCDC], a
 
 	call StopTimerAndTurnLCDOn
-	call SGBWait
+	call SGBWait_Long
 	pop hl
 
 	; hl= input SGB packet to send
 	call SGBTransfer
-	call SGBWait
+	call SGBWait_Long
 
 	call Func_452
 
@@ -932,7 +942,7 @@ Func_79ece:
 	push bc
 	push de
 	call SGBTransfer
-	call SGBWait
+	call SGBWait_Long
 	pop de
 	pop bc
 	pop hl
@@ -963,7 +973,7 @@ SGBTransferBorder:
 	ld hl, wSGBPacket
 	ld bc, SGB_PACKET_SIZE
 	call FillHL
-	call SGBWait
+	call SGBWait_Long
 
 	; show black screen
 	ld d, MASK_EN_BLANK_COLOR0
@@ -973,7 +983,7 @@ SGBTransferBorder:
 
 	ld hl, SGBPacket_MltReq_2Players
 	call SGBTransfer
-	call SGBWait
+	call SGBWait_Long
 
 	; send pal data
 	ld hl, $7274
@@ -1030,7 +1040,7 @@ DetectSGB:
 
 ; input:
 ; - d = MASK_EN_* constant
-SGB_MaskEn:
+SGB_MaskEn::
 	ld a, [wSGBEnabled]
 	or a
 	ret z ; no SGB
@@ -1043,11 +1053,95 @@ SGB_MaskEn:
 
 	ld hl, wSGBPacket
 	call SGBTransfer
-	call SGBWait
+	call SGBWait_Long
 	ret
 ; 0x7a002
 
-SECTION "Func_7a087", ROMX[$6087], BANK[$1e]
+SECTION "Func_7a011", ROMX[$6011], BANK[$1e]
+
+; input:
+; - e = ATF to set
+Func_7a011::
+	ld a, [wSGBEnabled]
+	or a
+	ret z ; no SGB
+
+	ld a, $80
+	ldh [hff84], a
+	ld a, e
+	ld [wdefe], a
+	ld a, [wBGP]
+	or a
+	ld a, $68 / 2 ; pal ID $68
+	jr z, .got_pal_id
+	ld a, $6a / 2 ; pal ID $69
+.got_pal_id
+	call Func_7a042
+	jp SGBWait_Long
+; 0x7a02e
+
+SECTION "Func_7a042", ROMX[$6042], BANK[$1e]
+
+; requests SGB to set the pre-loaded palettes from SNES WRAM
+; uses as input (pal ID / 2), then loads the next 3 palettes as well
+; input:
+; - a = starting SGB pal ID / 2
+; - e = ATF to set
+; - [hff84] = additional palette set flags
+Func_7a042:
+	ld l, a
+	ld h, $00
+	add hl, hl
+	add hl, hl ; *2
+	ld c, l
+	ld b, h
+	ld hl, wSGBPacket
+	ld [hl], PAL_SET_CMD | 1
+	inc hl
+	ld a, 4 ; num of pals
+.loop_pals
+	ld [hl], c
+	inc hl
+	ld [hl], b
+	inc hl
+	inc bc ; next pal ID
+	dec a
+	jr nz, .loop_pals
+	ldh a, [hff84]
+	or e
+	ld [hli], a
+
+	; fill rest of packet with 0
+	xor a
+	ld bc, $6
+	call FillHL
+
+	ld hl, wSGBPacket
+	call SGBTransfer
+	xor a
+	inc a
+	ret
+
+; input:
+; - e = SGB_SFX_*
+SGBPlaySFX:
+	ld a, [wSGBEnabled]
+	or a
+	ret z ; no SGB
+
+	ld hl, SGBSFXPackets
+	swap e
+	ld a, e
+	and $f0
+	ld c, a
+	ld a, e
+	and $0f
+	ld b, a
+	; bc = e * 16
+	add hl, bc
+	call SGBTransfer
+	call SGBWait_Long
+	ret
 
 SGBPacket_MltReq_2Players:
 	sgb_mlt_req MLT_REQ_2P
@@ -1063,3 +1157,20 @@ SGBPacket_PctTrn:
 
 SGBPacket_AttrTrn:
 	sgb_attr_trn
+; 0x7a0d7
+
+SECTION "Func_7badf", ROMX[$7adf], BANK[$1e]
+
+SGBSFXPackets:
+	table_width SGB_PACKET_SIZE
+	sgb_sound_b SGBSOUNDB_STOP, 0, 0           ; SGB_SFX_STOP
+	sgb_sound_a SGBSOUNDA_SMALL_LASER, 3, 0    ; SGB_SFX_LASER
+	sgb_sound_a SGBSOUNDA_PIC_FLOATS, 3, 0     ; SGB_SFX_PIC_FLOATS
+	sgb_sound_a SGBSOUNDA_SWORD_SWING, 1, 0    ; SGB_SFX_SWORD_SWING
+	sgb_sound_b SGBSOUNDB_WIND, 0, 1           ; SGB_SFX_WIND_HIGH
+	sgb_sound_b SGBSOUNDB_WAVE, 2, 2           ; SGB_SFX_WAVE
+	sgb_sound_b SGBSOUNDB_APPLAUSE_SMALL, 3, 0 ; SGB_SFX_APPLAUSE
+	sgb_sound_b SGBSOUNDB_WIND, 0, 0           ; SGB_SFX_WIND_LOW
+	sgb_sound_b SGBSOUNDB_THUNDERSTORM, 3, 2   ; SGB_SFX_THUNDERSTORM
+	sgb_sound_b SGBSOUNDB_LIGHTNING, 0, 1      ; SGB_SFX_LIGHTNING
+	assert_table_length NUM_SGB_SFX

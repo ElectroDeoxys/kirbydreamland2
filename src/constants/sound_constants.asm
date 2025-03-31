@@ -2,14 +2,14 @@
 	const MUSIC_00 ; $00
 	const MUSIC_01 ; $01
 	const MUSIC_02 ; $02
-	const MUSIC_03 ; $03
+	const MUSIC_GRASS_LAND_HUB ; $03
 	const MUSIC_04 ; $04
 	const MUSIC_05 ; $05
-	const MUSIC_06 ; $06
+	const MUSIC_TITLE_SCREEN ; $06
 	const MUSIC_07 ; $07
 	const MUSIC_08 ; $08
 	const MUSIC_09 ; $09
-	const MUSIC_0A ; $0a
+	const MUSIC_BIG_FOREST_HUB ; $0a
 	const MUSIC_0B ; $0b
 	const MUSIC_0C ; $0c
 	const MUSIC_0D ; $0d
@@ -27,7 +27,7 @@
 	const MUSIC_19 ; $19
 	const MUSIC_1A ; $1a
 	const MUSIC_1B ; $1b
-	const MUSIC_1C ; $1c
+	const MUSIC_LEVEL_SELECT ; $1c
 	const MUSIC_1D ; $1d
 	const MUSIC_1E ; $1e
 	const MUSIC_1F ; $1f
@@ -45,7 +45,7 @@
 	const MUSIC_2B ; $2b
 	const MUSIC_2C ; $2c
 	const MUSIC_2D ; $2d
-	const MUSIC_2E ; $2e
+	const MUSIC_FILE_SELECT_MENU ; $2e
 DEF NUM_MUSICS EQU const_value
 	const_def $ff
 	const MUSIC_NONE ; $ff

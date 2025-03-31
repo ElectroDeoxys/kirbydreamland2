@@ -2,6 +2,24 @@ MACRO sgb_header
 	db \1 | \2 ; sgb_command and length
 ENDM
 
+MACRO sgb_sound
+	sgb_header SGBSOUND_CMD, 1
+	db \1 ; SGBSOUNDA_* parameter
+	db \2 ; SGBSOUNDB_* parameter
+	db \3 | (\4 << 2) | (\5 << 4) | (\6 << 6) ; pitch A, volume A, pitch B, volume B
+REPT 12
+	db $00
+ENDR
+ENDM
+
+MACRO sgb_sound_a
+	sgb_sound \1, $0, \2, \3, 0, 0
+ENDM
+
+MACRO sgb_sound_b
+	sgb_sound $0, \1, 0, 0, \2, \3
+ENDM
+
 MACRO sgb_pal_trn
 	sgb_header PAL_TRN_CMD, 1
 REPT 15

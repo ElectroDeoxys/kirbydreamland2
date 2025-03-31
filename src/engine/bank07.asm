@@ -1,4 +1,19 @@
-SECTION "Func_1c01d", ROMX[$401d], BANK[$7]
+Func_1c000:
+	ld a, 1
+	ld [wDemoInputDuration], a
+	ld a, $02
+	ld [wDemoActive], a
+	ld hl, wDemoInputPtr
+	ld bc, sDemoInputs
+	ld [hl], c
+	inc hl
+	ld [hl], b
+	xor a
+	ld hl, wda30
+	ld [hli], a
+	ld [hl], a
+	ld [wda0e], a
+	ret
 
 ; fills some kind of look up table for Decompress
 Func_1c01d:
@@ -15,6 +30,226 @@ Func_1c01d:
 	jr nz, .loop_entries
 	ret
 ; 0x1c02d
+
+SECTION "Func_1c1dc", ROMX[$41dc], BANK[$7]
+
+Func_1c1dc::
+	ld hl, wdb51
+	ld a, [hli]
+	ld [wda01], a
+	sub $10
+	ld c, a
+	ld a, [hli]
+	ld b, a
+	jr nc, .asm_1c1eb
+	dec b
+.asm_1c1eb
+	ld a, [hli] ; wdb53
+	ld [wda00], a
+	sub $10
+	ld e, a
+	ld d, [hl]
+	jr nc, .asm_1c1f6
+	dec d
+.asm_1c1f6
+	call Func_15e3
+	push hl
+	call Func_15fc
+	pop bc
+	ld d, $0d
+	ld e, $0b
+	jr .asm_1c21e
+.asm_1c204
+	ld a, c
+	add $10
+	ld c, a
+	jr c, .asm_1c213
+	ld a, l
+	add $40
+	ld l, a
+	jr nc, .asm_1c21e
+	inc h
+	jr .asm_1c21e
+.asm_1c213
+	ld a, [wdb3d]
+	add b
+	ld b, a
+	ld h, $98
+	ld a, l
+	and $1f
+	ld l, a
+.asm_1c21e
+	push bc
+	push hl
+	push de
+	jr .asm_1c236
+.asm_1c223
+	inc c
+	ld a, c
+	and $0f
+	jr z, .asm_1c22d
+	inc l
+	inc l
+	jr .asm_1c236
+.asm_1c22d
+	ld a, c
+	sub $10
+	ld c, a
+	inc b
+	ld a, l
+	and $e0
+	ld l, a
+.asm_1c236
+	ld a, [bc]
+	push bc
+	ld c, a
+	ld b, $c5
+	ld a, [bc]
+	ld [hli], a
+	inc b
+	ld a, [bc]
+	ld [hl], a
+	inc b
+	ld a, l
+	add $1f
+	ld l, a
+	ld a, [bc]
+	ld [hli], a
+	inc b
+	ld a, [bc]
+	ld [hl], a
+	ld a, l
+	sub $21
+	ld l, a
+	pop bc
+	dec d
+	jr nz, .asm_1c223
+	pop de
+	pop hl
+	pop bc
+	dec e
+	jr nz, .asm_1c204
+	ret
+
+Func_1c259::
+	ld hl, wdb51
+	ld a, [hli]
+	ld [wda01], a
+	sub $10
+	ld c, a
+	ld a, [hli]
+	ld b, a
+	jr nc, .asm_1c268
+	dec b
+.asm_1c268
+	ld a, [hli] ; wdb53
+	ld [wda00], a
+	sub $10
+	ld e, a
+	ld d, [hl]
+	jr nc, .asm_1c273
+	dec d
+.asm_1c273
+	ld a, e
+	and $f0
+	ld h, a
+	ld a, [wdb56]
+	sub h
+	jr z, .asm_1c294
+	push bc
+	push de
+	rla
+	jr nc, .asm_1c289
+	ld a, e
+	add $a0
+	ld e, a
+	jr nc, .asm_1c289
+	inc d
+.asm_1c289
+	ld a, h
+	ld [wdb56], a
+	ld a, $0d
+	call $42bc ; Func_1c2bc
+	pop de
+	pop bc
+.asm_1c294
+	ld a, c
+	and $f0
+	ld h, a
+	ld a, [wdb55]
+	sub h
+	jr z, .asm_1c2bb
+	rla
+	jr nc, .asm_1c2a8
+	ld a, c
+	add $b0
+	ld c, a
+	jr nc, .asm_1c2a8
+	inc b
+.asm_1c2a8
+	ld a, h
+	ld [wdb55], a
+	push bc
+	ld bc, $400
+.asm_1c2b0
+	dec bc
+	ld a, b
+	or c
+	jr nz, .asm_1c2b0
+	pop bc
+	ld a, $0b
+	call $4318 ; Func_1c318
+.asm_1c2bb
+	ret
+; 0x1c2bc
+
+SECTION "Func_1dada", ROMX[$5ada], BANK[$7]
+
+Func_1dada:
+	xor a
+	ld [wObjDisabled], a
+	ld hl, wNextStatTrampoline
+	ld a, LOW(Func_2aa)
+	ld [hli], a
+	ld [hl], HIGH(Func_2aa)
+	ld hl, wStatTrampoline + $1
+	ld a, LOW(Func_2aa)
+	ld [hli], a
+	ld [hl], HIGH(Func_2aa)
+
+	ld a, $7f
+	ldh [rLYC], a
+	ld [wLYC], a
+
+	xor a
+	ld hl, rSCY
+	ld [hli], a
+	ld [hl], a ; rSCX
+	ld [wda01], a
+	ld [wda00], a
+
+	ld a, LCDCF_BGON | LCDCF_OBJ16 | LCDCF_OBJON | LCDCF_WIN9C00
+	ldh [rLCDC], a
+	ret
+
+; input:
+; - b = LYC value
+Func_1db06:
+	ld hl, wLYC
+	ld a, b
+	ld [hl], a
+	ldh [rLYC], a
+
+	ld hl, wNextStatTrampoline
+	ld a, LOW(Func_30c)
+	ld [hli], a
+	ld [hl], HIGH(Func_30c)
+
+	; switch on LYC==LY
+	ld hl, rSTAT
+	set STATB_LYC, [hl]
+	ret
+; 0x1db1b
 
 SECTION "Func_1d7bc", ROMX[$57bc], BANK[$7]
 
@@ -46,13 +281,15 @@ Func_1d7bc:
 	ret
 ; 0x1d7da
 
-SECTION "Func_1dfee", ROMX[$5fee], BANK[$7]
+SECTION "TitleScreen", ROMX[$5fee], BANK[$7]
 
-Func_1dfee:
-	ld hl, $df00
-	ld a, $3e
+TitleScreen:
+	; set time to switch to Demo
+	; after entering Title Screen
+	ld hl, wTitleScreenDemoTimer
+	ld a, LOW(1598)
 	ld [hli], a
-	ld [hl], $06
+	ld [hl], HIGH(1598)
 
 	ld hl, $6107
 	ld de, vTiles0
@@ -72,29 +309,28 @@ Func_1dfee:
 	ld de, vTiles0
 	call FarDecompress
 
+	; load Kirby graphics
 	ld a, $09
 	ld hl, $4000
-	ld de, $8100
-	ld bc, $280
+	ld de, vTiles0 tile $10
+	ld bc, $28 tiles
 	call FarCopyHLToDE
 
 	ld a, $09
 	ld hl, $4280
-	ld de, $8380
-	ld bc, $220
+	ld de, vTiles0 tile $38
+	ld bc, $22 tiles
 	call FarCopyHLToDE
 
-	ld hl, $4000
-	ld a, $08
-	call Farcall
+	farcall Func_20000
 
 	ld a, $f8
-	ld hl, $a0b3
+	ld hl, sa0b3
 	call Func_7c4
 
 	xor a
-	ld [$df02], a
-	ld hl, $cd09
+	ld [wdf02], a
+	ld hl, wcd09
 	ld a, $e4
 	ld [hli], a
 	ld a, $d0
@@ -105,7 +341,7 @@ Func_1dfee:
 	ld e, SFX_NONE
 	farcall PlaySFX
 
-	ld e, MUSIC_06
+	ld e, MUSIC_TITLE_SCREEN
 	farcall PlayMusic
 
 	call Func_1584
@@ -116,68 +352,62 @@ Func_1dfee:
 	call Func_46d
 
 	ld e, $08
-	ld hl, $6011
-	ld a, $1e
-	call Farcall
+	farcall Func_7a011
 
-	ld de, $4
+	lb de, $00, $04
 	farcall Func_68246
 
-	ld e, $06
-	ld hl, $606d
-	ld a, $1e
-	call Farcall
+	ld e, SGB_SFX_APPLAUSE
+	farcall SGBPlaySFX
 
-	ld a, $20
-.asm_1e09a
+	; short delay before accepting input
+	ld a, 32
+.wait_delay
 	push af
 	call Func_496
-	ld hl, $86b
-	ld a, $00
-	call Farcall
+	farcall Func_86b
 	call Func_4ae
 	call Func_343
 	call ReadJoypad
 	pop af
 	dec a
-	jr nz, .asm_1e09a
-.asm_1e0b3
+	jr nz, .wait_delay
+
+.wait_input_or_demo
 	call Func_496
-	ld hl, $86b
-	ld a, $00
-	call Farcall
+	farcall Func_86b
 	call Func_647
 	call Func_4ae
 	call Func_343
 	call ReadJoypad
-	ld a, [$df02]
+
+	ld a, [wdf02]
 	or a
-	jr nz, .asm_1e0e8
-	ld hl, $df00
+	jr nz, .end_due_to_input
+
+	; tick down wTitleScreenDemoTimer
+	ld hl, wTitleScreenDemoTimer
 	ld a, [hl]
-	sub $01
+	sub 1
 	ld [hli], a
 	ld a, [hl]
-	sbc $00
+	sbc 0
 	ld [hld], a
 	or [hl]
-	jr nz, .asm_1e0b3
-	ld hl, $5e92
-	ld a, $08
-	call Farcall
-	jr .asm_1e0ef
-.asm_1e0e8
-	xor a
-	ld [$deff], a
+	jr nz, .wait_input_or_demo
+
+	farcall Func_21e92
+	jr .end_due_to_demo_timer
+
+.end_due_to_input
+	xor a ; NO_DEMO
+	ld [wNextDemo], a
 	jp Func_437
-.asm_1e0ef
-	ld e, $00
-	ld hl, $606d
-	ld a, $1e
-	call Farcall
-	ld de, $4
-	ld hl, $427b
-	ld a, $1a
-	call Farcall
+
+.end_due_to_demo_timer
+	ld e, SGB_SFX_STOP
+	farcall SGBPlaySFX
+	lb de, $00, $04
+	farcall Func_6827b
 	jp Func_437
 ; 0x1e107

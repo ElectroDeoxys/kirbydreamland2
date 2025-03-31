@@ -8,6 +8,7 @@ Init::
 	xor a
 	ldh [rLCDC], a
 
+	; enable SRAM (it will always stay enabled)
 	ld a, CART_SRAM_ENABLE
 	ld [rRAMG], a
 
@@ -44,14 +45,16 @@ Init::
 	ld a, $00
 	call FillHL
 
+	; init IF and enable some interrupts
 	xor a
 	ldh [rIF], a
 	ld a, IEF_VBLANK | IEF_STAT | IEF_TIMER
 	ldh [rIE], a
 
-	ld a, $ff
+	; set Timer to be executed
+	; as soon as possible
+	ld a, -1
 	ldh [rTIMA], a
-
 	; sets timer to interrupt at
 	; 4k Hz / 68 ~ 59 Hz
 	ld a, -68
@@ -63,7 +66,7 @@ Init::
 	ldh [rSTAT], a
 	ld a, $ff
 	ldh [rLYC], a
-	ld [wda29], a
+	ld [wLYC], a
 
 	; initialise transfer OAM function in HRAM
 	ld a, BANK(TransferVirtualOAM) ; useless UnsafeBankswitch
@@ -73,13 +76,14 @@ Init::
 	ld bc, SIZEOF("DMA Transfer")
 	call CopyHLToDE
 
-	ld hl, wda21
-	ld a, $02
+	ld hl, wda20 + $1
+	ld a, HIGH(Func_22b)
 	ld [hld], a
-	ld [hl], $2b
+	ld [hl], LOW(Func_22b)
 	xor a
 	ld [wda1c], a
 
+	; initialise Audio engine and WRAM tables
 	farcall_unsafe InitAudio
 	farcall_unsafe Func_1d7bc
 	farcall_unsafe Func_1c01d
@@ -95,16 +99,16 @@ Init::
 	ldh [rSCX], a
 	ldh [rWY], a
 	ldh [rWX], a
-	ld [$da2b], a
-	ld a, $c0
-	ld [$da08], a
+	ld [wObjDisabled], a
+	ld a, HIGH(wVirtualOAM)
+	ld [wda08], a
 	ld a, $c2
-	ld [$da28], a
-	ld a, $c3
-	ld [$da10], a
+	ld [wda28], a
 
-	ld hl, $342
-	call Func_604
+	ld a, $c3 ; jp
+	ld [wVBlankTrampoline + 0], a
+	ld hl, VBlankHandler_Default
+	call UnsafeSetVBlankTrampoline
 
 	ld hl, wStatTrampoline
 	ld a, $c3 ; jp
@@ -112,11 +116,12 @@ Init::
 	ld a, LOW(StatHandler_Default)
 	ld [hli], a
 	ld [hl], HIGH(StatHandler_Default)
-	ld hl, wda16
+	ld hl, wNextStatTrampoline
 	ld a, LOW(StatHandler_Default)
 	ld [hli], a
 	ld [hl], HIGH(StatHandler_Default)
 
+	; finally, enable interrupts and start timer
 	ei
 	ld a, TACF_START | TACF_4KHZ
 	ldh [rTAC], a
@@ -134,18 +139,55 @@ hTransferVirtualOAM::
 	jr nz, .loop ; 3 cycles
 	ret
 ENDL
-; 0x680f2
+
+Pointers_680f2:
+	dw $4136 ; $00
+	dw $413b ; $01
+	dw $4140 ; $02
+	dw $4145 ; $03
+	dw $414a ; $04
+	dw $414f ; $05
+	dw $4154 ; $06
+	dw $4159 ; $07
+	dw $415e ; $08
+	dw $4163 ; $09
+	dw $4168 ; $0a
+	dw $416d ; $0b
+	dw $4172 ; $0c
+	dw $4177 ; $0d
+	dw $417c ; $0e
+	dw $4181 ; $0f
+	dw $4186 ; $10
+	dw $418b ; $11
+	dw $4190 ; $12
+	dw $4195 ; $13
+	dw $419a ; $14
+	dw $41a4 ; $15
+	dw $419f ; $16
+	dw $41ae ; $17
+	dw $41a9 ; $18
+	dw $41b3 ; $19
+	dw $41b8 ; $1a
+	dw $41bd ; $1b
+	dw $41c2 ; $1c
+	dw $41c7 ; $1d
+	dw $41cc ; $1e
+	dw $41d1 ; $1f
+	dw $41d6 ; $20
+	dw $41db ; $21
+; 0x68136
 
 SECTION "Func_681e0", ROMX[$41e0], BANK[$1a]
 
 Func_681e0:
 	ld a, [wSGBEnabled]
 	or a
-	ret z
-	pop hl
+	ret z ; no SGB
+
+	pop hl ; skips rest of caller's execution
 	ld a, d
-	ld hl, $40f2
-	add a
+	ld hl, Pointers_680f2
+	add a ; *2
 	add l
 	ld l, a
 	jr nc, .asm_681f0
@@ -156,7 +198,7 @@ Func_681e0:
 	ld l, a
 	ld a, [hl]
 	ld c, a
-	ld de, $cd0c
+	ld de, wcd0c
 	ld [de], a
 	inc e
 	ld b, $00
@@ -169,14 +211,17 @@ Func_681e0:
 	jr nz, .asm_681fd
 	jr Func_68235
 
+; input:
+; - d = ?
 Func_68205:
 	ld a, [wSGBEnabled]
 	or a
-	ret z
-	pop hl
+	ret z ; no SGB
+
+	pop hl ; skips rest of caller's execution
 	ld a, d
-	ld hl, $40f2
-	add a
+	ld hl, Pointers_680f2
+	add a ; *2
 	add l
 	ld l, a
 	jr nc, .asm_68215
@@ -187,7 +232,7 @@ Func_68205:
 	ld l, a
 	ld a, [hli]
 	ld c, a
-	ld de, $cd0c
+	ld de, wcd0c
 	ld [de], a
 	inc e
 	inc hl
@@ -198,95 +243,108 @@ Func_68205:
 	dec c
 	jr nz, .loop_copy
 
-	ld hl, $cd09
-	ld de, wBGP
-	ld b, $03
-.asm_6822e
+	; c = $0 = LOW(rP1)
+	ld hl, wcd09
+	ld de, wBGOBPals
+	ld b, wBGOBPalsEnd - wBGOBPals
+.loop_pal_configs
 	ld a, [hli]
 	ld [de], a
-	ld [$ff00+c], a
+	ld [$ff00+c], a ; bug, c should be LOW(rBGP)
 	inc e
 	dec b
-	jr nz, .asm_6822e
+	jr nz, .loop_pal_configs
 ;	fallthrough
 Func_68235:
 	ld a, $0d
-	ld [$da34], a
+	ld [wda34], a
 	ld a, $01
-	ld [$da38], a
+	ld [wda38], a
 	ld a, $04
-	ldh [$ff84], a
+	ldh [hff84], a
 	jp Func_682ca
 
-Func_68246:
+; input:
+; - d = ?
+; - e = ?
+Func_68246::
 	ld a, $ff
-	ld [$da37], a
+	ld [wda37], a
+
 	call Func_68205
+
+	; being here means no SGB
 	ld a, e
-	ldh [$ff84], a
+	ldh [hff84], a
 	ld a, [wBGP]
 	or a
-	ld a, $00
+	ld a, FALSE
 	jr z, .asm_6825b
-	ld a, $01
+	ld a, TRUE
 .asm_6825b
-	ld [$da35], a
-	ld hl, $cd08
-	ld de, $cd0b
+	ld [wda35], a
+	; wda35 = (wBGP != 0)
+
+	ld hl, wcd08
+	ld de, wcd0b
 	ld c, $06
-.asm_68266
+.loop
 	ld a, [de]
 	dec e
 	call Func_682dd
 	ld [hld], a
 	dec c
-	jr nz, .asm_68266
+	jr nz, .loop
 	jr Func_682c5
 
 	call Func_68292
-	jr .asm_68283
+	jr Func_68283
 
 	call Func_6829a
-	jr .asm_68283
+	jr Func_68283
 
+Func_6827b::
 	call Func_682a4
-	jr .asm_68283
+	jr Func_68283
 
 	call Func_682ac
-.asm_68283
+;	fallthrough
+
+Func_68283:
+.loop
 	ld a, $01
-	ld [$da39], a
+	ld [wda39], a
 	call Func_343
-	ld a, [$da36]
+	ld a, [wda36]
 	or a
-	jr nz, .asm_68283
+	jr nz, .loop
 	ret
 
 Func_68292:
 	ld a, $01
-	ld [$da37], a
+	ld [wda37], a
 	call Func_681e0
 ;	fallthrough
 Func_6829a:
-	ld a, $01
-	ld [$da35], a
+	ld a, TRUE
+	ld [wda35], a
 	ld a, e
-	ldh [$ff84], a
+	ldh [hff84], a
 	jr Func_682b4
 
 Func_682a4:
 	ld a, $00
-	ld [$da37], a
+	ld [wda37], a
 	call Func_681e0
 ;	fallthrough
 Func_682ac:
-	ld a, $00
-	ld [$da35], a
+	ld a, FALSE
+	ld [wda35], a
 	ld a, e
-	ldh [$ff84], a
+	ldh [hff84], a
 Func_682b4:
-	ld hl, $cd03
-	ld de, wBGP
+	ld hl, wcd03
+	ld de, wBGOBPals
 	ld c, $09
 .asm_682bc
 	ld a, [de]
@@ -299,23 +357,28 @@ Func_682b4:
 
 Func_682c5:
 	ld a, $03
-	ld [$da34], a
+	ld [wda34], a
 Func_682ca:
-	ldh a, [$ff84]
-	ld [$da32], a
-	ld [$da33], a
+	ldh a, [hff84]
+	ld [wda32], a
+	ld [wda33], a
 	ld a, $01
-	ld [$da36], a
-	ld hl, $684
-	jp Func_5f9
+	ld [wda36], a
 
+	ld hl, Func_684
+	jp SetVBlankTrampoline
+
+; input:
+; - a = ?
+; output:
+; - a = ?
 Func_682dd:
 	ld b, a
-	ld a, [$da35]
-	cp $00
+	ld a, [wda35]
+	cp FALSE
 	ld a, b
 	jr nz, .asm_68305
-	ld b, a
+	ld b, a ; unnecessary
 	and $c0
 	ld a, b
 	jr z, .asm_682ef
@@ -339,6 +402,7 @@ Func_682dd:
 	ret z
 	dec a
 	ret
+
 .asm_68305
 	ld b, a
 	and $c0

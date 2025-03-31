@@ -50,7 +50,7 @@ SECTION "PlayMusic", ROMX[$4232], BANK[$1f]
 
 ; input:
 ; - e = MUSIC_* constant
-PlayMusic:
+PlayMusic::
 	ld a, [wCurMusic]
 	cp e
 	ret z ; skip, already playing
@@ -125,14 +125,14 @@ MusicHeaders:
 	dw $4295 ; MUSIC_00
 	dw $42a2 ; MUSIC_01
 	dw $42af ; MUSIC_02
-	dw $42b9 ; MUSIC_03
+	dw $42b9 ; MUSIC_GRASS_LAND_HUB
 	dw $42c3 ; MUSIC_04
 	dw $42d0 ; MUSIC_05
-	dw $42dd ; MUSIC_06
+	dw $42dd ; MUSIC_TITLE_SCREEN
 	dw $42ea ; MUSIC_07
 	dw $42f7 ; MUSIC_08
 	dw $54b8 ; MUSIC_09
-	dw $54c5 ; MUSIC_0A
+	dw $54c5 ; MUSIC_BIG_FOREST_HUB
 	dw $54cf ; MUSIC_0B
 	dw $54dc ; MUSIC_0C
 	dw $54e9 ; MUSIC_0D
@@ -150,7 +150,7 @@ MusicHeaders:
 	dw $632b ; MUSIC_19
 	dw $6338 ; MUSIC_1A
 	dw $6345 ; MUSIC_1B
-	dw $6352 ; MUSIC_1C
+	dw $6352 ; MUSIC_LEVEL_SELECT
 	dw $635f ; MUSIC_1D
 	dw $6369 ; MUSIC_1E
 	dw $6376 ; MUSIC_1F
@@ -168,5 +168,5 @@ MusicHeaders:
 	dw $73d9 ; MUSIC_2B
 	dw $73e6 ; MUSIC_2C
 	dw $73ed ; MUSIC_2D
-	dw $73fa ; MUSIC_2E
+	dw $73fa ; MUSIC_FILE_SELECT_MENU
 	assert_table_length NUM_MUSICS

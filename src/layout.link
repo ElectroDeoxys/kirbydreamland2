@@ -19,14 +19,22 @@ ROMX $07
 	"Bank 7"
 ROMX $08
 	"Bank 8"
+ROMX $0f
+	"Bank F"
+ROMX $10
+	"Bank 10"
 ROMX $1a
 	"Bank 1A"
 ROMX $1e
 	"Bank 1E"
 ROMX $1f
 	"Bank 1F"
-VRAM $00
+VRAM $0
 	"VRAM0"
+SRAM $0
+	"SRAM0"
+SRAM $1
+	"SRAM1"
 WRAM0
 	"WRAM0"
 WRAMX $1
