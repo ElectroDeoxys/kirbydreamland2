@@ -1,8 +1,14 @@
 SECTION "WRAM0", WRAM0
 
-wVirtualOAM:: ; c000
+wVirtualOAM1:: ; c000
 	ds $4 * OAM_COUNT
-wVirtualOAMEnd::
+wVirtualOAM1End::
+
+SECTION "WRAM0@c100", WRAM0[$c100]
+
+wVirtualOAM2:: ; c100
+	ds $4 * OAM_COUNT
+wVirtualOAM2End::
 
 SECTION "WRAM0@c200", WRAM0[$c200]
 
@@ -195,16 +201,17 @@ wSCX2:: db ; da05
 wda06:: db ; da06
 wda07:: db ; da07
 
-wda08:: ; da08
-	db
-
-wda09:: ; da09
-	db
+; points to the next empty spot in a virtual OAM
+; (either wVirtualOAM1 or wVirtualOAM2)
+wVirtualOAMPtr:: ; da08
+	dw
 
 wda0a:: db ; da0a
 wda0b:: db ; da0b
 
-wda0c:: ; da0c
+; if TRUE, then V-Blank has been
+; executed for this frame
+wVBlankExecuted:: ; da0c
 	db
 
 ; whether Timer interrupt has occurred

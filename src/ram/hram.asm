@@ -32,7 +32,10 @@ SECTION "HRAM 2", HRAM
 hff92:: ; ff92
 	db
 
-	ds $3
+; if bit 7 is set, then mirror sprite horizontally
+wObjectDirection:: db ; ff93
+hOAMBaseTileID::   db ; ff94
+hOAMFlags::        db ; ff95
 
 ; holds a ROM bank temporarily for general purposes
 ; (e.g. doing a far call, copying far bytes)

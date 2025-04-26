@@ -100,8 +100,8 @@ Init::
 	ldh [rWY], a
 	ldh [rWX], a
 	ld [wObjDisabled], a
-	ld a, HIGH(wVirtualOAM)
-	ld [wda08], a
+	ld a, HIGH(wVirtualOAM1)
+	ld [wVirtualOAMPtr + 0], a
 	ld a, $c2
 	ld [wda28], a
 
@@ -126,12 +126,13 @@ Init::
 	ld a, TACF_START | TACF_4KHZ
 	ldh [rTAC], a
 
+	; hand control over to the main game loop
 	jp GameLoop
 
 TransferVirtualOAM:
 LOAD "DMA Transfer", HRAM
 hTransferVirtualOAM::
-	ld a, HIGH(wVirtualOAM)
+	ld a, HIGH(wVirtualOAM1)
 	ldh [rDMA], a ; start DMA transfer (starts right after instruction)
 	ld a, 160 / (1 + 3) ; delay for a total of 160 cycles
 .loop
@@ -314,7 +315,7 @@ Func_68283:
 .loop
 	ld a, $01
 	ld [wda39], a
-	call Func_343
+	call DoFrame
 	ld a, [wda36]
 	or a
 	jr nz, .loop

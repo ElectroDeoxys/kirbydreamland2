@@ -1078,9 +1078,21 @@ Func_7a011::
 .got_pal_id
 	call Func_7a042
 	jp SGBWait_Long
-; 0x7a02e
 
-SECTION "Func_7a042", ROMX[$6042], BANK[$1e]
+Func_7a02e:
+	call Func_7a035
+	ret z
+	jp SGBWait_Long
+
+Func_7a035:
+	ld a, $80
+	ldh [hff84], a
+	ld a, [wSGBEnabled]
+	or a
+	ret z
+	ld a, e
+	ld [wdefe], a
+;	fallthrough
 
 ; requests SGB to set the pre-loaded palettes from SNES WRAM
 ; uses as input (pal ID / 2), then loads the next 3 palettes as well

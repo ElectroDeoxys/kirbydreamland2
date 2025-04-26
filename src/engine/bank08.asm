@@ -1,15 +1,15 @@
 Func_20000::
-	ld a, $a0
+	ld a, HIGH(sObjects)
 	ld [wda48], a
 	xor a
 	ld [wda46], a
 	ld [wda47], a
-	ld hl, sb201
+	ld hl, sb200Unk01
 	ld [hl], a
 	dec h
 	; hl = sb101
 	ld b, $12
-	ld a, $b2
+	ld a, HIGH(sb200)
 .asm_20015
 	ld [hl], a
 	dec h
@@ -100,7 +100,7 @@ _GameLoop::
 	ld a, $00
 	call Farcall
 
-	ld a, [sa082]
+	ld a, [sa000Unk82]
 	dec a
 	ld hl, .PointerTable
 	add a
@@ -153,6 +153,203 @@ Func_206ef:
 	ld a, $ff
 	ret
 ; 0x2070e
+
+SECTION "Script_218e7", ROMX[$58e7], BANK[$8]
+
+Script_218e7:
+	set_draw_func Func_df6
+	set_oam OAM_1e9fb
+	unk03_cmd Func_21a2c
+	set_field OBJSTRUCT_UNK26, $20
+	set_x 0
+	set_y 109
+
+	repeat 1
+	set_frame 10
+	set_x_vel 1.375
+	set_y_vel -2.094
+	set_y_acc 0.199
+	wait 10
+	set_frame 9
+	wait 10
+	set_frame 4
+	set_x_vel 0.0
+	set_y_vel 0.0
+	set_y_acc 0.0
+	wait 6
+	repeat_end
+
+.loop
+	set_frame 8
+	wait 50
+	set_frame 0
+	wait 16
+	set_x 28
+	set_y 109
+
+	repeat 5
+	set_frame 1
+	set_x_vel 0.75
+	wait 6
+	set_frame 2
+	wait 6
+	set_frame 3
+	wait 6
+	set_frame 2
+	wait 6
+	repeat_end
+
+	set_frame 1
+	wait 6
+	set_frame 2
+	wait 6
+	set_frame 3
+	wait 6
+	set_frame 5
+	set_x_vel 0.0
+	wait 6
+	set_frame 18
+	wait 20
+	set_frame 0
+	wait 6
+	set_frame 14
+	wait 30
+
+	repeat 5
+	set_frame 11
+	set_x_vel -0.75
+	wait 6
+	set_frame 12
+	wait 6
+	set_frame 13
+	wait 6
+	set_frame 12
+	wait 6
+	repeat_end
+
+	set_frame 11
+	wait 6
+	set_frame 12
+	wait 6
+	set_frame 6
+	wait 6
+	set_frame 6
+	set_x_vel 0.0
+	wait 6
+	set_frame 14
+	wait 10
+
+	repeat 2
+	set_frame 0
+	wait 6
+	set_frame 14
+	wait 6
+	repeat_end
+
+	set_frame 0
+	set_x_vel 0.0
+	wait 30
+
+	repeat 5
+	set_frame 1
+	set_x_vel 0.75
+	wait 6
+	set_frame 2
+	wait 6
+	set_frame 3
+	wait 6
+	set_frame 2
+	wait 6
+	repeat_end
+
+	set_frame 7
+	wait 18
+	set_frame 7
+	set_x_vel 0.0
+	wait 6
+	set_frame 4
+	wait 6
+	set_frame 0
+	wait 6
+	set_frame 14
+	wait 30
+
+	repeat 4
+	set_frame 16
+	set_x_vel -0.75
+	set_y_vel -1.0
+	set_y_acc 0.094
+	wait 10
+	set_frame 15
+	wait 10
+	set_frame 17
+	set_x_vel 0.0
+	set_y_vel 0.0
+	set_y_acc 0.0
+	wait 6
+	repeat_end
+
+	repeat 2
+	set_frame 16
+	set_x_vel -0.75
+	set_y_vel -1.0
+	set_y_acc 0.098
+	wait 10
+	set_frame 15
+	wait 10
+	set_frame 17
+	set_x_vel 0.0
+	set_y_vel 0.0
+	set_y_acc 0.0
+	wait 6
+	repeat_end
+
+	set_frame 16
+	set_x_vel -0.688
+	set_y_vel -1.0
+	set_y_acc 0.098
+	wait 10
+	set_frame 15
+	wait 10
+	set_frame 17
+	set_x_vel 0.0
+	set_y_vel 0.0
+	set_y_acc 0.0
+	wait 6
+	set_x 28
+	set_y 109
+	jump .loop
+
+Func_21a2c:
+	call ApplyObjectXAcceleration
+	call ApplyObjectYAcceleration
+	call ApplyObjectVelocities
+
+	ld e, OBJSTRUCT_UNK26
+	ld a, [de]
+	or a
+	jr z, .read_input
+	dec a
+	ld [de], a
+	ret
+.read_input
+	ldh a, [hJoypad1Pressed]
+	and A_BUTTON | B_BUTTON | START
+	ret z ; no input
+
+	ld e, SFX_2D
+	farcall PlaySFX
+	ld e, SGB_SFX_STOP
+	farcall SGBPlaySFX
+	ld de, $4
+	farcall Func_682a4
+
+	ldh a, [hff9a]
+	ld d, a
+	ld e, $08
+	ld bc, $5a6d
+	jp Func_846
+; 0x21a6d
 
 SECTION "Func_21a79", ROMX[$5a79], BANK[$8]
 

@@ -84,7 +84,7 @@ StartIntro:
 
 	call Func_496
 	call Func_4ae
-	call Func_343
+	call DoFrame
 	ld a, [wScreenSectionSCX]
 	and a
 	jr nz, .loop_scroll_rick
@@ -111,7 +111,7 @@ StartIntro:
 
 	call Func_496
 	call Func_4ae
-	call Func_343
+	call DoFrame
 	ld a, [wScreenSectionSCX]
 	and a
 	jr nz, .loop_scroll_coo
@@ -138,7 +138,7 @@ StartIntro:
 
 	call Func_496
 	call Func_4ae
-	call Func_343
+	call DoFrame
 	ld a, [wScreenSectionSCX]
 	and a
 	jr nz, .loop_scroll_kine
@@ -150,7 +150,7 @@ StartIntro:
 	push af
 	call Func_496
 	call Func_4ae
-	call Func_343
+	call DoFrame
 	pop af
 	and a
 	jr nz, .loop_wait

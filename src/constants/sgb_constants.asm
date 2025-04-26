@@ -25,7 +25,7 @@ ENDM
 	sgb_command DATA_SND ; $0f ($78)
 	sgb_command DATA_TRN ; $10 ($80)
 	sgb_command MLT_REQ  ; $11 ($88)
-	sgb_command JUMP     ; $12 ($90)
+	sgb_command SGB_JUMP ; $12 ($90)
 	sgb_command CHR_TRN  ; $13 ($98)
 	sgb_command PCT_TRN  ; $14 ($a0)
 	sgb_command ATTR_TRN ; $15 ($a8)
