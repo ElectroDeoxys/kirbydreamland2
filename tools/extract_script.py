@@ -26,8 +26,8 @@ EXEC_ASM_CMD = 0x0d
 UNK0E_CMD = 0x0e
 SET_FIELD_CMD = 0x0f
 UNK10_CMD = 0x10
-JUMP_IF_UNK27_CMD = 0x11
-UNK12_CMD = 0x12
+JUMP_IF_NOT_UNK27_CMD = 0x11
+JUMP_IF_UNK27_CMD = 0x12
 UNK13_CMD = 0x13
 UNK14_CMD = 0x14
 UNK15_CMD = 0x15
@@ -93,7 +93,7 @@ def parse_home_func(data):
     if addr in syms:
         func = syms[addr]
     else:
-        func = "Func_{addr:0x}"
+        func = f"Func_{addr:0x}"
     return (2, f"{func}")
 
 def parse_unk03(data):
@@ -128,8 +128,8 @@ cmds = [
     ("unk0e_cmd", None), # UNK0E_CMD
     ("set_field", [parse_field, parse_byte]), # SET_FIELD_CMD
     ("unk10_cmd", None), # UNK10_CMD
+    ("jump_if_not_unk27", [parse_local_addr]), # JUMP_IF_NOT_UNK27_CMD
     ("jump_if_unk27", [parse_local_addr]), # JUMP_IF_UNK27_CMD
-    ("unk12_cmd", None), # UNK12_CMD
     ("unk13_cmd", None), # UNK13_CMD
     ("unk14_cmd", None), # UNK14_CMD
     ("unk15_cmd", None), # UNK15_CMD
@@ -175,7 +175,6 @@ for o in args.offsets:
     while True:
         this_pos = pos
         cmd = reader.get_rom_byte(pos)
-        #print(f"{cmd:02x}")
         cmd_str, cmd_funcs = cmds[cmd]
         pos += 1
 
@@ -190,6 +189,7 @@ for o in args.offsets:
 
         if cmd_funcs == None:
             print(f"Invalid command 0x{cmd:02x}")
+            print(strings)
             raise Exception()
 
         else:
@@ -209,7 +209,7 @@ for o in args.offsets:
 
         strings.append((this_pos, s))
 
-        if cmd in [JUMP_CMD, JUMP_IF_UNK27_CMD]:
+        if cmd in [JUMP_CMD, JUMP_IF_NOT_UNK27_CMD, JUMP_IF_UNK27_CMD]:
             jump_addresses.add(arg_str)
 
         if cmd in [JUMP_CMD, SCRIPT_END_CMD]:

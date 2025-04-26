@@ -158,7 +158,7 @@ SECTION "Script_218e7", ROMX[$58e7], BANK[$8]
 
 Script_218e7:
 	set_draw_func Func_df6
-	set_oam OAM_1e9fb
+	set_oam $69fb, $7 ; OAM_1e9fb
 	unk03_cmd Func_21a2c
 	set_field OBJSTRUCT_UNK26, $20
 	set_x 0
@@ -346,12 +346,19 @@ Func_21a2c:
 
 	ldh a, [hff9a]
 	ld d, a
-	ld e, $08
-	ld bc, $5a6d
+	ld e, BANK(Script_21a6d)
+	ld bc, Script_21a6d
 	jp Func_846
-; 0x21a6d
 
-SECTION "Func_21a79", ROMX[$5a79], BANK[$8]
+Script_21a6d:
+	wait 16
+	exec_asm Func_21a73
+	script_end
+
+Func_21a73:
+	ld a, $01
+	ld [wdf02], a
+	ret
 
 Demo1Inputs:
 	db NO_INPUT, 0

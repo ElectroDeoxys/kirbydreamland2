@@ -415,12 +415,12 @@ ENDR
 	ld a, [hli]
 	ld b, [hl]
 	ld c, a
-	cp LOW($befe)
+	cp LOW(sDemoInputsEnd - $2)
 	jr nz, .asm_3ca
 	ld a, b
-	cp HIGH($befe)
+	cp HIGH(sDemoInputsEnd - $2)
 	jr nz, .asm_3ca
-	; bc = $befe
+	; bc = sDemoInputsEnd - $2
 	dec bc
 	dec bc
 .asm_3ca
@@ -1054,7 +1054,7 @@ Func_684::
 	ld a, $1e
 	call UnsafeBankswitch
 	ld e, h
-	call $600c
+	call Func_7a00c
 	pop af
 	call UnsafeBankswitch
 	jr .asm_6b8
@@ -1607,7 +1607,26 @@ Func_9ba:
 	inc bc
 	inc bc
 	jp Func_8a1.asm_8ce
-; 0x9ce
+
+; branches to argument address
+; if OBJSTRUCT_UNK27 is non-0
+Func_9ce:
+	ld e, OBJSTRUCT_UNK27
+	ld a, [de]
+	or a
+	jr z, .asm_9dd
+	ld a, [bc]
+	inc bc
+	ld e, a
+	ld a, [bc]
+	ld b, a
+	ld c, e
+	jp Func_8a1.asm_8ce
+.asm_9dd
+	inc bc
+	inc bc
+	jp Func_8a1.asm_8ce
+; 0x9e2
 
 SECTION "Func_a0c", ROM0[$a0c]
 
@@ -1960,8 +1979,10 @@ ApplyObjectVelocities::
 	ret
 ; 0xdce
 
-SECTION "Func_df6", ROM0[$df6]
+SECTION "Func_df3", ROM0[$df3]
 
+Func_df3::
+	call Func_3467
 Func_df6::
 	call Func_e2c
 	jp Func_f22
@@ -4045,8 +4066,8 @@ Data_3f00::
 	dw $b1f ; UNK0E_CMD
 	dw Func_937 ; SET_FIELD_CMD
 	dw $940 ; UNK10_CMD
-	dw $9ba ; JUMP_IF_UNK27_CMD
-	dw $9ce ; UNK12_CMD
+	dw $9ba ; JUMP_IF_NOT_UNK27_CMD
+	dw Func_9ce ; JUMP_IF_UNK27_CMD
 	dw $9e2 ; UNK13_CMD
 	dw $9f7 ; UNK14_CMD
 	dw $914 ; UNK15_CMD

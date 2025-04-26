@@ -1057,7 +1057,12 @@ SGB_MaskEn::
 	ret
 ; 0x7a002
 
-SECTION "Func_7a011", ROMX[$6011], BANK[$1e]
+SECTION "Func_7a00c", ROMX[$600c], BANK[$1e]
+
+Func_7a00c::
+	xor a
+	ldh [hff84], a
+	jr Func_7a039
 
 ; input:
 ; - e = ATF to set
@@ -1087,6 +1092,7 @@ Func_7a02e:
 Func_7a035:
 	ld a, $80
 	ldh [hff84], a
+Func_7a039:
 	ld a, [wSGBEnabled]
 	or a
 	ret z

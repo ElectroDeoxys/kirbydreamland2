@@ -233,7 +233,7 @@ Func_43bcc:
 	ld h, HIGH(wc400)
 	ld a, $06
 	ldh [hff81], a
-	ld de, $cfc0
+	ld de, wcf00 + $c0
 	ld a, [wdf33]
 	add e
 	ld e, a

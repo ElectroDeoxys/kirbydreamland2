@@ -37,9 +37,8 @@ sbb00:: ; bb00
 	ds $100
 
 sDemoInputs:: ; bc00
-	ds $100
-
-	ds $200
+	ds $300
+sDemoInputsEnd::
 
 sFileSaveData::
 sFile1:: file_struct sFile1 ; bf00

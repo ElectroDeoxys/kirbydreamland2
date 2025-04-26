@@ -405,6 +405,11 @@ wdb60:: ; db60
 wdb6a:: ; db6a
 	db
 
+	ds $7b - $6b
+
+wdb7b:: ; db7b
+	db
+
 SECTION "WRAM1@dd2d", WRAMX[$dd2d], BANK[$1]
 
 wdd2d:: ; dd2d
@@ -413,7 +418,17 @@ wdd2d:: ; dd2d
 wdd2e:: ; dd2e
 	db
 
-	ds $63 - $2f
+	ds $59 - $2f
+
+wdd59:: ; dd59
+	db
+
+	ds $1
+
+wdd5b:: ; dd5b
+	db
+
+	ds $63 - $5c
 
 wdd63:: ; dd63
 	db

@@ -412,30 +412,6 @@ TitleScreen:
 	jp Func_437
 ; 0x1e107
 
-SECTION "OAM_1e9fb", ROMX[$69fb], BANK[$7]
-
-OAM_1e9fb:
-	dw $6a21
-	dw $6a2a
-	dw $6a33
-	dw $6a3c
-	dw $6a45
-	dw $6a4e
-	dw $6a53
-	dw $6a5c
-	dw $6a65
-	dw $6a6e
-	dw $6a77
-	dw $6a80
-	dw $6a89
-	dw $6a92
-	dw $6a9b
-	dw $6aa4
-	dw $6aad
-	dw $6ab6
-	dw $6abf
-; 0x1ea21
-
 SECTION "Data_1f700", ROMX[$7700], BANK[$7], ALIGN[8]
 
 Data_1f700::
@@ -593,7 +569,7 @@ Data_1f700::
 	dwb $7412, $18 ; $97
 	dwb $7363, $18 ; $98
 	dwb $71d6, $18 ; $99
-	dwb $44e6, $0f ; $9a
+	dab Script_3c4e6 ; $9a
 	dwb $47e3, $0f ; $9b
 	dwb $451d, $0f ; $9c
 	dwb $4554, $0f ; $9d

@@ -92,13 +92,18 @@ ENDM
 
 	const UNK10_CMD ; $10
 
-	const JUMP_IF_UNK27_CMD ; $11
+	const JUMP_IF_NOT_UNK27_CMD ; $11
+MACRO jump_if_not_unk27
+	db JUMP_IF_NOT_UNK27_CMD
+	dw \1 ; address
+ENDM
+
+	const JUMP_IF_UNK27_CMD ; $12
 MACRO jump_if_unk27
 	db JUMP_IF_UNK27_CMD
 	dw \1 ; address
 ENDM
 
-	const UNK12_CMD ; $12
 	const UNK13_CMD ; $13
 	const UNK14_CMD ; $14
 	const UNK15_CMD ; $15

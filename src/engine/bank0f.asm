@@ -1,3 +1,129 @@
+SECTION "Script_3c4e6", ROMX[$44e6], BANK[$0f]
+
+Script_3c4e6:
+	exec_asm $496c
+	set_draw_func Func_df3
+	set_field OBJSTRUCT_UNK43, $20
+	exec_asm $454b
+	unk03_cmd Func_3c841
+	set_oam $42c6, $0f ; OAM_3c2c6
+	exec_asm $48ef
+	exec_asm $4912
+	jump_if_unk27 .script_3c509
+	create_object $9c, $a0, $b3
+.script_3c509
+	set_field OBJSTRUCT_UNK40, $00
+.loop
+	set_y_vel 0.0
+	set_y_acc 0.031
+	wait 10
+	set_y_vel 0.0
+	set_y_acc -0.031
+	wait 10
+	jump .loop
+; 0x3c51d
+
+SECTION "Func_3c841", ROMX[$4841], BANK[$0f]
+
+Func_3c841:
+	call ReadJoypad
+	ldh a, [hff9a]
+	ld d, a
+	ld a, [wdd5b]
+	and a
+	jr nz, .skip_a_btn_or_start
+	ld e, OBJSTRUCT_UNK43
+	ld a, [de]
+	and a
+	jr z, .check_a_btn_or_start
+	dec a
+	ld [de], a
+	jr .skip_a_btn_or_start
+.check_a_btn_or_start
+	ldh a, [hJoypad1Pressed]
+	bit A_BUTTON_F, a
+	jr nz, .a_btn_or_start
+	bit START_F, a
+	jr nz, .a_btn_or_start
+.skip_a_btn_or_start
+	call ApplyObjectXAcceleration
+	call ApplyObjectYAcceleration
+	call ApplyObjectVelocities
+	ld hl, wdb60
+	ld a, [hl]
+	add a ; *2
+	ld c, a
+	ld a, [wdb6a]
+	ld hl, wdb7b
+	cp [hl]
+	ret nz
+	ld a, [wdd5b]
+	and a
+	ret nz
+	ld e, OBJSTRUCT_UNK40
+	ld a, [de]
+	cp $10
+	jr c, .asm_3c88f
+	ldh a, [hJoypad1Down]
+	bit D_RIGHT_F, a
+	jr nz, .asm_3c892
+	bit D_LEFT_F, a
+	jr nz, .asm_3c8b0
+	ret
+.asm_3c88f
+	inc a
+	ld [de], a
+	ret
+.asm_3c892
+	ld hl, wdb6a
+	ld b, [hl]
+	ld hl, wdb60
+	ld a, [hl]
+	cp $06
+	ret z
+	inc a
+.asm_3c89e
+	and a
+	jr z, .asm_3c8aa
+	ld e, $00
+	srl b
+	rl e
+	dec a
+	jr .asm_3c89e
+.asm_3c8aa
+	bit 0, e
+	ret z
+	inc [hl]
+	jr .asm_3c8b9
+.asm_3c8b0
+	ld hl, wdb60
+	ld a, [hl]
+	cp $00
+	ret z
+	dec [hl]
+	dec c
+.asm_3c8b9
+	ld a, c
+	cp $0c
+	ret nc
+	ld [wdd59], a
+	push de
+	ld e, SFX_56
+	farcall PlaySFX
+	pop de
+	ld e, $0f
+	ld bc, $47f8
+	jp Func_846
+.a_btn_or_start
+	push de
+	ld e, SFX_2D
+	farcall PlaySFX
+	pop de
+	ld e, $0f
+	ld bc, $4550
+	jp Func_846
+; 0x3c8e8
+
 SECTION "FileSelectMenu", ROMX[$68d2], BANK[$0f]
 
 FileSelectMenu:
@@ -80,7 +206,7 @@ Script_3e96e:
 
 Script_3e974:
 	exec_asm Func_3e9d9
-	jump_if_unk27 .script_3e980
+	jump_if_not_unk27 .script_3e980
 	exec_asm Func_3e9d2
 	jump Script_3e940
 .script_3e980
