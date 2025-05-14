@@ -17,7 +17,8 @@ ENDU
 hff82:: ; ff82
 	db
 
-	ds $1
+hff83:: ; ff83
+	db
 
 hff84:: ; ff84
 	db
@@ -29,7 +30,8 @@ hff87:: ; ff87
 
 SECTION "HRAM 2", HRAM
 
-hff92:: ; ff92
+; size of wBGMapQueue in bytes
+hBGMapQueueSize:: ; ff92
 	db
 
 ; if bit 7 is set, then mirror sprite horizontally

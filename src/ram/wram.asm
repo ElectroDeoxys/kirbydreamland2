@@ -18,13 +18,21 @@ wc200:: ; c200
 wc300:: ; c300
 	ds $100
 
-wc400:: ; c400
+; holds several entries to process in ProcessBGMapQueue
+; each entry consists of a pointer in BG map,
+; the number of tiles indices to copy over and the
+; tile index data (copied continuously in a line)
+wBGMapQueue:: ; c400
 	ds $100
 
 wc500:: ; c500
 	ds $100
 
-SECTION "WRAM0@cd00", WRAM0[$cd00]
+SECTION "WRAM0@ca00", WRAM0[$ca00]
+
+wca00:: ds $100 ; ca00
+wcb00:: ds $100 ; cb00
+wcc00:: ds $100 ; cc00
 
 wBGOBPals::
 wBGP::  db ; cd00
@@ -51,6 +59,19 @@ wcd0c:: ; cd0c
 
 wcd2d:: ; cd2d
 	db
+
+	ds $35 - $2e
+
+wcd35:: ; cd35
+	ds $8
+
+wcd3d:: ; cd3d
+	ds 2 * $8
+
+	ds $56 - $4d
+
+wcd56:: ; cd56
+	ds $18
 
 SECTION "Audio WRAM", WRAM0[$ce00]
 
@@ -257,7 +278,7 @@ wda1e:: ; da1e
 
 	ds $1
 
-wda20:: ; da20
+wProcessBGMapQueueFunc:: ; da20
 	dw
 
 wda22:: ; da22
@@ -286,14 +307,15 @@ wLYC:: ; da29
 wObjDisabled:: ; da2b
 	db
 
-	ds $1
+wda2c:: ; da2c
+	db
 
 wScreenSectionSCX:: ; da2d
 	db
 
 	ds $2
 
-wda30:: ; da30
+wRNG:: ; da30
 	dw
 
 wda32:: ; da32
@@ -344,7 +366,10 @@ wda49:: ; da49
 wda4a:: ; da4a
 	db
 
-SECTION "WRAM1@db38", WRAMX[$db38], BANK[$1]
+SECTION "WRAM1@db36", WRAMX[$db36], BANK[$1]
+
+wdb36:: ; db36
+	dw
 
 wdb38:: ; db38
 	db
@@ -352,7 +377,14 @@ wdb38:: ; db38
 wdb39:: ; db39
 	db
 
-	ds $d - $a
+wdb3a:: ; db3a
+	db
+
+wdb3b:: ; db3b
+	db
+
+wdb3c:: ; db3c
+	db
 
 wdb3d:: ; db3d
 	db
@@ -360,7 +392,10 @@ wdb3d:: ; db3d
 wdb3e:: ; db3e
 	db
 
-	ds $45 - $3f
+wdb3f:: ; db3f
+	db
+
+	ds $45 - $40
 
 wdb45:: ; db45
 	dw
@@ -374,7 +409,10 @@ wdb49:: ; db49
 wdb4b:: ; db4b
 	dw
 
-	ds $51 - $4d
+	ds $2
+
+wdb4f:: db ; db4f
+wdb50:: db ; db50
 
 wdb51:: dw ; db51
 wdb53:: dw ; db53
@@ -385,30 +423,104 @@ wdb55:: ; db55
 wdb56:: ; db56
 	db
 
-	ds $9 - $7
+wdb57:: ; db57
+	db
+
+wdb58:: ; db58
+	db
 
 wdb59:: ; db59
 	db
 
-	ds $c - $a
+wdb5a:: ; db5a
+	db
+
+wdb5b:: ; db5b
+	db
 
 wdb5c:: ; db5c
 	db
 
-	ds $60 - $5d
-
-wdb60:: ; db60
+wdb5d:: ; db5d
 	db
 
-	ds $6a - $61
+wdb5e:: ; db5e
+	db
+
+wdb5f:: ; db5f
+	db
+
+wLevel:: ; db60
+	db
+
+wdb61:: ; db61
+	db
+
+wdb62:: ; db62
+	ds $8
 
 wdb6a:: ; db6a
 	db
 
-	ds $7b - $6b
+wdb6b:: ; db6b
+	db
+
+wdb6c:: ; db6c
+	db
+
+wdb6d:: ; db6d
+	db
+
+wdb6e:: ; db6e
+	db
+
+wdb6f:: ; db6f
+	db
+
+wdb70:: ; db70
+	db
+
+wdb71:: ; db71
+	db
+
+wdb72:: ; db72
+	db
+
+wdb73:: db ; db73
+wdb74:: db ; db74
+wdb75:: db ; db75
+wdb76:: db ; db76
+wdb77:: db ; db77
+
+wdb78:: ; db78
+	ds $3
 
 wdb7b:: ; db7b
 	db
+
+	ds $7d - $7c
+
+wdb7d:: ; db7d
+	db
+
+wdb7e:: ; db7e
+	db
+
+wObjectOAMs:: ; db7f
+ObjectOAM1:: obj_oam_struct ObjectOAM1 ; db7f
+ObjectOAM2:: obj_oam_struct ObjectOAM2 ; db84
+ObjectOAM3:: obj_oam_struct ObjectOAM3 ; db89
+ObjectOAM4:: obj_oam_struct ObjectOAM4 ; db8e
+
+	ds $d0 - $93
+
+wdbd0:: ; dbd0
+	ds $12c
+
+	ds $1
+
+wdcfd:: ; dcfd
+	dw
 
 SECTION "WRAM1@dd2d", WRAMX[$dd2d], BANK[$1]
 
@@ -428,7 +540,10 @@ wdd59:: ; dd59
 wdd5b:: ; dd5b
 	db
 
-	ds $63 - $5c
+	ds $62 - $5c
+
+wdd62:: ; dd62
+	db
 
 wdd63:: ; dd63
 	db
@@ -469,18 +584,46 @@ SECTION "WRAM1@de15", WRAMX[$de15], BANK[$1]
 wTempoModeDurations:: ; de15
 	ds NUM_TEMPO_MODES * $6
 
-SECTION "WRAM1@dede", WRAMX[$dede], BANK[$1]
+SECTION "WRAM1@dedb", WRAMX[$dedb], BANK[$1]
 
-wdede:: ; dede
+wScore:: ; dedb
+	ds $3
+
+wHUDUpdateFlags:: ; dede
 	db
 
 wdedf:: ; dedf
 	db
 
-wdee0:: ; dee0
+wCopyAbility:: ; dee0
 	db
 
-	ds $ed - $e1
+wdee1:: ; dee1
+	db
+
+	ds $1
+
+wdee3:: ; dee3
+	db
+
+wdee4:: ; dee4
+	db
+
+wdee5:: ; dee5
+	db
+
+wdee6:: dw ; dee6
+wdee8:: db ; dee8
+wdee9:: db ; dee9
+
+wdeea:: ; deea
+	db
+
+wdeeb:: ; deeb
+	db
+
+wdeec:: ; deec
+	db
 
 ; if TRUE, then SGB was detected
 wSGBEnabled:: ; deed

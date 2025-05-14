@@ -131,9 +131,9 @@ MusicHeaders:
 	dw $42dd ; MUSIC_TITLE_SCREEN
 	dw $42ea ; MUSIC_07
 	dw $42f7 ; MUSIC_08
-	dw $54b8 ; MUSIC_09
+	dw $54b8 ; MUSIC_KINE
 	dw $54c5 ; MUSIC_BIG_FOREST_HUB
-	dw $54cf ; MUSIC_0B
+	dw $54cf ; MUSIC_COO
 	dw $54dc ; MUSIC_0C
 	dw $54e9 ; MUSIC_0D
 	dw $54f6 ; MUSIC_0E
@@ -142,7 +142,7 @@ MusicHeaders:
 	dw $551d ; MUSIC_11
 	dw $552a ; MUSIC_12
 	dw $62e3 ; MUSIC_13
-	dw $62f0 ; MUSIC_14
+	dw $62f0 ; MUSIC_RICK
 	dw $62fd ; MUSIC_15
 	dw $6304 ; MUSIC_16
 	dw $6311 ; MUSIC_17

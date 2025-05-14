@@ -4,6 +4,7 @@ GB disassembler
 """
 
 import os
+import re
 import argparse
 from ctypes import c_int8
 
@@ -393,32 +394,32 @@ def load_symbols(path):
 		label = symbol['label']
 
 		if 0x0000 <= address < 0x8000:
-			if not sym.has_key(bank):
+			if bank not in sym:
 				sym[bank] = {}
 
 			sym[bank][address] = label
 			reverse_sym[label] = get_global_address(address, bank)
 
 		elif 0x8000 <= address < 0xa000:
-			if not vram_sym.has_key(bank):
+			if bank not in vram_sym:
 				vram_sym[bank] = {}
 
 			vram_sym[bank][address] = label
 
 		elif 0xa000 <= address < 0xc000:
-			if not sram_sym.has_key(bank):
+			if bank not in sram_sym:
 				sram_sym[bank] = {}
 
 			sram_sym[bank][address] = label
 
 		elif 0xc000 <= address <= 0xe000:
-			if not wram_sym.has_key(bank):
+			if bank not in wram_sym:
 				wram_sym[bank] = {}
 
 			wram_sym[bank][address] = label
 
 		elif 0xff80 <= address < 0xffff:
-			if not hram_sym.has_key(bank):
+			if bank not in hram_sym:
 				hram_sym[bank] = {}
 
 			hram_sym[bank][address] = label
@@ -559,6 +560,63 @@ class Disassembler(object):
 			return self.rsym.get(label)
 
 		return None
+	
+	def post_processing(self, output):
+		def substitute_bgcoords(m):
+			reg = m[1]
+			addr = int(m[2], 16)
+			which_map = ""
+			if addr < 0x9c00:
+				which_map = ""
+				addr -= 0x9800
+			else:
+				which_map = ", vBGMap1"
+				addr -= 0x9c00
+			y = addr // 0x20
+			x = addr % 0x20
+			return f"{reg}bgcoord {x}, {y}{which_map}"
+
+		output = re.sub(r"ld (hl|bc|de), \$(9[89a-f][a-f0-9]{2})", substitute_bgcoords, output)
+
+		def substitute_vram(m):
+			reg = m[1]
+			addr = int(m[2], 16)
+			which_map = ""
+			if addr >= 0x9000:
+				which_map = "vTiles2"
+				addr -= 0x9000
+			elif addr >= 0x8800:
+				which_map = "vTiles1"
+				addr -= 0x8800
+			else:
+				which_map = "vTiles0"
+				addr -= 0x8000
+			tile = addr // 0x10
+			return f"ld {reg}, {which_map} tile ${tile:02x}"
+
+		output = re.sub(r"ld (hl|bc|de), \$([89][a-f0-9]{3})", substitute_vram, output)
+
+		def substitute_hex_farcall(m):
+			offset = int(m[1], 16)
+			bank_id = int(m[2], 16)
+			if offset < 0x4000:
+				bank_id = 0x00
+			label = self.find_label(offset, bank_id)
+			if label is None:
+				global_offset = offset if bank_id == 0 else offset + (bank_id - 1) * 0x4000
+				label = f"Func_{global_offset:0x}"
+			return f"farcall {label}"
+
+		output = re.sub(r"ld hl, \$([1-7][a-f0-9]{3})\n\tld a, \$([a-f0-9]{2})\n\tcall Farcall", substitute_hex_farcall, output)
+
+		def substitute_farcall(m):
+			return f"farcall {m[1]}"
+
+		output = re.sub(r"ld hl, (.+)\n\tld a, \$([a-f0-9]{2})\n\tcall Farcall", substitute_farcall, output)
+
+		output = re.sub(r"jr nc, (.*)\n\tinc (.)\n\1", lambda m: f"incc {m[2]}", output)
+
+		return output
 
 	def output_bank_opcodes(self, start_offset, stop_offset, hard_stop=False, parse_data=False):
 		"""
@@ -579,7 +637,7 @@ class Disassembler(object):
 
 		debug = False
 
-		bank_id = start_offset / 0x4000
+		bank_id = start_offset // 0x4000
 
 		stop_offset_undefined = False
 
@@ -590,7 +648,7 @@ class Disassembler(object):
 			stop_offset = (bank_id + 1) * 0x4000 - 1
 
 		if debug:
-			print "bank id is: " + str(bank_id)
+			print("bank id is: " + str(bank_id))
 
 		rom = self.rom
 
@@ -886,6 +944,9 @@ class Disassembler(object):
 		# add the offset of the final location
 		output += "; " + hex(offset)
 
+		# post-processing
+		output = self.post_processing(output)
+
 		return [output, offset, stop_offset, byte_labels, data_tables]
 
 def get_raw_addr(addr):
@@ -932,7 +993,7 @@ if __name__ == "__main__":
 
 	# suppress output if quiet flag is set
 	if not args.quiet:
-		print output
+		print(output)
 
 	# only write to the output file if the no write flag is unset
 	if not args.no_write:

@@ -1,4 +1,4 @@
-SECTION "SRAM", SRAM
+SECTION "Working SRAM", SRAM
 
 sObjects::
 sObjectGroup1::
@@ -36,9 +36,15 @@ sb300:: ; b300
 sbb00:: ; bb00
 	ds $100
 
+
+SECTION "Demo Input SRAM", SRAM
+
 sDemoInputs:: ; bc00
 	ds $300
 sDemoInputsEnd::
+
+
+SECTION "Save Data SRAM", SRAM
 
 sFileSaveData::
 sFile1:: file_struct sFile1 ; bf00

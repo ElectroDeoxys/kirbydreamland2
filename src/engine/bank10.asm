@@ -1,3 +1,11 @@
+SECTION "Bank 10 GFX", ROMX[$6211], BANK[$10]
+
+Gfx_42211: INCBIN "gfx/gfx_42211.2bpp"
+Gfx_42571: INCBIN "gfx/gfx_42571.2bpp"
+Gfx_42b71: INCBIN "gfx/gfx_42b71.2bpp"
+Gfx_43211: INCBIN "gfx/gfx_43211.2bpp"
+
+
 SECTION "StartIntro", ROMX[$7a2d], BANK[$10]
 
 StartIntro:
@@ -14,12 +22,12 @@ StartIntro:
 	ld [wcd0b], a
 
 	; clear BG maps
-	ld hl, vBGMap0
+	hlbgcoord 0, 0
 	ld bc, SCRN_VX_B * SCRN_VY_B
 	ld a, $00
 	call FillHL
 
-	ld hl, vBGMap1
+	hlbgcoord 0, 0, vBGMap1
 	ld bc, SCRN_VX_B * SCRN_VY_B
 	ld a, $00
 	call FillHL
@@ -58,7 +66,7 @@ StartIntro:
 
 	call Func_46d
 
-	ld e, $1f
+	ld e, SGB_ATF_1F
 	farcall Func_7a011
 
 	lb de, $02, $01
@@ -168,7 +176,7 @@ Func_43b84:
 	and %111
 	ret nz
 
-	ld bc, vBGMap0
+	bcbgcoord 0, 0, vBGMap0
 	ld a, [wdf33]
 	and a
 	ret z ; is 0
@@ -176,9 +184,9 @@ Func_43b84:
 	ld [wdf33], a
 	add c
 	ld c, a
-	ldh a, [hff92]
+	ldh a, [hBGMapQueueSize]
 	ld l, a
-	ld h, HIGH(wc400)
+	ld h, HIGH(wBGMapQueue)
 	ld a, $06
 	ldh [hff81], a
 	ld de, wcf00
@@ -198,21 +206,17 @@ Func_43b84:
 	ld a, e
 	add SCRN_VX_B
 	ld e, a
-	jr nc, .asm_43bba
-	inc d
-.asm_43bba
+	incc d
 	ld a, c
 	add SCRN_VX_B
 	ld c, a
-	jr nc, .asm_43bc1
-	inc b
-.asm_43bc1
+	incc b
 	ldh a, [hff81]
 	dec a
 	ldh [hff81], a
 	jr nz, .loop
 	ld a, l
-	ldh [hff92], a
+	ldh [hBGMapQueueSize], a
 	ret
 
 Func_43bcc:
@@ -220,7 +224,7 @@ Func_43bcc:
 	and $07
 	ret nz
 
-	ld bc, $98c0
+	bcbgcoord 0, 6
 	ld a, [wdf33]
 	cp $14
 	ret z
@@ -228,9 +232,9 @@ Func_43bcc:
 	ld [wdf33], a
 	add c
 	ld c, a
-	ldh a, [hff92]
+	ldh a, [hBGMapQueueSize]
 	ld l, a
-	ld h, HIGH(wc400)
+	ld h, HIGH(wBGMapQueue)
 	ld a, $06
 	ldh [hff81], a
 	ld de, wcf00 + $c0
@@ -250,21 +254,17 @@ Func_43bcc:
 	ld a, e
 	add SCRN_VX_B
 	ld e, a
-	jr nc, .asm_43c03
-	inc d
-.asm_43c03
+	incc d
 	ld a, c
 	add SCRN_VX_B
 	ld c, a
-	jr nc, .asm_43c0a
-	inc b
-.asm_43c0a
+	incc b
 	ldh a, [hff81]
 	dec a
 	ldh [hff81], a
 	jr nz, .loop
 	ld a, l
-	ldh [hff92], a
+	ldh [hBGMapQueueSize], a
 	ret
 
 Func_43c15:
@@ -272,7 +272,7 @@ Func_43c15:
 	and $07
 	ret nz
 
-	ld bc, $9980
+	bcbgcoord 0, 12
 	ld a, [wdf33]
 	and a
 	ret z
@@ -280,9 +280,9 @@ Func_43c15:
 	ld [wdf33], a
 	add c
 	ld c, a
-	ldh a, [hff92]
+	ldh a, [hBGMapQueueSize]
 	ld l, a
-	ld h, HIGH(wc400)
+	ld h, HIGH(wBGMapQueue)
 	ld a, $06
 	ldh [hff81], a
 	ld de, wd080
@@ -302,21 +302,17 @@ Func_43c15:
 	ld a, e
 	add SCRN_VX_B
 	ld e, a
-	jr nc, .asm_43c4b
-	inc d
-.asm_43c4b
+	incc d
 	ld a, c
 	add SCRN_VX_B
 	ld c, a
-	jr nc, .asm_43c52
-	inc b
-.asm_43c52
+	incc b
 	ldh a, [hff81]
 	dec a
 	ldh [hff81], a
 	jr nz, .loop
 	ld a, l
-	ldh [hff92], a
+	ldh [hBGMapQueueSize], a
 	ret
 ; 0x43c5d
 
@@ -327,7 +323,7 @@ SECTION "DrawStartIntroLineSeparators", ROMX[$7c90], BANK[$10]
 DrawStartIntroLineSeparators:
 	ld hl, wcf00 + $a0
 	ld a, [hl]
-	ld hl, $98a0
+	hlbgcoord 0, 5
 	ld b, SCRN_VX_B
 .loop_line_upper_1
 	ld [hli], a
@@ -335,7 +331,7 @@ DrawStartIntroLineSeparators:
 	jr nz, .loop_line_upper_1
 	ld hl, wcf00 + $c0
 	ld a, [hl]
-	ld hl, $98c0
+	hlbgcoord 0, 6
 	ld b, SCRN_VX_B
 .loop_line_bottom_1
 	ld [hli], a
@@ -344,7 +340,7 @@ DrawStartIntroLineSeparators:
 
 	ld hl, wd060
 	ld a, [hl]
-	ld hl, $9960
+	hlbgcoord 0, 11
 	ld b, SCRN_VX_B
 .loop_line_upper_2
 	ld [hli], a
@@ -352,7 +348,7 @@ DrawStartIntroLineSeparators:
 	jr nz, .loop_line_upper_2
 	ld hl, wd080
 	ld a, [hl]
-	ld hl, $9980
+	hlbgcoord 0, 12
 	ld b, SCRN_VX_B
 .loop_line_bottom_2
 	ld [hli], a

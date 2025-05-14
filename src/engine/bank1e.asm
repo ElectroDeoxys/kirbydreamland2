@@ -897,7 +897,7 @@ SGBVRAMTransfer:
 
 	; bg map needs to hold incremental values
 	; $80, $81, $82...
-	ld hl, vBGMap0
+	hlbgcoord 0, 0
 	ld de, SCRN_VX_B - SCRN_X_B
 	ld a, $80
 	ld c, 13 ; number of rows to fill
@@ -963,7 +963,7 @@ Func_79ece:
 	sgb_data_snd $85d, $00, $8c, $d0, $f4, $60
 	sgb_data_snd $810, $00, $4c, $20, $08, $ea, $ea, $ea, $ea, $ea, $60, $ea, $ea
 
-SGBTransferBorder:
+InitSGB:
 	ld a, [wSGBEnabled]
 	or a
 	ret z ; no SGB
@@ -979,6 +979,7 @@ SGBTransferBorder:
 	ld d, MASK_EN_BLANK_COLOR0
 	call SGB_MaskEn
 
+	; set SGB WRAM
 	call Func_79ece
 
 	ld hl, SGBPacket_MltReq_2Players
@@ -1055,12 +1056,20 @@ SGB_MaskEn::
 	call SGBTransfer
 	call SGBWait_Long
 	ret
-; 0x7a002
 
-SECTION "Func_7a00c", ROMX[$600c], BANK[$1e]
+; input:
+; - e = SGB_PALS_* constant
+SGBSetPalette_WithoutATF::
+	xor a ; no ATF
+	ldh [hff84], a
+	call Func_7a039
+	ret z
+	jp SGBWait_Long
 
-Func_7a00c::
-	xor a
+; input:
+; - e = SGB_PALS_* constant
+SGBSetPalette_WithoutATF_NoWait::
+	xor a ; no ATF
 	ldh [hff84], a
 	jr Func_7a039
 
@@ -1071,27 +1080,34 @@ Func_7a011::
 	or a
 	ret z ; no SGB
 
-	ld a, $80
+	ld a, $80 ; apply ATF
 	ldh [hff84], a
 	ld a, e
 	ld [wdefe], a
 	ld a, [wBGP]
 	or a
-	ld a, $68 / 2 ; pal ID $68
+	ld a, SGB_PALS_34
 	jr z, .got_pal_id
-	ld a, $6a / 2 ; pal ID $69
+	ld a, SGB_PALS_35
 .got_pal_id
-	call Func_7a042
+	call _SGBPaletteSet
 	jp SGBWait_Long
 
-Func_7a02e:
-	call Func_7a035
+; input:
+; - e = SGB_PALS_* constant (coincides with SGB_ATF_*)
+SGBPaletteSet_WithATF::
+	call SGBSetPalette_WithATF_NoWait
 	ret z
 	jp SGBWait_Long
 
-Func_7a035:
-	ld a, $80
+SGBSetPalette_WithATF_NoWait:
+	ld a, $80 ; apply ATF
 	ldh [hff84], a
+;	fallthrough
+
+; input:
+; - e = SGB_PALS_* constant (coincides with SGB_ATF_*)
+; - [hff84] = additional palette set flags
 Func_7a039:
 	ld a, [wSGBEnabled]
 	or a
@@ -1101,16 +1117,16 @@ Func_7a039:
 ;	fallthrough
 
 ; requests SGB to set the pre-loaded palettes from SNES WRAM
-; uses as input (pal ID / 2), then loads the next 3 palettes as well
+; uses as input a palette group, which includes 4 (consecutive) palettes
 ; input:
-; - a = starting SGB pal ID / 2
+; - a = SGB_PALS_* constant
 ; - e = ATF to set
 ; - [hff84] = additional palette set flags
-Func_7a042:
+_SGBPaletteSet:
 	ld l, a
 	ld h, $00
 	add hl, hl
-	add hl, hl ; *2
+	add hl, hl ; *4
 	ld c, l
 	ld b, h
 	ld hl, wSGBPacket

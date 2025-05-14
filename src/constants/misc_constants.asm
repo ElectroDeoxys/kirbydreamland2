@@ -252,3 +252,13 @@ DEF OBJSTRUCT_UNKFC RB ; $fc
 DEF OBJSTRUCT_UNKFD RB ; $fd
 DEF OBJSTRUCT_UNKFE RB ; $fe
 DEF OBJSTRUCT_UNKFF RB ; $ff
+
+; wHUDUpdateFlags constants
+	const_def
+	const UPDATE_SCORE_F        ; 0
+	const UPDATE_KIRBY_HP_F     ; 1
+	const UPDATE_LIVES_F        ; 2
+	const UPDATE_COPY_ABILITY_F ; 3
+	const UPDATE_BOSS_HP_F      ; 4
+	const UPDATE_STARS_F        ; 5
+	const UPDATE_LEVEL_F        ; 6

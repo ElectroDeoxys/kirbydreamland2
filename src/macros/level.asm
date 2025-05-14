@@ -1,0 +1,19 @@
+DEF LOAD_CMD_MASK EQU $e0
+DEF LOAD_ARG_MASK EQU $ff ^ LOAD_CMD_MASK
+
+DEF LOAD_START_LEVEL_CMD EQU $00
+MACRO ld_start_level
+	db LOAD_START_LEVEL_CMD | \1 ; ?
+	db \2 ; ?
+	db (\3) / 16, (\4) / 16 ; position
+ENDM
+
+DEF LOAD_SET_LEVEL_CMD EQU $20
+MACRO ld_set_level
+	db LOAD_SET_LEVEL_CMD | \1 ; level
+ENDM
+
+DEF LOAD_UNK40_CMD EQU $40
+MACRO ld_unk40
+	db LOAD_UNK40_CMD | \1 ; ?
+ENDM

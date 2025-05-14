@@ -39,9 +39,9 @@ Init::
 	ld a, $00
 	call FillHL
 
-	; clear SRAM
-	ld hl, STARTOF(SRAM)
-	ld bc, $1c00
+	; clear working SRAM
+	ld hl, STARTOF("Working SRAM")
+	ld bc, SIZEOF("Working SRAM")
 	ld a, $00
 	call FillHL
 
@@ -76,10 +76,10 @@ Init::
 	ld bc, SIZEOF("DMA Transfer")
 	call CopyHLToDE
 
-	ld hl, wda20 + $1
-	ld a, HIGH(Func_22b)
+	ld hl, wProcessBGMapQueueFunc + $1
+	ld a, HIGH(ProcessBGMapQueue)
 	ld [hld], a
-	ld [hl], LOW(Func_22b)
+	ld [hl], LOW(ProcessBGMapQueue)
 	xor a
 	ld [wda1c], a
 
@@ -191,9 +191,7 @@ Func_681e0:
 	add a ; *2
 	add l
 	ld l, a
-	jr nc, .asm_681f0
-	inc h
-.asm_681f0
+	incc h
 	ld a, [hli]
 	ld h, [hl]
 	ld l, a
@@ -225,9 +223,7 @@ Func_68205:
 	add a ; *2
 	add l
 	ld l, a
-	jr nc, .asm_68215
-	inc h
-.asm_68215
+	incc h
 	ld a, [hli]
 	ld h, [hl]
 	ld l, a
@@ -273,8 +269,12 @@ Func_68246::
 	ld [wda37], a
 
 	call Func_68205
-
 	; being here means no SGB
+;	fallthrough
+
+; input:
+; - e = ?
+Func_6824e::
 	ld a, e
 	ldh [hff84], a
 	ld a, [wBGP]
@@ -301,16 +301,14 @@ Func_68246::
 	call Func_68292
 	jr Func_68283
 
+Func_68276::
 	call Func_6829a
 	jr Func_68283
-
 Func_6827b::
 	call Func_682a4
 	jr Func_68283
-
+Func_68280::
 	call Func_682ac
-;	fallthrough
-
 Func_68283:
 .loop
 	ld a, $01
@@ -434,3 +432,10 @@ Func_682dd:
 	inc a
 	ret
 ; 0x6832c
+
+SECTION "Bank 1A GFX", ROMX[$79fd], BANK[$1a]
+
+Gfx_6b9fd: INCBIN "gfx/gfx_6b9fd.2bpp"
+	ds 1 tiles
+Gfx_6bacd: INCBIN "gfx/gfx_6bacd.2bpp"
+Gfx_6bbcd: INCBIN "gfx/gfx_6bbcd.2bpp"

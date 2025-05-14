@@ -154,41 +154,41 @@ _VBlank:
 	pop de ; wda1a
 	pop hl ; wda1c
 	ld c, h
-	ld h, HIGH(wc400)
-	ldh a, [hff92]
+	ld h, HIGH(wBGMapQueue)
+	ldh a, [hBGMapQueueSize]
 	ld b, a
 	pop af ; wda1e
-	reti ; return to wda20
+	reti ; jumps to wProcessBGMapQueueFunc
 
-Func_22b::
-.asm_22b
-	ld a, l
+ProcessBGMapQueue::
+.next_entry
+	ld a, l ; wda1c
 	cp b
 	jr z, .asm_23e
-.asm_22f
+.start_copy
 	ld e, [hl]
 	inc l
 	ld d, [hl]
 	inc l
 	ld c, [hl]
 	inc l
-.asm_235
+.loop_copy
 	ld a, [hl]
 	ld [de], a
 	inc l
 	inc de
 	dec c
-	jr nz, .asm_235
-	jr .asm_22b
+	jr nz, .loop_copy
+	jr .next_entry
 .asm_23e
 	di
 	cp b
 	jr z, .asm_245
 	ei
-	jr .asm_22f
+	jr .start_copy
 .asm_245
 	ld h, c
-	ld bc, .asm_22b
+	ld bc, ProcessBGMapQueue
 	push bc
 	push af
 	push hl
@@ -476,10 +476,8 @@ ENDR
 	or a
 	ret z ; no reset
 	; ...do reset
-	ld e, $34
-	ld hl, $6002
-	ld a, $1e
-	call Farcall
+	ld e, SGB_PALS_34
+	farcall SGBSetPalette_WithoutATF
 	jp _Start
 
 ; input:
@@ -590,7 +588,7 @@ Func_4ae::
 	ld c, a
 	ld h, a
 	; load wda0a if wVirtualOAM1
-	; load wda0b if $c100
+	; load wda0b if wVirtualOAM2
 	ld de, wda0a
 	rra
 	jr nc, .asm_4ba
@@ -832,7 +830,7 @@ Farcall::
 ; same as UnsafeBankswitch but disables interrupts
 ; to avoid an interrupt between UnsafeBankswitch
 ; and write to hROMBank
-Bankswitch:
+Bankswitch::
 	di
 	ld [rROMB0 + $100], a
 	ldh [hROMBank], a
@@ -933,12 +931,12 @@ FillHL::
 	ret
 ; 0x63b
 
-SECTION "Func_647", ROM0[$647]
+SECTION "UpdateRNG", ROM0[$647]
 
-Func_647::
+UpdateRNG::
 	push de
 	push hl
-	ld hl, wda30
+	ld hl, wRNG
 	ld a, [hli]
 	ld h, [hl]
 	ld l, a
@@ -947,18 +945,35 @@ Func_647::
 	add hl, hl
 	add hl, hl
 	add hl, de ; *5
-	ld de, $3711
+	ld de, $3711 ; seed
 	add hl, de
 	ld a, l
-	ld [wda30 + 0], a
+	ld [wRNG + 0], a
 	ld a, h
-	ld [wda30 + 1], a
+	ld [wRNG + 1], a
 	pop hl
 	pop de
 	ret
-; 0x663
 
-SECTION "Func_675", ROM0[$675]
+; output:
+; - a = 2^a
+GetPowerOfTwo::
+	ld hl, PowersOfTwo
+	add l
+	ld l, a
+	incc h
+	ld a, [hl]
+	ret
+
+PowersOfTwo:
+	db 1 << 0
+	db 1 << 1
+	db 1 << 2
+	db 1 << 3
+	db 1 << 4
+	db 1 << 5
+	db 1 << 6
+	db 1 << 7
 
 ; input:
 ; - a = ?
@@ -968,7 +983,7 @@ Func_675::
 	push de
 	add $03
 	ld e, a
-	ldh a, [hff92]
+	ldh a, [hBGMapQueueSize]
 	ld d, a
 	ld a, [wda1c]
 	sub d
@@ -1054,7 +1069,7 @@ Func_684::
 	ld a, $1e
 	call UnsafeBankswitch
 	ld e, h
-	call Func_7a00c
+	call SGBSetPalette_WithoutATF_NoWait
 	pop af
 	call UnsafeBankswitch
 	jr .asm_6b8
@@ -1726,6 +1741,35 @@ Func_b01:
 	jp Func_8a1.asm_8ce
 ; 0xb07
 
+SECTION "Func_b1f", ROM0[$b1f]
+
+Func_b1f:
+	ld h, b
+	ld l, c
+	ld e, OBJSTRUCT_UNK27
+	ld a, [de]
+	cp [hl]
+	jr nc, .skip_table
+	inc hl
+	rlca ; *2
+	ld c, a
+	ld b, $00
+	add hl, bc
+	ld a, [hli]
+	ld c, a
+	ld b, [hl]
+	jp Func_8a1.asm_8ce
+.skip_table
+	ld a, [hli]
+	rlca
+	ld c, a
+	ld b, $00
+	add hl, bc
+	ld b, h
+	ld c, l
+	jp Func_8a1.asm_8ce
+; 0xb3e
+
 SECTION "Func_b74", ROM0[$b74]
 
 Func_b74:
@@ -2127,28 +2171,24 @@ GameLoop::
 	jp _GameLoop
 
 Func_10e6::
-	ld e, $09
-	ld hl, $602e
-	ld a, $1e
-	call Farcall
+	ld e, SGB_PALS_09 ; SGB_ATF_09
+	farcall SGBPaletteSet_WithATF
 
 	call Func_1126
 	call Func_1134
 
-	ld hl, $5b28
-	ld a, $07
-	call Farcall
+	farcall Func_1db28
 
-	ld hl, wdede
-	set 2, [hl]
-	set 1, [hl]
-	set 3, [hl]
-	set 5, [hl]
-	set 6, [hl]
+	ld hl, wHUDUpdateFlags
+	set UPDATE_LIVES_F, [hl]
+	set UPDATE_KIRBY_HP_F, [hl]
+	set UPDATE_COPY_ABILITY_F, [hl]
+	set UPDATE_STARS_F, [hl]
+	set UPDATE_LEVEL_F, [hl]
 
 	ld a, [sa000Unk5b]
 	inc a
-	ld [wdee0], a
+	ld [wCopyAbility], a
 	ld a, [sa000Unk71]
 	or a
 	jr z, .asm_111d
@@ -2172,7 +2212,7 @@ Func_1134:
 	ld a, $0b
 	call Bankswitch
 	ld hl, $7122
-	ld de, $9630
+	ld de, vTiles2 tile $63
 	call Decompress
 	ld a, $0b
 	call Bankswitch
@@ -2185,7 +2225,7 @@ Func_1150::
 	ld a, $0b
 	call Bankswitch
 	ld hl, $6d87
-	ld de, $8600
+	ld de, vTiles0 tile $60
 	call Decompress
 	ret
 ; 0x115f
@@ -2193,9 +2233,7 @@ Func_1150::
 SECTION "Func_1166", ROM0[$1166]
 
 Func_1166::
-	ld hl, $747d
-	ld a, $02
-	call Farcall
+	farcall Func_b47d
 	ld a, [sa000Unk51]
 	cp $0d
 	jr nz, .asm_1183
@@ -2205,15 +2243,14 @@ Func_1166::
 	ld de, vTiles0
 	jp Decompress
 .asm_1183
-	ld a, $07
+	ld a, BANK(Func_1f458)
 	call Bankswitch
-	call $7458
+	call Func_1f458
 	call .Func_1196
 
-	ld a, $07
+	ld a, BANK(Func_1f472)
 	call Bankswitch
-	call $7472
-
+	call Func_1f472
 .Func_1196:
 	ld a, [wdf11]
 	ld h, $00
@@ -2224,7 +2261,7 @@ Func_1166::
 	add hl, bc
 	add hl, hl
 	add hl, bc ; *7
-	ld bc, $74bb
+	ld bc, Data_1f4bb
 	add hl, bc
 	ld a, [hli]
 	ld e, a
@@ -2244,7 +2281,530 @@ Func_1166::
 	ldh a, [hff84]
 	call Bankswitch
 	jp CopyHLToDE
-; 0x11be
+
+; main level loop
+; only breaks when sa000Unk82 is non-zero
+LevelLoop::
+	xor a
+	ld [sa000Unk82], a
+	ldh [hJoypad1Down], a
+	ldh [hJoypad1Pressed], a
+.loop
+	call Func_496
+	ld a, [sa000Unk6c]
+	rra
+	jr c, .asm_11d4
+	ld a, $ff
+	ld [sa000Unk5d], a
+.asm_11d4
+	call UpdateObjects
+
+	ld a, BANK(Func_1c259)
+	call Bankswitch
+	call Func_1c259
+	ld a, BANK(Func_1c3cb)
+	call Bankswitch
+	call Func_1c3cb
+
+	call Func_4ae
+	farcall UpdateHUD
+	farcall Func_1dbd2
+
+	call DoFrame
+	call ReadJoypad
+
+	ld a, [sa000Unk82]
+	or a
+	jr nz, .check_break
+	ld a, [wDemoActive]
+	cp $02
+	jr nz, .check_break
+	ld a, [wJoypad1Pressed]
+	and A_BUTTON | B_BUTTON | START
+	jr z, .check_break
+	ld a, $09
+	ld [sa000Unk82], a
+.check_break
+	ld a, [sa000Unk82]
+	or a
+	jr z, .loop
+	ret
+
+Func_1220::
+	call Func_1564
+	ld bc, $e
+	add hl, bc
+	ld a, [hld]
+	ld b, a
+	ld a, [hld]
+	ld l, [hl]
+	ld h, a
+	ld a, b
+	call Bankswitch
+	ld de, sa000XPos + $1
+	ld a, [de]
+	and $f0
+	swap a
+	ld b, a
+	inc e
+	ld a, [de]
+	swap a
+	or b
+	ld b, a
+	ld e, OBJSTRUCT_Y_POS + $1
+	ld a, [de]
+	and $f0
+	swap a
+	ld c, a
+	inc e
+	ld a, [de]
+	swap a
+	or c
+	ld c, a
+	; b = Kirby's block X coordinate
+	; c = Kirby's block Y coordinate
+
+	ld de, $3
+.asm_1250
+	ld a, [hli]
+	cp b
+	jr nz, .asm_125a
+	ld a, [hli]
+	cp c
+	jr nz, .asm_125b
+	jr .asm_1267
+.asm_125a
+	inc hl
+.asm_125b
+	ld a, [hli]
+	cp $20
+	jr nc, .asm_125b
+	cp $01
+	jr z, .asm_1250
+	add hl, de
+	jr .asm_1250
+.asm_1267
+	push hl
+	ld a, [hli]
+	cp $60
+	ld e, $04
+	jr nz, .asm_1279
+	farcall Func_68276
+	jr .asm_1281
+.asm_1279
+	farcall Func_68280
+.asm_1281
+	call Func_437
+	pop hl
+	ret
+
+Func_1286::
+	call Func_1564
+Func_1289:
+	ld a, [hli]
+	ld [wdb3d], a
+	ld c, a
+	ld a, [hli]
+	ld [wdb3e], a
+
+	push hl
+	ld b, a
+	ld hl, wcd2d
+	ld a, $b3
+	jr .asm_129c
+.asm_129b
+	add c
+.asm_129c
+	ld [hli], a
+	dec b
+	jr nz, .asm_129b
+	sla c
+	ld a, [wdb3e]
+	ld b, a
+	ld hl, wcd35
+	ld a, LOW(wcd3d)
+	jr .asm_12ae
+.asm_12ad
+	add c
+.asm_12ae
+	ld [hli], a
+	dec b
+	jr nz, .asm_12ad
+	pop hl
+
+	ld c, $04
+	ld de, wdb45
+.asm_12b8
+	ld a, [hli]
+	swap a
+	ld b, a
+	and $f0
+	ld [de], a
+	inc de
+	ld a, b
+	and $0f
+	ld [de], a
+	inc de
+	dec c
+	jr nz, .asm_12b8
+
+	push hl
+	ld hl, wdb45
+	ld de, wdb3f
+	ld a, [hli]
+	add $08
+	ld [de], a
+	inc de
+	ld a, [hli]
+	adc $00
+	ld [de], a
+	inc de
+	ld a, [hli]
+	add $08
+	ld [de], a
+	inc de
+	ld a, [hli]
+	adc $00
+	ld [de], a
+	inc de
+	ld a, [hli]
+	add $98
+	ld [de], a
+	inc de
+	ld a, [hl]
+	adc $00
+	ld [de], a
+	pop hl
+
+	push hl
+	ld bc, $a
+	add hl, bc
+	ld de, sb300
+	call Decompress
+	pop hl
+
+	inc hl
+	inc hl
+	push hl
+	ld a, [hld]
+	ld b, a
+	ld a, [hld]
+	ld l, [hl]
+	ld h, a
+	ld a, b
+	call Bankswitch
+	ld bc, $3
+	add hl, bc
+	push hl
+	ld a, [hli]
+	ld [wdb5c], a
+	ld de, wcf00
+	call Decompress
+
+	ld c, $05
+	ld hl, wcf00
+	ld de, wc500
+.asm_131c
+	ld a, [wdb5c]
+	ld b, a
+.asm_1320
+	ld a, [hli]
+	ld [de], a
+	inc e
+	dec b
+	jr nz, .asm_1320
+	ld e, $00
+	inc d
+	dec c
+	jr nz, .asm_131c
+	pop hl
+	dec hl
+	ld a, [hld]
+	ld b, a
+	ld a, [hld]
+	ld l, [hl]
+	ld h, a
+	ld a, b
+	ld [wdb5a], a
+	call Bankswitch
+	ld a, [hli]
+	cpl
+	inc a
+	swap a
+	ld d, a
+	and $f0
+	ld e, a
+	ld a, d
+	or $f0
+	ld d, a
+	ld a, e
+	add $30
+	ld e, a
+	ld a, d
+	adc $96
+	ld d, a
+	and $0f
+	or e
+	swap a
+	ld [wdb59], a
+	ld a, l
+	ld [wdb5b], a
+	ld a, h
+	ld [wdb5c], a
+	call Decompress
+	ld a, [wdb58]
+	call Bankswitch
+	pop hl
+
+	push hl
+	ld bc, $7
+	add hl, bc
+	bit 0, [hl]
+	ld a, $86
+	jr z, .asm_1388
+	ld a, $0c
+	call Bankswitch
+	ld hl, $47d1
+	ld de, vTiles1 tile $06
+	call Decompress
+	ld a, d
+	and $0f
+	or e
+	swap a
+.asm_1388
+	ld [wdb5e], a
+	ld a, [wdb73]
+	or a
+	jr z, .asm_13a3
+	pop hl
+
+	ld a, [wLevel]
+	ld hl, PtrTable_14d0
+	add a ; *2
+	add l
+	ld l, a
+	incc h
+	ld a, [hli]
+	ld h, [hl]
+	ld l, a
+	jr .asm_13ae
+.asm_13a3
+	ld a, [wdb58]
+	call Bankswitch
+	pop hl
+	ld bc, $3
+	add hl, bc
+.asm_13ae
+	ld a, [hld]
+	ld b, a
+	ld [wdb5d], a
+	ld a, [hld]
+	ld l, [hl]
+	ld h, a
+	ld a, b
+	call Bankswitch
+
+	ld de, wObjectOAMs
+.asm_13bd
+	ld a, [hli]
+	cp $ff
+	jp z, .asm_1445
+	ldh [hff84], a
+	push hl
+	ld l, a
+	ld h, $00
+	ld [de], a ; object ID
+	inc de
+	ld a, [wdb5e]
+	ld [de], a ; base tile index
+	inc de
+	add hl, hl
+	ld b, h
+	ld c, l
+	add hl, hl
+	add hl, bc ; *6
+	ld bc, Data_1d629
+	add hl, bc
+	ld a, BANK(Data_1d629)
+	call Bankswitch
+	ld a, [hli] ; OAM ptr
+	ld [de], a
+	inc de
+	ld a, [hli]
+	ld [de], a
+	inc de
+	ld a, [hli] ; OAM bank
+	ld [de], a
+	inc de
+	ldh a, [hff84]
+	cp $13
+	jr z, .asm_143b
+	cp $14
+	jr z, .asm_143b
+	cp $15
+	jr z, .asm_143b
+	cp $16
+	jr z, .asm_143b
+	cp $1c
+	jr z, .asm_143b
+	cp $1f
+	jr z, .asm_143b
+	cp $3e
+	jr z, .asm_143b
+	push de
+	inc hl
+	inc hl
+	ld a, [hld]
+	ld b, a
+	ld a, [hld]
+	ld l, [hl]
+	ld h, a
+	ld a, b
+	call Bankswitch
+	ldh a, [hff84]
+	cp $11
+	jr nz, .asm_141f
+	ld de, vTiles1 tile $58
+	call Decompress
+	jr .asm_143a
+.asm_141f
+	ld a, [wdb5e]
+	swap a
+	ld d, a
+	and $f0
+	ld e, a
+	ld a, d
+	and $0f
+	add $80
+	ld d, a
+	call Decompress
+	ld a, d
+	and $0f
+	or e
+	swap a
+	ld [wdb5e], a
+.asm_143a
+	pop de
+.asm_143b
+	pop hl
+	ld a, [wdb5d]
+	call Bankswitch
+	jp .asm_13bd
+.asm_1445
+	ld a, $ff
+	ld [de], a
+
+	ld b, $00
+	ld de, wcd3d
+.asm_144d
+	ld a, [hli]
+	cp $ff
+	jr z, .asm_145c
+	ld [de], a
+	ld c, a
+	inc e
+	ld a, b
+	ld [de], a
+	inc e
+	add c
+	ld b, a
+	jr .asm_144d
+.asm_145c
+	ld a, b
+	ld [wdb5f], a
+
+	ld c, $03
+	ld de, wca00
+.asm_1465
+	ld a, [wdb5f]
+	ld b, a
+.asm_1469
+	ld a, [hli]
+	ld [de], a
+	inc e
+	dec b
+	jr nz, .asm_1469
+	ld e, $00
+	inc d
+	dec c
+	jr nz, .asm_1465
+
+	ld hl, sbb00
+	ld bc, $100
+	ld a, $00
+	call FillHL
+
+	xor a
+	ld hl, wdb4f
+	ld [hli], a ; wdb4f
+	ld [hli], a ; wdb50
+
+	ld de, sa000XPos + 1
+	ld a, [de]
+	inc e
+	sub $50
+	ld [hli], a ; wdb51
+	ld a, [de]
+	inc e
+	sbc $00
+	ld [hli], a
+	inc e
+	ld a, [de] ; sa000YPos + 1
+	inc e
+	sub $40
+	ld [hli], a ; wdb53
+	ld a, [de]
+	sbc $00
+	ld [hl], a
+	call Func_1513
+
+	ld hl, wdb51
+	ld a, [hli] ; wdb51
+	and $f0
+	sub $10
+	ld [wdb55], a
+	ld [wdb7d], a
+	inc hl
+	ld a, [hl] ; wdb53
+	and $f0
+	sub $10
+	ld [wdb56], a
+	ld [wdb7e], a
+
+	ld hl, wcd56
+	ld bc, $18
+	ld a, $00
+	call FillHL
+
+	xor a
+	ld [wdb72], a
+	ld [wdb70], a
+	ld [wdb71], a
+	ret
+
+PtrTable_14d0:
+	table_width 2
+	dw .grass_land   + $2 ; GRASS_LAND
+	dw .big_forest   + $2 ; BIG_FOREST
+	dw .ripple_field + $2 ; RIPPLE_FIELD
+	dw .iceberg      + $2 ; ICEBERG
+	dw .red_canyon   + $2 ; RED_CANYON
+	dw .cloudy_park  + $2 ; CLOUDY_PARK
+	assert_table_length NUM_LEVELS - 1
+
+.grass_land
+	dab Data_1c02d
+.big_forest
+	dab Data_1c038
+.ripple_field
+	dab Data_1c043
+.iceberg
+	dab Data_1c0b7
+.red_canyon
+	dab Data_1c0c2
+.cloudy_park
+	dab Data_1c0d7
+; 0x14fe
 
 SECTION "Func_1513", ROM0[$1513]
 
@@ -2312,9 +2872,28 @@ Func_1513:
 	ld [hl], c
 .asm_1563
 	ret
-; 0x1564
 
-SECTION "Func_1584", ROM0[$1584]
+Func_1564::
+	ld a, BANK(PtrTable_2111d)
+	call Bankswitch
+	ld a, [wdb57]
+	ld l, a
+	ld h, $00
+	ld b, h
+	ld c, l
+	add hl, hl
+	add hl, bc ; *3
+	ld bc, PtrTable_2111d + $2
+	add hl, bc
+	ld a, [hld]
+	ld b, a
+	ld [wdb58], a
+	ld a, [hld]
+	ld l, [hl]
+	ld h, a
+	ld a, b
+	call Bankswitch
+	ret
 
 Func_1584::
 	; clear scroll
@@ -2374,7 +2953,51 @@ Func_15fc::
 	add l
 	ld l, a
 	ret
-; 0x1611
+
+; input:
+; - a = level
+Func_1611::
+	ldh [hff84], a
+	ld hl, wdb62
+	add l
+	ld l, a
+	incc h
+	ld e, [hl]
+	ldh a, [hff84]
+	ld hl, Data_163e
+	add l
+	ld l, a
+	incc h
+	ld a, [hl]
+	or e
+	inc a
+	ret
+
+Func_162a::
+	ldh [hff84], a
+	ld a, e
+	call GetPowerOfTwo
+	ld e, a
+	ldh a, [hff84]
+	ld hl, wdb62
+	add l
+	ld l, a
+	incc h
+	ld a, [hl]
+	and e
+	ret
+
+Data_163e:
+	table_width 1
+	db   -8 ; GRASS_LAND
+	db   -8 ; BIG_FOREST
+	db   -8 ; RIPPLE_FIELD
+	db  -16 ; ICEBERG
+	db  -32 ; RED_CANYON
+	db  -64 ; CLOUDY_PARK
+	db -128 ; DARK_CASTLE
+	assert_table_length NUM_LEVELS
+; 0x1645
 
 SECTION "Multiply", ROM0[$293e]
 
@@ -2471,7 +3094,9 @@ Data_29c9:
 	data_29c9 MUSIC_0F, $15, $1c, $5b60, $1b, $5478, $1b, $58a0, $73
 	data_29c9 MUSIC_1D, $0a, $0e, $4cc3, $0e, $595a, $0e, $5b4c, $77
 
-	db $1e, $07
+Func_2a29::
+	ld e, $07
+;	fallthrough
 
 ; input:
 ; - e = ?
@@ -2544,7 +3169,7 @@ Func_2a2b::
 	ld a, [bc]
 	ld h, a
 	inc bc
-	ld de, vBGMap0
+	debgcoord 0, 0, vBGMap0
 	push bc
 	call Decompress
 
@@ -2571,9 +3196,7 @@ Func_2a2b::
 	add $03
 	ld d, a
 	ld e, $04
-	ld hl, $4246
-	ld a, $1a
-	call Farcall
+	farcall Func_68246
 
 .asm_2ac4
 	call Func_496
@@ -2591,13 +3214,9 @@ Func_2a2b::
 	add $03
 	ld d, a
 	ld e, $04
-	ld hl, $427b
-	ld a, $1a
-	call Farcall
+	farcall Func_6827b
 	call Func_437
-	ld hl, $5ada
-	ld a, $07
-	call Farcall
+	farcall Func_1dada
 	ret
 
 Func_2af8::
@@ -2619,7 +3238,12 @@ Func_2af8::
 	ret
 ; 0x2b13
 
-SECTION "_UpdateAudio", ROM0[$2b97]
+SECTION "Func_2b91", ROM0[$2b91]
+
+Func_2b91::
+	ld hl, wdd2d
+	ld [hl], $01
+	ret
 
 ; input:
 ; - [de] = audio commands
@@ -3738,7 +4362,277 @@ NoiseChannelPolynomialCounters:
 InitialWaveform::
 	dn 13,  5,  6,  9,  5,  0,  1, 14,  0,  0,  1,  8,  0, 13,  7,  9,  8,  5,  2,  7,  4, 15,  7,  8,  8, 10,  2,  7,  4,  7,  7, 11
 
-SECTION "Func_32ff", ROM0[$32ff]
+SECTION "Func_3131", ROM0[$3131]
+
+Func_3131::
+	xor a
+	ld [wHUDUpdateFlags], a
+
+	hlbgcoord 1, 1, vBGMap1
+	ld c, $70
+	ld de, wScore
+	ld a, [de]
+	ld b, a
+	inc de
+	ld b, a
+	swap a
+	and $0f
+	add c
+	ld [hli], a
+	ld a, b
+	and $0f
+	add c
+	ld [hli], a
+	ld a, [de]
+	inc de
+	ld b, a
+	swap a
+	and $0f
+	add c
+	ld [hli], a
+	ld a, b
+	and $0f
+	add c
+	ld [hli], a
+	ld a, [de]
+	ld b, a
+	swap a
+	and $0f
+	add c
+	ld [hli], a
+	ld a, b
+	and $0f
+	add c
+	ld [hli], a
+	ld a, c
+	ld [hl], a
+
+	hlbgcoord 2, 0, vBGMap1
+	ld a, [sa000Unk71]
+	and a
+	jr nz, .asm_3178
+	ld a, [wdee3]
+	rra
+	jr .asm_317b
+.asm_3178
+	ld a, [wdee5]
+.asm_317b
+	ld d, $06
+	and a
+	jr z, .asm_3187
+.asm_3180
+	ld [hl], $64
+	inc hl
+	dec d
+	dec a
+	jr nz, .asm_3180
+.asm_3187
+	ld a, d
+	and a
+	jr z, .asm_3191
+.asm_318b
+	ld [hl], $63
+	inc hl
+	dec d
+	jr nz, .asm_318b
+.asm_3191
+	hlbgcoord 9, 0, vBGMap1
+	ld de, wdee1
+	ld a, [de]
+	and a
+	ld b, a
+	ld c, $07
+	ld a, $68
+.asm_319e
+	jr z, .asm_31a7
+	ld [hli], a
+	dec c
+	dec b
+	jr nz, .asm_319e
+	jr .asm_31ad
+.asm_31a7
+	ld a, $67
+.asm_31a9
+	ld [hli], a
+	dec c
+	jr nz, .asm_31a9
+.asm_31ad
+	hlbgcoord 10, 1, vBGMap1
+	ld de, sa000Unk84
+	ld a, [de]
+	ld d, $70
+	ld e, a
+	swap a
+	and $0f
+	add d
+	ld [hli], a
+	ld a, e
+	and $0f
+	add d
+	ld [hl], a
+
+	hlbgcoord 15, 1, vBGMap1
+	ld a, [wLevel]
+	inc a ; +1
+	ld e, $70
+	add e
+	ld [hl], a
+
+	ld bc, vTiles2 tile $69
+	ld de, wCopyAbility
+	ld a, [de]
+	swap a
+	ld l, a
+	and $0f
+	ld h, a
+	ld a, l
+	and $f0
+	ld l, a
+	sla l
+	rl h
+	sla l
+	rl h
+	; hl = wCopyAbility * (4 tiles)
+	ldh a, [hROMBank]
+	push af
+	ld a, BANK(CopyAbilityIconsGfx)
+	call Bankswitch
+	ld de, CopyAbilityIconsGfx
+	add hl, de
+	ld d, 4 tiles
+.loop_copy
+	ld a, [hli]
+	ld [bc], a
+	inc c
+	dec d
+	jr nz, .loop_copy
+	pop af
+	jp Bankswitch
+
+MACRO data_31fe
+	dbw \1, \2
+	dw \3
+ENDM
+
+Data_31fe:
+	data_31fe $0f, $4a64, $ff
+	data_31fe $0f, $4ca9, $4ee9
+	data_31fe $0f, $50b5, $531c
+	data_31fe $0f, $55a7, $58b1
+
+Func_3212::
+	ld a, $01
+	ld [wdf03], a
+	ld a, $e4
+	ld [wcd09], a
+	ld a, $d0
+	ld [wcd0a], a
+	ld a, $90
+	ld [wcd0b], a
+	call Func_33cb
+
+	ld e, MUSIC_15
+	farcall PlayMusic
+
+	ld a, $0f
+	call Bankswitch
+	ld hl, $4983
+	ld de, vTiles0
+	call Decompress
+
+	ld bc, Data_31fe
+	ld a, [sa000Unk71]
+	ld d, a
+	add a
+	add a
+	add d ; *5
+	add c
+	ld c, a
+	incc b
+	ld a, [bc]
+	inc bc
+	push bc
+	call Bankswitch
+	pop bc
+	ld a, [bc]
+	ld l, a
+	inc bc
+	ld a, [bc]
+	ld h, a
+	inc bc
+	push bc
+	ld de, vTiles0 tile $20
+	call Decompress
+
+	ld a, [sa000Unk71]
+	and a
+	pop bc
+	jr z, .asm_3276
+	ld a, [bc]
+	ld l, a
+	inc bc
+	ld a, [bc]
+	ld h, a
+	ld de, vTiles1 tile $60
+	call Decompress
+.asm_3276
+	ld a, BANK(Func_20000)
+	call Bankswitch
+	call Func_20000
+
+	ld a, $92
+	ld [wdb5e], a
+
+	ld bc, $60
+	ld de, $240
+	ld a, $ce
+	lb hl, HIGH(sObjectGroup1), HIGH(sObjectGroup1End)
+	call CreateObject
+
+	ld a, $0a
+	ld [wdb58], a
+	call Bankswitch
+	ld hl, $781c
+	call Func_1289
+
+	ld a, BANK(Func_1c1dc)
+	call Bankswitch
+	call Func_1c1dc
+
+	ld a, LCDCF_BGON | LCDCF_OBJON | LCDCF_OBJ16 | LCDCF_WINON | LCDCF_WIN9C00
+	ldh [rLCDC], a
+
+	call Func_46d
+	ld e, $04
+	farcall Func_6824e
+.asm_32b8
+	call Func_496
+	call UpdateObjects
+
+	ld a, BANK(Func_1c259)
+	call Bankswitch
+	call Func_1c259
+
+	ld a, BANK(Func_1c3cb)
+	call Bankswitch
+	call Func_1c3cb
+
+	call Func_4ae
+	farcall UpdateHUD
+	farcall Func_1dbd2
+	call DoFrame
+	ld hl, wdd2d
+	ld a, [hl]
+	and a
+	jr nz, .asm_32f1
+	ld a, [wda46]
+	and a
+	jr nz, .asm_32b8
+.asm_32f1
+	ld e, $04
+	farcall Func_68280
+	call Func_437
+	ret
 
 Func_32ff::
 	ld a, $ff
@@ -3753,7 +4647,6 @@ Func_32ff::
 	ld [wcd0a], a
 	ld a, $e4
 	ld [wcd0b], a
-
 	call Func_33cb
 
 	ld e, MUSIC_LEVEL_SELECT
@@ -3772,17 +4665,15 @@ Func_32ff::
 	call Bankswitch
 	call Func_20000
 
-	ld a, $0f
+	ld a, BANK(LevelSelectionCoordinates)
 	call Bankswitch
-	ld hl, $6111
-	ld a, [wdb60]
+	ld hl, LevelSelectionCoordinates
+	ld a, [wLevel]
 	add a
-	add a
+	add a ; *4
 	add l
 	ld l, a
-	jr nc, .asm_3353
-	inc h
-.asm_3353
+	incc h
 	ld a, [hli]
 	ld c, a
 	ld a, [hli]
@@ -3805,11 +4696,11 @@ Func_32ff::
 
 	call Func_46d
 
-	ld a, [wdb60]
+	ld a, [wLevel]
 	ld e, a
 	farcall Func_7a011
 
-	ld a, [wdb60]
+	ld a, [wLevel]
 	add $1b
 	ld d, a
 	ld e, $04
@@ -3833,7 +4724,7 @@ Func_32ff::
 	and a
 	jr nz, .asm_3396
 .asm_33b7
-	ld a, [wdb60]
+	ld a, [wLevel]
 	add $1b
 	ld d, a
 	ld e, $04
@@ -3856,6 +4747,7 @@ Func_33d5:
 	ld c, a
 	ld a, [hli]
 	ld [wdb3e], a
+
 	push hl
 	ld b, a
 	ld hl, wcd2d
@@ -3945,7 +4837,7 @@ Func_33d5:
 	ret
 
 Func_3467:
-	ld de, sa000Unk04
+	ld de, sa000XPos + 1
 	ld hl, wdb51
 	ld a, [de]
 	inc e
@@ -3992,9 +4884,7 @@ Func_34a3:
 	ld hl, $612d
 	add l
 	ld l, a
-	jr nc, .asm_34c1
-	inc h
-.asm_34c1
+	incc h
 	ld a, [hli]
 	ld c, a
 	ld a, [hli]
@@ -4010,7 +4900,7 @@ Func_34cc:
 	ld b, a
 	ld a, $00
 .asm_34d2
-	ld hl, $6111
+	ld hl, LevelSelectionCoordinates
 	rr b
 	call c, .Func_34e0
 	inc a
@@ -4025,9 +4915,7 @@ Func_34cc:
 	add a
 	add l
 	ld l, a
-	jr nc, .asm_34e9
-	inc h
-.asm_34e9
+	incc h
 	ld a, [hli] ; x pos
 	ld c, a     ;
 	ld a, [hli] ;
@@ -4063,7 +4951,7 @@ Data_3f00::
 	dw $a6f ; UNK0B_CMD
 	dw $ab4 ; UNK0C_CMD
 	dw Func_ae3 ; EXEC_ASM_CMD
-	dw $b1f ; UNK0E_CMD
+	dw Func_b1f ; JUMPTABLE_CMD
 	dw Func_937 ; SET_FIELD_CMD
 	dw $940 ; UNK10_CMD
 	dw $9ba ; JUMP_IF_NOT_UNK27_CMD

@@ -5,14 +5,19 @@ MACRO joypad_struct
 	db ; ?
 ENDM
 
+MACRO obj_oam_struct
+\1ObjectID::   db
+\1BaseTileID:: db
+\1OAMPtr::     dw
+\1OAMBank::    db
+ENDM
+
 MACRO obj_struct
 \1Unk00:: db ; $00
 \1Unk01:: db ; $01
 \1Unk02:: db ; $02
-\1Unk03:: db ; $03
-\1Unk04:: dw ; $04
-\1Unk06:: db ; $06
-\1Unk07:: dw ; $07
+\1XPos:: ds 3 ; $03
+\1YPos:: ds 3 ; $06
 \1Unk09:: dw ; $09
 \1Unk0b:: dW ; $0b
 \1Unk0d:: dw ; $0d
@@ -257,9 +262,22 @@ ENDM
 MACRO file_struct
 \1Completion::   dw
 \1CurrentLevel:: db
-	ds $17
-\1Checksum1::     db
-\1Checksum2::     db
+\1Unk03::        ds $8
+\1Unk0b::        db
+\1Unk0c::        db
+\1Unk0d::        db
+\1Unk0e::        db
+\1Unk0f::        db
+\1Unk10::        db
+\1Lives::        db
+\1HP::           db
+\1Unk13::        db
+\1Unk14::        db
+\1Unk15::        db
+\1AnimalFriend:: db
+\1Score::        ds $3
+\1Checksum1::    db
+\1Checksum2::    db
 ENDM
 
 MACRO channel1_struct

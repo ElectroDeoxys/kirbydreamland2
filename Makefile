@@ -1,6 +1,7 @@
 rom := kirbydreamland2.gb
 
 rom_obj := \
+src/gfx.o \
 src/home.o \
 src/main.o \
 src/ram.o
@@ -85,6 +86,9 @@ $(rom): $(rom_obj) src/layout.link
 	$(RGBLINK) -m $(rom:.gb=.map) -n $(rom:.gb=.sym) -l src/layout.link -o $@ $(filter %.o,$^) -O baserom.gb
 	$(RGBFIX) $(opts) $@
 
+### Interleaved gfx
+
+src/gfx/%.2bpp: tools/gfx += --interleave --png=$<
 
 ### Catch-all graphics rules
 

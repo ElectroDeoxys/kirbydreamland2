@@ -81,7 +81,11 @@ MACRO create_object
 	db \2, \3 ; object groups
 ENDM
 
-	const UNK0E_CMD ; $0e
+	const JUMPTABLE_CMD ; $0e
+MACRO jumptable
+	db JUMPTABLE_CMD
+	db \1 ; number of entries
+ENDM
 
 	const SET_FIELD_CMD ; $0f
 MACRO set_field

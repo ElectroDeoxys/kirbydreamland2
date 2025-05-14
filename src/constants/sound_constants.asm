@@ -8,9 +8,9 @@
 	const MUSIC_TITLE_SCREEN ; $06
 	const MUSIC_07 ; $07
 	const MUSIC_08 ; $08
-	const MUSIC_09 ; $09
+	const MUSIC_KINE ; $09
 	const MUSIC_BIG_FOREST_HUB ; $0a
-	const MUSIC_0B ; $0b
+	const MUSIC_COO ; $0b
 	const MUSIC_0C ; $0c
 	const MUSIC_0D ; $0d
 	const MUSIC_0E ; $0e
@@ -19,7 +19,7 @@
 	const MUSIC_11 ; $11
 	const MUSIC_12 ; $12
 	const MUSIC_13 ; $13
-	const MUSIC_14 ; $14
+	const MUSIC_RICK ; $14
 	const MUSIC_15 ; $15
 	const MUSIC_16 ; $16
 	const MUSIC_17 ; $17

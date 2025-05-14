@@ -9,8 +9,13 @@ MACRO incc
 ENDM
 
 MACRO farcall
+IF _NARG == 2
+	ld hl, \2
+	ld a, \1
+ELSE
 	ld hl, \1
 	ld a, BANK(\1)
+ENDC
 	call Farcall
 ENDM
 

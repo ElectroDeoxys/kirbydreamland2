@@ -1,14 +1,14 @@
 SECTION "Script_3c4e6", ROMX[$44e6], BANK[$0f]
 
 Script_3c4e6:
-	exec_asm $496c
+	exec_asm Func_3c96c
 	set_draw_func Func_df3
 	set_field OBJSTRUCT_UNK43, $20
-	exec_asm $454b
+	exec_asm Func_3c54b
 	unk03_cmd Func_3c841
 	set_oam $42c6, $0f ; OAM_3c2c6
-	exec_asm $48ef
-	exec_asm $4912
+	exec_asm Func_3c8ef
+	exec_asm Func_3c912
 	jump_if_unk27 .script_3c509
 	create_object $9c, $a0, $b3
 .script_3c509
@@ -22,6 +22,303 @@ Script_3c4e6:
 	wait 10
 	jump .loop
 ; 0x3c51d
+
+SECTION "Func_3c54b", ROMX[$454b], BANK[$0f]
+
+Func_3c54b:
+	xor a
+	ld [wdd5b], a
+	ret
+
+Script_3c550:
+	exec_asm Func_2b91
+	script_end
+; 0x3c554
+
+SECTION "Script_3c567", ROMX[$4567], BANK[$0f]
+
+Script_3c567:
+	set_draw_func Func_df3
+	unk03_cmd Func_3c818
+	set_field OBJSTRUCT_UNK27, $00
+	set_oam $42c6, $0f ; OAM_3c2c6
+	set_x 56
+	set_y 36
+	set_x 56
+	set_y 36
+	set_x_vel 1.199
+	set_y_vel -2.031
+	set_y_acc 0.168
+	wait 40
+	set_x_vel 0.0
+	set_y_vel 0.0
+	set_y_acc 0.0
+	set_x 104
+	set_y 92
+	jump Script_3c4e6
+
+Script_3c59c:
+	set_draw_func Func_df3
+	unk03_cmd Func_3c818
+	set_field OBJSTRUCT_UNK27, $00
+	set_oam $42c6, $0f ; OAM_3c2c6
+	set_x 104
+	set_y 92
+	set_x 104
+	set_y 92
+	set_x_vel -1.199
+	set_y_vel -4.031
+	set_y_acc 0.129
+	wait 40
+	set_x_vel 0.0
+	set_y_vel 0.0
+	set_y_acc 0.0
+	set_x 56
+	set_y 36
+	jump Script_3c4e6
+
+Script_3c5d1:
+	set_draw_func Func_df3
+	unk03_cmd Func_3c818
+	set_field OBJSTRUCT_UNK27, $00
+	set_oam $42c6, $0f ; OAM_3c2c6
+	set_x 104
+	set_y 92
+	set_x 104
+	set_y 92
+	set_x_vel 1.199
+	set_y_vel -4.0
+	set_y_acc 0.137
+	wait 40
+	set_x_vel 0.0
+	set_y_vel 0.0
+	set_y_acc 0.0
+	set_x 152
+	set_y 44
+	jump Script_3c4e6
+
+Script_3c606:
+	set_draw_func Func_df3
+	unk03_cmd Func_3c818
+	set_field OBJSTRUCT_UNK27, $00
+	set_oam $42c6, $0f ; OAM_3c2c6
+	set_x 152
+	set_y 44
+	set_x 152
+	set_y 44
+	set_x_vel -1.199
+	set_y_vel -2.0
+	set_y_acc 0.156
+	wait 40
+	set_x_vel 0.0
+	set_y_vel 0.0
+	set_y_acc 0.0
+	set_x 104
+	set_y 92
+	jump Script_3c4e6
+
+Script_3c63b:
+	set_draw_func Func_df3
+	unk03_cmd Func_3c818
+	set_field OBJSTRUCT_UNK27, $00
+	set_oam $42c6, $0f ; OAM_3c2c6
+	set_x 152
+	set_y 44
+	set_x 152
+	set_y 44
+	set_x_vel 1.199
+	set_y_vel -2.031
+	set_y_acc 0.168
+	wait 40
+	set_x_vel 0.0
+	set_y_vel 0.0
+	set_y_acc 0.0
+	set_x 200
+	set_y 100
+	jump Script_3c4e6
+
+Script_3c670:
+	set_draw_func Func_df3
+	unk03_cmd Func_3c818
+	set_field OBJSTRUCT_UNK27, $00
+	set_oam $42c6, $0f ; OAM_3c2c6
+	set_x 200
+	set_y 100
+	set_x 200
+	set_y 100
+	set_x_vel -1.199
+	set_y_vel -4.031
+	set_y_acc 0.129
+	wait 40
+	set_x_vel 0.0
+	set_y_vel 0.0
+	set_y_acc 0.0
+	set_x 152
+	set_y 44
+	jump Script_3c4e6
+
+Script_3c6a5:
+	set_draw_func Func_df3
+	unk03_cmd Func_3c818
+	set_field OBJSTRUCT_UNK27, $00
+	set_oam $42c6, $0f ; OAM_3c2c6
+	set_x 200
+	set_y 100
+	set_x 200
+	set_y 100
+	set_x_vel 1.199
+	set_y_vel -4.031
+	set_y_acc 0.129
+	wait 40
+	set_x_vel 0.0
+	set_y_vel 0.0
+	set_y_acc 0.0
+	set_x 248
+	set_y 44
+	jump Script_3c4e6
+
+Script_3c6da:
+	set_draw_func Func_df3
+	unk03_cmd Func_3c818
+	set_field OBJSTRUCT_UNK27, $00
+	set_oam $42c6, $0f ; OAM_3c2c6
+	set_x 248
+	set_y 44
+	set_x 248
+	set_y 44
+	set_x_vel -1.199
+	set_y_vel -2.031
+	set_y_acc 0.168
+	wait 40
+	set_x_vel 0.0
+	set_y_vel 0.0
+	set_y_acc 0.0
+	set_x 200
+	set_y 100
+	jump Script_3c4e6
+
+Script_3c70f:
+	set_draw_func Func_df3
+	unk03_cmd Func_3c818
+	set_field OBJSTRUCT_UNK27, $00
+	set_oam $42c6, $0f ; OAM_3c2c6
+	set_x 248
+	set_y 44
+	set_x 248
+	set_y 44
+	set_x_vel 1.199
+	set_y_vel -2.0
+	set_y_acc 0.156
+	wait 40
+	set_x_vel 0.0
+	set_y_vel 0.0
+	set_y_acc 0.0
+	set_x 296
+	set_y 92
+	jump Script_3c4e6
+
+Script_3c744:
+	set_draw_func Func_df3
+	unk03_cmd Func_3c818
+	set_field OBJSTRUCT_UNK27, $00
+	set_oam $42c6, $0f ; OAM_3c2c6
+	set_x 296
+	set_y 92
+	set_x 296
+	set_y 92
+	set_x_vel -1.199
+	set_y_vel -4.0
+	set_y_acc 0.137
+	wait 40
+	set_x_vel 0.0
+	set_y_vel 0.0
+	set_y_acc 0.0
+	set_x 248
+	set_y 44
+	jump Script_3c4e6
+
+Script_3c779:
+	set_draw_func Func_df3
+	unk03_cmd Func_3c818
+	set_field OBJSTRUCT_UNK27, $00
+	set_oam $42c6, $0f ; OAM_3c2c6
+	set_x 296
+	set_y 92
+	set_x 296
+	set_y 92
+	set_x_vel 1.199
+	set_y_vel -4.031
+	set_y_acc 0.129
+	wait 40
+	set_x_vel 0.0
+	set_y_vel 0.0
+	set_y_acc 0.0
+	set_x 344
+	set_y 36
+	jump Script_3c4e6
+
+Script_3c7ae:
+	set_draw_func Func_df3
+	unk03_cmd Func_3c818
+	set_field OBJSTRUCT_UNK27, $00
+	set_oam $42c6, $0f ; OAM_3c2c6
+	set_x 344
+	set_y 36
+	set_x 344
+	set_y 36
+	set_x_vel -1.199
+	set_y_vel -2.031
+	set_y_acc 0.168
+	wait 40
+	set_x_vel 0.0
+	set_y_vel 0.0
+	set_y_acc 0.0
+	set_x 296
+	set_y 92
+	jump Script_3c4e6
+; 0x3c7e3
+
+SECTION "Script_3c7f8", ROMX[$47f8], BANK[$0f]
+
+Script_3c7f8:
+	exec_asm Func_3c95d
+	exec_asm Func_3c8e8
+	jumptable 12
+	dw Script_3c567
+	dw Script_3c59c
+	dw Script_3c5d1
+	dw Script_3c606
+	dw Script_3c63b
+	dw Script_3c670
+	dw Script_3c6a5
+	dw Script_3c6da
+	dw Script_3c70f
+	dw Script_3c744
+	dw Script_3c779
+	dw Script_3c7ae
+
+Func_3c818:
+	call ApplyObjectXAcceleration
+	call ApplyObjectYAcceleration
+	call ApplyObjectVelocities
+
+	ld e, OBJSTRUCT_UNK27
+	ld a, [de]
+	and a
+	jr z, .asm_3c82a
+	dec a
+	ld [de], a
+	ret
+.asm_3c82a
+	ld a, $04
+	ld [de], a ; OBJSTRUCT_UNK27
+	ld bc, .data
+	call Func_f50
+	ret
+
+.data
+	db $9b, $a0, $b3
+; 0x3c837
 
 SECTION "Func_3c841", ROMX[$4841], BANK[$0f]
 
@@ -49,7 +346,7 @@ Func_3c841:
 	call ApplyObjectXAcceleration
 	call ApplyObjectYAcceleration
 	call ApplyObjectVelocities
-	ld hl, wdb60
+	ld hl, wLevel
 	ld a, [hl]
 	add a ; *2
 	ld c, a
@@ -66,20 +363,21 @@ Func_3c841:
 	jr c, .asm_3c88f
 	ldh a, [hJoypad1Down]
 	bit D_RIGHT_F, a
-	jr nz, .asm_3c892
+	jr nz, .d_right
 	bit D_LEFT_F, a
-	jr nz, .asm_3c8b0
+	jr nz, .d_left
 	ret
 .asm_3c88f
 	inc a
-	ld [de], a
+	ld [de], a ; OBJSTRUCT_UNK40
 	ret
-.asm_3c892
+
+.d_right
 	ld hl, wdb6a
 	ld b, [hl]
-	ld hl, wdb60
+	ld hl, wLevel
 	ld a, [hl]
-	cp $06
+	cp DARK_CASTLE
 	ret z
 	inc a
 .asm_3c89e
@@ -95,10 +393,10 @@ Func_3c841:
 	ret z
 	inc [hl]
 	jr .asm_3c8b9
-.asm_3c8b0
-	ld hl, wdb60
+.d_left
+	ld hl, wLevel
 	ld a, [hl]
-	cp $00
+	cp GRASS_LAND
 	ret z
 	dec [hl]
 	dec c
@@ -111,18 +409,141 @@ Func_3c841:
 	ld e, SFX_56
 	farcall PlaySFX
 	pop de
-	ld e, $0f
-	ld bc, $47f8
+	ld e, BANK(Script_3c7f8)
+	ld bc, Script_3c7f8
 	jp Func_846
+
 .a_btn_or_start
 	push de
 	ld e, SFX_2D
 	farcall PlaySFX
 	pop de
-	ld e, $0f
-	ld bc, $4550
+	ld e, BANK(Script_3c550)
+	ld bc, Script_3c550
 	jp Func_846
-; 0x3c8e8
+
+Func_3c8e8:
+	ld e, OBJSTRUCT_UNK27
+	ld a, [wdd59]
+	ld [de], a
+	ret
+
+Func_3c8ef:
+	ld e, OBJSTRUCT_FRAME
+	ld hl, sa000Unk71
+	ld a, [hl]
+	ld [de], a
+	ld a, [wLevel]
+	ld hl, LevelSelectionCoordinates
+	add a
+	add a ; *4
+	add l
+	ld l, a
+	incc h
+	ld e, OBJSTRUCT_X_POS + 1
+	ld a, [hli]
+	ld [de], a
+	inc e
+	ld a, [hli]
+	ld [de], a
+	ld e, OBJSTRUCT_Y_POS + 1
+	ld a, [hli]
+	ld [de], a
+	inc e
+	ld a, [hl]
+	ld [de], a
+	ret
+
+Func_3c912:
+	ld hl, wLevel
+	ld a, [hl]
+	cp DARK_CASTLE
+	jr z, .dark_castle
+	ld a, [wdb6a]
+	ld hl, wdb7b
+	cp [hl]
+	jr nz, .asm_3c929
+
+.asm_3c923
+	ld e, OBJSTRUCT_UNK27
+	ld a, $01
+	ld [de], a
+	ret
+.asm_3c929
+	ld [hl], a
+	ld e, OBJSTRUCT_UNK27
+	xor a
+	ld [de], a
+	ret
+
+.dark_castle
+	ld a, [wdb6a]
+	ld hl, wdb7b
+	ld [hl], a
+	jr .asm_3c923
+; 0x3c938
+
+SECTION "Func_3c95d", ROMX[$495d], BANK[$0f]
+
+Func_3c95d:
+	push de
+	push bc
+	ld e, SGB_PALS_07 ; SGB_ATF_07
+	farcall SGBSetPalette_WithATF_NoWait
+	pop bc
+	pop de
+	ret
+
+Func_3c96c:
+	push de
+	push bc
+	ld a, [wda36]
+	or a
+	jr nz, .asm_3c980
+	ld hl, wLevel
+	ld e, [hl]
+	farcall SGBSetPalette_WithATF_NoWait
+.asm_3c980
+	pop bc
+	pop de
+	ret
+; 0x3c983
+
+SECTION "LevelSelectionCoordinates", ROMX[$6111], BANK[$0f]
+
+LevelSelectionCoordinates::
+	table_width 4
+	;    x,   y
+	dw  56,  36 ; GRASS_LAND
+	dw 104,  92 ; BIG_FOREST
+	dw 152,  44 ; RIPPLE_FIELD
+	dw 200, 100 ; ICEBERG
+	dw 248,  44 ; RED_CANYON
+	dw 296,  92 ; CLOUDY_PARK
+	dw 344,  36 ; DARK_CASTLE
+	assert_table_length NUM_LEVELS
+; 0x3e12d
+
+SECTION "Data_3e8a4", ROMX[$68a4], BANK[$0f]
+
+Data_3e8a4:
+	dbw 1, wLevel      ; FILE_CURRENT_LEVEL
+	dbw 8, wdb62      ; FILE_UNK03
+	dbw 1, wdb6a      ; FILE_UNK0B
+	dbw 1, wdd63      ; FILE_UNK0C
+	dbw 1, wdd62      ; FILE_UNK0D
+	dbw 1, wdb6c      ; FILE_UNK0E
+	dbw 1, wdb6b      ; FILE_UNK0F
+	dbw 1, wdb7b      ; FILE_UNK10
+	dbw 1, sa000Unk84 ; FILE_LIVES
+	dbw 1, sa000Unk4c ; FILE_HP
+	dbw 1, sa000Unk72 ; FILE_UNK13
+	dbw 1, sa000Unk51 ; FILE_UNK14
+	dbw 1, sa000Unk5b ; FILE_UNK15
+	dbw 1, sa000Unk71 ; FILE_ANIMAL_FRIEND
+	dbw 3, wScore     ; FILE_SCORE
+	db $00 ; end
+; 0x3e8d2
 
 SECTION "FileSelectMenu", ROMX[$68d2], BANK[$0f]
 
@@ -143,7 +564,7 @@ FileSelectMenu:
 
 .loop_selection
 	call .Func_3e8fe
-	call Func_647
+	call UpdateRNG
 	ld a, [wdf0a]
 	cp $06
 	jr z, .loop_selection
@@ -238,14 +659,14 @@ Script_3e9a4:
 	jump .loop
 
 Func_3e9bf:
-	ld e, $10
+	ld e, SGB_PALS_10 ; SGB_ATF_10
 	jr Func_3e9c5
 Func_3e9c3:
-	ld e, $20
+	ld e, SGB_PALS_20 ; SGB_ATF_20
 Func_3e9c5:
 	push bc
 	push de
-	farcall Func_7a02e
+	farcall SGBPaletteSet_WithATF
 	pop de
 	pop bc
 	ret
@@ -263,9 +684,7 @@ Func_3e9d9:
 	add a ; *2
 	add l
 	ld l, a
-	jr nc, .asm_3e9e5
-	inc h
-.asm_3e9e5
+	incc h
 	ld a, [hli]
 	ld h, [hl]
 	ld l, a
@@ -304,9 +723,7 @@ Func_3ea07:
 	ld hl, .XPositions
 	add l
 	ld l, a
-	jr nc, .asm_3ea12
-	inc h
-.asm_3ea12
+	incc h
 	ld a, [hl]
 	ld e, OBJSTRUCT_X_POS + 1
 	ld [de], a
@@ -323,9 +740,7 @@ UpdateFileSelectMenuCursorPosition:
 	ld hl, .YPositions
 	add l
 	ld l, a
-	jr nc, .asm_3ea25
-	inc h
-.asm_3ea25
+	incc h
 	ld a, [hl]
 	ld e, OBJSTRUCT_Y_POS + 1
 	ld [de], a
@@ -532,15 +947,13 @@ Func_3eb49:
 	add a ; *2
 	add l
 	ld l, a
-	jr nc, .asm_3eb58
-	inc h
-.asm_3eb58
+	incc h
 	ld a, [hli]
 	ld h, [hl]
 	ld l, a
-	ldh a, [hff92]
+	ldh a, [hBGMapQueueSize]
 	ld c, a
-	ld b, HIGH(wc400)
+	ld b, HIGH(wBGMapQueue)
 .loop_tile_data
 	ld a, [hli]
 	cp $ff
@@ -570,7 +983,7 @@ Func_3eb49:
 	jr .loop_tile_data
 .done
 	ld a, c
-	ldh [hff92], a
+	ldh [hBGMapQueueSize], a
 	pop de
 	pop bc
 	ret
@@ -799,20 +1212,20 @@ PrintFileInfo:
 	ret c
 
 	; fill level numbers and completion percentages
-	ldh a, [hff92]
+	ldh a, [hBGMapQueueSize]
 	ld l, a
-	ld h, HIGH(wc400)
-	ld de, $98cc
+	ld h, HIGH(wBGMapQueue)
+	debgcoord 12, 6
 	ld bc, sFile1CurrentLevel
 	call .PrintFileLevelAndCompletion
-	ld de, $992c
+	debgcoord 12, 9
 	ld bc, sFile2CurrentLevel
 	call .PrintFileLevelAndCompletion
-	ld de, $998c
+	debgcoord 12, 12
 	ld bc, sFile3CurrentLevel
 	call .PrintFileLevelAndCompletion
 	ld a, l
-	ldh [hff92], a
+	ldh [hBGMapQueueSize], a
 	ret
 
 ; input:
@@ -904,9 +1317,108 @@ CheckFilesChecksums:
 	; no need to clear completion data since
 	; that will be overwritten by CalculateFilesCompletion
 	jr .next_file
-; 0x3ed21
 
-SECTION "CalculateFilesCompletion", ROMX[$6db4], BANK[$0f]
+ReadSaveData:
+	ld a, [wdf0a]
+	cp $03
+	ret nc
+	ld de, sFile1CurrentLevel
+	cp FILE_2
+	jr c, .got_file
+	ld de, sFile2CurrentLevel
+	jr z, .got_file
+	ld de, sFile3CurrentLevel
+.got_file
+	ld hl, Data_3e8a4
+.loop
+	ld a, [hli]
+	or a
+	jr z, .asm_3ed50
+	ldh [hff84], a
+	ld a, [hli]
+	ld c, a
+	ld a, [hli]
+	ld b, a
+.asm_3ed43
+	ld a, [de]
+	inc de
+	ld [bc], a
+	inc bc
+	ldh a, [hff84]
+	dec a
+	ldh [hff84], a
+	jr nz, .asm_3ed43
+	jr .loop
+
+.asm_3ed50
+	ld hl, $ffe6
+	add hl, de
+	ld a, [hli]
+	or [hl]
+	ret nz
+	ld a, $02
+	ld [sa000Unk84], a
+	ld a, $0c
+	ld [sa000Unk4c], a
+	ld a, $06
+	ld [sa000Unk72], a
+	ld a, $ff
+	ld [sa000Unk5b], a
+	ret
+
+WriteSaveData:
+	ld a, [wdf0a]
+	cp $03
+	ret nc
+	ld de, sFile1CurrentLevel
+	cp FILE_2
+	jr c, .got_file
+	ld de, sFile2CurrentLevel
+	jr z, .got_file
+	ld de, sFile3CurrentLevel
+.got_file
+	ld hl, Data_3e8a4
+.loop
+	ld a, [hli]
+	or a
+	jr z, .asm_3ed9b
+	ldh [hff84], a
+	ld a, [hli]
+	ld c, a
+	ld a, [hli]
+	ld b, a
+.asm_3ed8e
+	ld a, [bc]
+	inc bc
+	ld [de], a
+	inc de
+	ldh a, [hff84]
+	dec a
+	ldh [hff84], a
+	jr nz, .asm_3ed8e
+	jr .loop
+.asm_3ed9b
+	ld hl, $ffe8
+	add hl, de
+	ld b, $17
+	push hl
+	ld a, [hli]
+.asm_3eda3
+	xor [hl]
+	inc hl
+	dec b
+	jr nz, .asm_3eda3
+	ld [hl], a
+	pop hl
+	ld b, $18
+	ld a, [hli]
+.asm_3edad
+	add [hl]
+	inc hl
+	dec b
+	jr nz, .asm_3edad
+	ld [hl], a
+	ret
 
 CalculateFilesCompletion:
 	ld a, NUM_FILES
@@ -977,7 +1489,7 @@ CalculateFilesCompletion:
 InitFileSelectMenu:
 	farcall Func_20000
 
-	ld e, $10
+	ld e, SGB_ATF_10
 	farcall Func_7a011
 
 	ld hl, $6e8c
@@ -991,7 +1503,7 @@ InitFileSelectMenu:
 	call Decompress
 
 	ld hl, $72a3
-	ld de, vBGMap0
+	debgcoord 0, 0, vBGMap0
 	call Decompress
 
 	call CheckFilesChecksums

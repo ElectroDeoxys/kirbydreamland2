@@ -1,7 +1,7 @@
 .PHONY: all clean
 
 CC := gcc
-CFLAGS := -O3 -std=c99 -Wall -Wextra -pedantic
+CFLAGS := -g -std=c99 -Wall -Wextra -pedantic
 
 tools := scan_includes gfx
 
