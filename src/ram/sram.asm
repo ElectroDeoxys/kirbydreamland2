@@ -8,12 +8,14 @@ sObjectGroup2::
 sa100:: obj_struct sa100 ; a100
 sa200:: obj_struct sa200 ; a200
 sa300:: obj_struct sa300 ; a300
+sObjectGroup2End::
+sObjectGroup3::
 sa400:: obj_struct sa400 ; a400
 sa500:: obj_struct sa500 ; a500
 sa600:: obj_struct sa600 ; a600
 sa700:: obj_struct sa700 ; a700
-sObjectGroup2End::
-sObjectGroup3::
+sObjectGroup3End::
+sObjectGroup4::
 sa800:: obj_struct sa800 ; a800
 sa900:: obj_struct sa900 ; a900
 saa00:: obj_struct saa00 ; aa00
@@ -24,7 +26,7 @@ sae00:: obj_struct sae00 ; ae00
 saf00:: obj_struct saf00 ; af00
 sb000:: obj_struct sb000 ; b000
 sb100:: obj_struct sb100 ; b100
-sObjectGroup3End::
+sObjectGroup4End::
 sb200:: obj_struct sb200 ; b200
 sObjectsEnd::
 

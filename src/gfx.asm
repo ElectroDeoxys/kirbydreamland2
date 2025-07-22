@@ -48,7 +48,7 @@ Gfx_28bc0:: INCBIN "gfx/gfx_28bc0.2bpp"
 Gfx_28d40:: INCBIN "gfx/gfx_28d40.2bpp"
 
 
-SECTION "Bank B", ROMX
+SECTION "Bank B Gfx", ROMX
 
 Gfx_2c000:: INCBIN "gfx/gfx_2c000.2bpp"
 Gfx_2c3a0:: INCBIN "gfx/gfx_2c3a0.2bpp"

@@ -23,7 +23,10 @@ hff83:: ; ff83
 hff84:: ; ff84
 	db
 
-	ds $2
+hff85:: ; ff85
+	db
+
+	ds $1
 
 hff87:: ; ff87
 	db
@@ -35,9 +38,9 @@ hBGMapQueueSize:: ; ff92
 	db
 
 ; if bit 7 is set, then mirror sprite horizontally
-wObjectDirection:: db ; ff93
-hOAMBaseTileID::   db ; ff94
-hOAMFlags::        db ; ff95
+hObjectOrientation:: db ; ff93
+hOAMBaseTileID::     db ; ff94
+hOAMFlags::          db ; ff95
 
 ; holds a ROM bank temporarily for general purposes
 ; (e.g. doing a far call, copying far bytes)
@@ -62,7 +65,16 @@ hff9c:: ; ff9c
 hff9d:: ; ff9d
 	db
 
-	ds $a4 - $9e
+hff9e:: db ; ff9e
+hff9f:: db ; ff9f
+
+	ds $a2 - $a0
+
+hffa2:: ; ffa2
+	db
+
+hffa3:: ; ffa3
+	db
 
 hROMBank:: db ; ffa4
 
@@ -71,7 +83,28 @@ hJoypad1:: ; ffa5
 hJoypad2:: ; ffa9
 	joypad_struct hJoypad2
 
-	ds $b5 - $ad
+	ds $ae - $ad
+
+hffae:: ; ffae
+	db
+
+hffaf:: ; ffaf
+	db
+
+hffb0:: ; ffb0
+	db
+
+hffb1:: ; ffb1
+	db
+
+hffb2:: ; ffb2
+	db
+
+hffb3:: ; ffb3
+	db
+
+hffb4:: ; ffb4
+	db
 
 ; if TRUE, then during V-Blank LCD is switched off
 hRequestLCDOff:: ; ffb5

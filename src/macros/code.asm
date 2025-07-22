@@ -24,3 +24,9 @@ MACRO farcall_unsafe
 	ld hl, \1
 	call UnsafeFarcall
 ENDM
+
+MACRO homecall
+	ld a, BANK(\1)
+	call Bankswitch
+	call \1
+ENDM

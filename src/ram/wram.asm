@@ -28,7 +28,10 @@ wBGMapQueue:: ; c400
 wc500:: ; c500
 	ds $100
 
-SECTION "WRAM0@ca00", WRAM0[$ca00]
+SECTION "WRAM0@c900", WRAM0[$c900]
+
+wc900:: ; c900
+	ds $100
 
 wca00:: ds $100 ; ca00
 wcb00:: ds $100 ; cb00
@@ -58,9 +61,7 @@ wcd0c:: ; cd0c
 	ds $2d - $d
 
 wcd2d:: ; cd2d
-	db
-
-	ds $35 - $2e
+	ds $8
 
 wcd35:: ; cd35
 	ds $8
@@ -68,7 +69,10 @@ wcd35:: ; cd35
 wcd3d:: ; cd3d
 	ds 2 * $8
 
-	ds $56 - $4d
+wcd4d:: ; cd4d
+	db
+
+	ds $56 - $4e
 
 wcd56:: ; cd56
 	ds $18
@@ -395,7 +399,13 @@ wdb3e:: ; db3e
 wdb3f:: ; db3f
 	db
 
-	ds $45 - $40
+	ds $1
+
+wdb41:: ; db41
+	dw
+
+wdb43:: ; db43
+	dw
 
 wdb45:: ; db45
 	dw
@@ -409,7 +419,8 @@ wdb49:: ; db49
 wdb4b:: ; db4b
 	dw
 
-	ds $2
+wdb4d:: ; db4d
+	dw
 
 wdb4f:: db ; db4f
 wdb50:: db ; db50
@@ -498,7 +509,8 @@ wdb78:: ; db78
 wdb7b:: ; db7b
 	db
 
-	ds $7d - $7c
+wdb7c:: ; db7c
+	db
 
 wdb7d:: ; db7d
 	db
@@ -653,12 +665,40 @@ wdf03:: ; df03
 wdf0a:: ; df0a
 	db
 
-	ds $11 - $b
+wdf0b:: ; df0b
+	db
+
+wdf0c:: ; df0c
+	db
+
+wdf0d:: ; df0d
+	db
+
+wdf0e:: ; df0e
+	db
+
+wdf0f:: ; df0f
+	db
+
+wdf10:: ; df10
+	db
 
 wdf11:: ; df11
 	db
 
-	ds $32 - $12
+wdf12:: ; df12
+	db
+
+wdf13:: ; df13
+	db
+
+wdf14:: ; df14
+	db
+
+wdf15:: ; df15
+	db
+
+	ds $32 - $16
 
 wdf32:: ; df32
 	db

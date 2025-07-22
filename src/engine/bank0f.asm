@@ -9,7 +9,7 @@ Script_3c4e6:
 	set_oam $42c6, $0f ; OAM_3c2c6
 	exec_asm Func_3c8ef
 	exec_asm Func_3c912
-	jump_if_unk27 .script_3c509
+	jump_if_var .script_3c509
 	create_object $9c, $a0, $b3
 .script_3c509
 	set_field OBJSTRUCT_UNK40, $00
@@ -32,7 +32,7 @@ Func_3c54b:
 
 Script_3c550:
 	exec_asm Func_2b91
-	script_end
+	script_stop
 ; 0x3c554
 
 SECTION "Script_3c567", ROMX[$4567], BANK[$0f]
@@ -40,7 +40,7 @@ SECTION "Script_3c567", ROMX[$4567], BANK[$0f]
 Script_3c567:
 	set_draw_func Func_df3
 	unk03_cmd Func_3c818
-	set_field OBJSTRUCT_UNK27, $00
+	set_field OBJSTRUCT_VAR, $00
 	set_oam $42c6, $0f ; OAM_3c2c6
 	set_x 56
 	set_y 36
@@ -60,7 +60,7 @@ Script_3c567:
 Script_3c59c:
 	set_draw_func Func_df3
 	unk03_cmd Func_3c818
-	set_field OBJSTRUCT_UNK27, $00
+	set_field OBJSTRUCT_VAR, $00
 	set_oam $42c6, $0f ; OAM_3c2c6
 	set_x 104
 	set_y 92
@@ -80,7 +80,7 @@ Script_3c59c:
 Script_3c5d1:
 	set_draw_func Func_df3
 	unk03_cmd Func_3c818
-	set_field OBJSTRUCT_UNK27, $00
+	set_field OBJSTRUCT_VAR, $00
 	set_oam $42c6, $0f ; OAM_3c2c6
 	set_x 104
 	set_y 92
@@ -100,7 +100,7 @@ Script_3c5d1:
 Script_3c606:
 	set_draw_func Func_df3
 	unk03_cmd Func_3c818
-	set_field OBJSTRUCT_UNK27, $00
+	set_field OBJSTRUCT_VAR, $00
 	set_oam $42c6, $0f ; OAM_3c2c6
 	set_x 152
 	set_y 44
@@ -120,7 +120,7 @@ Script_3c606:
 Script_3c63b:
 	set_draw_func Func_df3
 	unk03_cmd Func_3c818
-	set_field OBJSTRUCT_UNK27, $00
+	set_field OBJSTRUCT_VAR, $00
 	set_oam $42c6, $0f ; OAM_3c2c6
 	set_x 152
 	set_y 44
@@ -140,7 +140,7 @@ Script_3c63b:
 Script_3c670:
 	set_draw_func Func_df3
 	unk03_cmd Func_3c818
-	set_field OBJSTRUCT_UNK27, $00
+	set_field OBJSTRUCT_VAR, $00
 	set_oam $42c6, $0f ; OAM_3c2c6
 	set_x 200
 	set_y 100
@@ -160,7 +160,7 @@ Script_3c670:
 Script_3c6a5:
 	set_draw_func Func_df3
 	unk03_cmd Func_3c818
-	set_field OBJSTRUCT_UNK27, $00
+	set_field OBJSTRUCT_VAR, $00
 	set_oam $42c6, $0f ; OAM_3c2c6
 	set_x 200
 	set_y 100
@@ -180,7 +180,7 @@ Script_3c6a5:
 Script_3c6da:
 	set_draw_func Func_df3
 	unk03_cmd Func_3c818
-	set_field OBJSTRUCT_UNK27, $00
+	set_field OBJSTRUCT_VAR, $00
 	set_oam $42c6, $0f ; OAM_3c2c6
 	set_x 248
 	set_y 44
@@ -200,7 +200,7 @@ Script_3c6da:
 Script_3c70f:
 	set_draw_func Func_df3
 	unk03_cmd Func_3c818
-	set_field OBJSTRUCT_UNK27, $00
+	set_field OBJSTRUCT_VAR, $00
 	set_oam $42c6, $0f ; OAM_3c2c6
 	set_x 248
 	set_y 44
@@ -220,7 +220,7 @@ Script_3c70f:
 Script_3c744:
 	set_draw_func Func_df3
 	unk03_cmd Func_3c818
-	set_field OBJSTRUCT_UNK27, $00
+	set_field OBJSTRUCT_VAR, $00
 	set_oam $42c6, $0f ; OAM_3c2c6
 	set_x 296
 	set_y 92
@@ -240,7 +240,7 @@ Script_3c744:
 Script_3c779:
 	set_draw_func Func_df3
 	unk03_cmd Func_3c818
-	set_field OBJSTRUCT_UNK27, $00
+	set_field OBJSTRUCT_VAR, $00
 	set_oam $42c6, $0f ; OAM_3c2c6
 	set_x 296
 	set_y 92
@@ -260,7 +260,7 @@ Script_3c779:
 Script_3c7ae:
 	set_draw_func Func_df3
 	unk03_cmd Func_3c818
-	set_field OBJSTRUCT_UNK27, $00
+	set_field OBJSTRUCT_VAR, $00
 	set_oam $42c6, $0f ; OAM_3c2c6
 	set_x 344
 	set_y 36
@@ -283,7 +283,7 @@ SECTION "Script_3c7f8", ROMX[$47f8], BANK[$0f]
 Script_3c7f8:
 	exec_asm Func_3c95d
 	exec_asm Func_3c8e8
-	jumptable 12
+	var_jumptable 12
 	dw Script_3c567
 	dw Script_3c59c
 	dw Script_3c5d1
@@ -302,7 +302,7 @@ Func_3c818:
 	call ApplyObjectYAcceleration
 	call ApplyObjectVelocities
 
-	ld e, OBJSTRUCT_UNK27
+	ld e, OBJSTRUCT_VAR
 	ld a, [de]
 	and a
 	jr z, .asm_3c82a
@@ -311,7 +311,7 @@ Func_3c818:
 	ret
 .asm_3c82a
 	ld a, $04
-	ld [de], a ; OBJSTRUCT_UNK27
+	ld [de], a ; OBJSTRUCT_VAR
 	ld bc, .data
 	call Func_f50
 	ret
@@ -423,7 +423,7 @@ Func_3c841:
 	jp Func_846
 
 Func_3c8e8:
-	ld e, OBJSTRUCT_UNK27
+	ld e, OBJSTRUCT_VAR
 	ld a, [wdd59]
 	ld [de], a
 	ret
@@ -465,13 +465,13 @@ Func_3c912:
 	jr nz, .asm_3c929
 
 .asm_3c923
-	ld e, OBJSTRUCT_UNK27
+	ld e, OBJSTRUCT_VAR
 	ld a, $01
 	ld [de], a
 	ret
 .asm_3c929
 	ld [hl], a
-	ld e, OBJSTRUCT_UNK27
+	ld e, OBJSTRUCT_VAR
 	xor a
 	ld [de], a
 	ret
@@ -564,7 +564,7 @@ FileSelectMenu:
 
 .loop_selection
 	call .Func_3e8fe
-	call UpdateRNG
+	call Random
 	ld a, [wdf0a]
 	cp $06
 	jr z, .loop_selection
@@ -588,7 +588,7 @@ Script_3e912:
 	jump Script_3e933
 
 Script_3e920:
-	create_object $a9, HIGH(sObjects), HIGH(sObjectsEnd)
+	create_object BOMB_FILE_SELECT, HIGH(sObjects), HIGH(sObjectsEnd)
 	set_oam $7370, $0f ; OAM_3f370
 	set_draw_func Func_df6
 	set_y 0
@@ -616,7 +616,7 @@ Script_3e94f:
 	jump .loop
 
 Script_3e95f:
-	create_object $aa, HIGH(sObjects), HIGH(sObjectsEnd)
+	create_object EXPLOSION_FILE_SELECT, HIGH(sObjects), HIGH(sObjectsEnd)
 	set_frame_wait 1, 32
 	exec_asm EraseSelectedFile
 	jump Script_3e939
@@ -627,7 +627,7 @@ Script_3e96e:
 
 Script_3e974:
 	exec_asm Func_3e9d9
-	jump_if_not_unk27 .script_3e980
+	jump_if_not_var .script_3e980
 	exec_asm Func_3e9d2
 	jump Script_3e940
 .script_3e980
@@ -688,7 +688,7 @@ Func_3e9d9:
 	ld a, [hli]
 	ld h, [hl]
 	ld l, a
-	ld e, OBJSTRUCT_UNK27
+	ld e, OBJSTRUCT_VAR
 	ld a, [hli]
 	or a
 	jr nz, .non_zero
@@ -1172,7 +1172,7 @@ Script_3ec47:
 	set_frame_wait 7, 2
 	repeat_end
 
-	script_end
+	script_stop
 
 EraseSelectedFile:
 	push bc
@@ -1515,7 +1515,7 @@ InitFileSelectMenu:
 	ld [wLYC], a
 	ldh [rLYC], a
 
-	ld a, $a8
+	ld a, KIRBY_FILE_SELECT
 	lb hl, HIGH(sObjects), HIGH(sObjectsEnd)
 	call CreateObject
 

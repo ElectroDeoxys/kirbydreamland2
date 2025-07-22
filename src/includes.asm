@@ -12,6 +12,7 @@ INCLUDE "constants/kirby_constants.asm"
 INCLUDE "constants/level_constants.asm"
 INCLUDE "constants/menu_constants.asm"
 INCLUDE "constants/misc_constants.asm"
+INCLUDE "constants/object_constants.asm"
 INCLUDE "constants/sgb_constants.asm"
 INCLUDE "constants/sound_constants.asm"
 

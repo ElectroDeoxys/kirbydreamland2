@@ -368,7 +368,7 @@ LoadLevel:
 	rla
 	ld d, a ; *16
 	inc de
-	ld a, $00
+	ld a, UNK_OBJ_00
 	lb hl, HIGH(sObjectGroup1), HIGH(sObjectGroup1End)
 	call CreateObject
 	ld a, $08
@@ -1112,7 +1112,7 @@ Func_21a2c:
 Script_21a6d:
 	wait 16
 	exec_asm Func_21a73
-	script_end
+	script_stop
 
 Func_21a73:
 	ld a, $01
@@ -1691,3 +1691,941 @@ Func_21e92:
 	dw Demo2InputsEnd - Demo2Inputs, Demo2Inputs ; DEMO_2
 	dw Demo3InputsEnd - Demo3Inputs, Demo3Inputs ; DEMO_3
 ; 0x21ecb
+
+SECTION "Func_22d7a", ROMX[$6d7a], BANK[$8]
+
+Func_22d7a:
+	ld e, OBJSTRUCT_UNK39
+	ld a, [de]
+	srl a
+	srl a
+	srl a ; /8
+	ld hl, .data
+	add a ; *2
+	add l
+	ld l, a
+	incc h
+	ld a, [hli]
+	ld h, [hl]
+	ld l, a
+	ld b, d
+	ld c, OBJSTRUCT_UNK8D
+	ld e, OBJSTRUCT_X_VEL
+	ld a, [de]
+	ld [bc], a
+	add l
+	ld [de], a
+	inc c
+	inc e
+	ld a, [de]
+	ld [bc], a
+	adc h
+	ld [de], a
+	ld e, OBJSTRUCT_UNK39
+	ld a, [de]
+	inc a
+	cp $60
+	jr c, .asm_22da7
+	xor a
+.asm_22da7
+	ld [de], a
+	ret
+
+.data
+	dw  0.5
+	dw  0.25
+	dw  0.0625
+	dw -0.0625
+	dw -0.25
+	dw -0.5
+	dw -0.5
+	dw -0.25
+	dw -0.0625
+	dw  0.0625
+	dw  0.25
+	dw  0.5
+
+Func_22dc1:
+	ld e, OBJSTRUCT_UNK3F
+	ld a, [de]
+	srl a
+	srl a
+	srl a ; /8
+	ld hl, .data
+	add a ; *2
+	add l
+	ld l, a
+	incc h
+	ld a, [hli]
+	ld h, [hl]
+	ld l, a
+	ld b, d
+	ld c, OBJSTRUCT_UNK8F
+	ld e, OBJSTRUCT_Y_VEL
+	ld a, [de]
+	ld [bc], a
+	add l
+	ld [de], a
+	inc c
+	inc e
+	ld a, [de]
+	ld [bc], a
+	adc h
+	ld [de], a
+	ld e, OBJSTRUCT_UNK3F
+	ld a, [de]
+	inc a
+	cp $60
+	jr c, .asm_22dee
+	xor a
+.asm_22dee
+	ld [de], a
+	ret
+
+.data
+	dw  0.25
+	dw  0.125
+	dw  0.0313
+	dw -0.0313
+	dw -0.125
+	dw -0.25
+	dw -0.25
+	dw -0.125
+	dw -0.0313
+	dw  0.0313
+	dw  0.125
+	dw  0.25
+; 0x22e08
+
+SECTION "Func_22e10", ROMX[$6e10], BANK[$8]
+
+Func_22e10:
+	xor a
+	ld [wdf14], a
+	ld e, OBJSTRUCT_UNK7D
+	xor a
+	ld [de], a
+	push de
+	call GetObjectPosition
+	call Func_1646
+	pop de
+	ld b, a
+	cp $f0
+	jr z, .asm_22e2f
+	and $78
+	cp $20
+	jr c, .asm_22e32
+	cp $40
+	jr nc, .asm_22e32
+.asm_22e2f
+	call Func_23171
+.asm_22e32
+	ld a, [wdf14]
+	cp $01
+	jr c, .apply_velocities
+	jr z, .asm_22e40
+	call Func_22dc1
+	jr .apply_velocities
+.asm_22e40
+	call Func_22d7a
+.apply_velocities
+	call ApplyObjectVelocities
+
+	ld a, [wdb75]
+	or a
+	jp nz, Func_22f16
+	ld a, [wdb74]
+	or a
+	jp nz, Func_22f9a
+	ld a, [wdb77]
+	or a
+	jp nz, Func_22e9d
+	call Func_22e64
+	call Func_23012
+	jp Func_23067
+
+Func_22e64:
+	ld hl, wdb3f
+	ld a, [hli]
+	ld c, a
+	ld b, [hl]
+	ld h, d
+	ld l, OBJSTRUCT_X_POS + 1
+	ld a, [hli]
+	sub c
+	ld a, [hl]
+	sbc b
+	jr nc, Func_22e78
+	ld a, b
+	ld [hld], a
+	ld [hl], c
+	jr Func_22e78
+
+Func_22e78:
+	ld hl, wdb43
+	ld a, [hli]
+	ld c, a
+	ld b, [hl]
+	ld h, d
+	ld l, OBJSTRUCT_X_POS + 1
+	ld a, [hli]
+	sub c
+	ld a, [hl]
+	sbc b
+	jr c, .asm_22e8a
+	ld a, b
+	ld [hld], a
+	ld [hl], c
+.asm_22e8a
+	ld hl, wdb41
+	ld a, [hli]
+	ld c, a
+	ld b, [hl]
+	ld h, d
+	ld l, OBJSTRUCT_Y_POS + 1
+	ld a, [hli]
+	sub c
+	ld a, [hl]
+	sbc b
+	jr nc, .asm_22e9c
+	ld a, b
+	ld [hld], a
+	ld [hl], c
+.asm_22e9c
+	ret
+
+Func_22e9d:
+	call Func_22ee2
+	call Func_22efc
+	ld a, [wdb77]
+	cp $02
+	jr z, .asm_22ec4
+	jr nc, .asm_22edc
+	ld hl, wdb43
+	ld bc, wdb51
+	ld a, [bc]
+	add $98
+	ld [hli], a
+	inc bc
+	ld a, [bc]
+	adc $00
+	ld [hl], a
+	call Func_22e64
+	call Func_23067
+	jp Func_22f4d
+.asm_22ec4
+	ld hl, wdb3f
+	ld bc, wdb51
+	ld a, [bc]
+	add $08
+	ld [hli], a
+	inc bc
+	ld a, [bc]
+	adc $00
+	ld [hl], a
+	call Func_22e64
+	call Func_23067
+	jp Func_22f80
+.asm_22edc
+	call Func_22e64
+	jp Func_23012
+
+Func_22ee2:
+	ld hl, wdb4f
+	ld e, OBJSTRUCT_UNK77
+	ld a, [de]
+	add [hl]
+	ld [hl], a
+	ld hl, wdb51
+	inc e
+	ld a, [de] ; OBJSTRUCT_UNK78
+	bit 7, a
+	ld b, $00
+	jr z, .asm_22ef6
+	dec b
+.asm_22ef6
+	adc [hl]
+	ld [hli], a
+	ld a, b
+	adc [hl]
+	ld [hl], a
+	ret
+
+Func_22efc:
+	ld hl, wdb50
+	ld e, OBJSTRUCT_UNK79
+	ld a, [de]
+	add [hl]
+	ld [hl], a
+	ld hl, wdb53
+	inc e
+	ld a, [de]
+	bit 7, a
+	ld b, $00
+	jr z, .asm_22f10
+	dec b
+.asm_22f10
+	adc [hl]
+	ld [hli], a
+	ld a, b
+	adc [hl]
+	ld [hl], a
+	ret
+
+Func_22f16:
+	call Func_22ee2
+	ld a, [wdb3d]
+	dec a
+	ld c, a
+	cp [hl]
+	jr nz, .asm_22f38
+	dec hl
+	ld a, [hli]
+	cp $10
+	jr c, .asm_22f38
+	ld [hl], $00
+
+	ld hl, sObjects + OBJSTRUCT_X_POS + 2
+.loop_objs
+	ld a, [hl]
+	cp c
+	jr nz, .next_obj
+	ld [hl], 0
+.next_obj
+	inc h
+	ld a, h
+	cp HIGH(sObjectsEnd)
+	jr nz, .loop_objs
+
+.asm_22f38
+	ld hl, wdb43
+	ld bc, wdb51
+	ld a, [bc]
+	add $98
+	ld [hli], a
+	inc bc
+	ld a, [bc]
+	adc $00
+	ld [hl], a
+	call Func_22e78
+	jp Func_22f4d
+
+Func_22f4d:
+	xor a
+	ld [sa000Unk7b], a
+	ld hl, wdb51
+	ld a, [hli]
+	add $08
+	ld c, a
+	ld a, [hl]
+	adc $00
+	ld b, a
+	ld h, d
+	ld l, OBJSTRUCT_X_POS + 1
+	ld a, [hli]
+	sub c
+	ld c, a
+	ld a, [hld]
+	sbc b
+	ret nc
+Func_22f65:
+	ld a, c
+	ld [sa000Unk7b], a
+	cpl
+	inc a
+	ld c, a
+	rla
+	sbc a
+	ld b, a
+	ld a, [hl]
+	add c
+	ld [hli], a
+	ld a, [hl]
+	adc b
+	ld [hl], a
+	ld l, OBJSTRUCT_X_VEL + 1
+	ld a, [hl]
+	add c
+	ld [hl], a
+	ld l, OBJSTRUCT_UNK8E
+	ld a, [hl]
+	add c
+	ld [hl], a
+	ret
+
+Func_22f80:
+	xor a
+	ld [sa000Unk7b], a
+	ld hl, wdb51
+	ld a, [hli]
+	add $98
+	ld c, a
+	ld a, [hl]
+	adc $00
+	ld b, a
+	ld h, d
+	ld l, OBJSTRUCT_X_POS + 1
+	ld a, [hli]
+	sub c
+	ld c, a
+	ld a, [hld]
+	sbc b
+	ret c
+	jr Func_22f65
+
+Func_22f9a:
+	ld e, OBJSTRUCT_UNK39
+	ld a, [wdb53]
+	ld [de], a
+	call Func_22fb9
+	call Func_22e64
+	ld hl, wdb4d
+	ld a, [hli]
+	ld c, a
+	ld b, [hl]
+	ld h, d
+	ld l, OBJSTRUCT_Y_POS + 1
+	ld a, [hli]
+	sub c
+	ld a, [hl]
+	sbc b
+	jr c, .asm_22fb8
+	ld a, b
+	ld [hld], a
+	ld [hl], c
+.asm_22fb8
+	ret
+
+Func_22fb9:
+	call Func_22efc
+	ld hl, wdb47
+	ld a, [hli]
+	ld c, a
+	ld b, [hl]
+	ld hl, wdb53
+	ld a, [hli]
+	sub c
+	ld a, [hl]
+	sbc b
+	jr nc, .asm_22fce
+	ld a, b
+	ld [hld], a
+	ld [hl], c
+.asm_22fce
+	ld hl, wdb4b
+	ld a, [hli]
+	ld c, a
+	ld b, [hl]
+	ld hl, wdb53
+	ld a, [hli]
+	sub c
+	ld a, [hl]
+	sbc b
+	jr c, .asm_22fe0
+	ld a, b
+	ld [hld], a
+	ld [hl], c
+.asm_22fe0
+	ld h, d
+	ld l, OBJSTRUCT_UNK39
+	ld a, [wdb53]
+	sub [hl]
+	ld c, a
+	rla
+	sbc a
+	ld b, a
+	ld l, OBJSTRUCT_Y_POS + 1
+	ld a, [hl]
+	add c
+	ld [hli], a
+	ld a, [hl]
+	adc b
+	ld [hl], a
+	ld hl, wdb41
+	ld bc, wdb53
+	ld a, [bc]
+	add $08
+	ld [hli], a
+	inc bc
+	ld a, [bc]
+	adc $00
+	ld [hl], a
+	ld hl, wdb4d
+	ld bc, wdb53
+	ld a, [bc]
+	add $78
+	ld [hli], a
+	inc bc
+	ld a, [bc]
+	adc $00
+	ld [hl], a
+	ret
+
+Func_23012:
+	ld e, OBJSTRUCT_X_POS + 1
+	ld hl, wdb51
+	ld a, [de]
+	sub [hl]
+	cp $48
+	jr nc, .asm_23047
+	ld a, [de]
+	inc e
+	sub $48
+	ld [hli], a
+	ld a, [de]
+	sbc $00
+	ld [hl], a
+	jr nc, .asm_23033
+	ld hl, wdb45
+	ld a, [hli]
+	ld c, a
+	ld b, [hl]
+	ld hl, wdb51 + 1
+	jr .asm_23042
+.asm_23033
+	ld hl, wdb45
+	ld a, [hli]
+	ld c, a
+	ld b, [hl]
+	ld hl, wdb51
+	ld a, [hli]
+	sub c
+	ld a, [hl]
+	sbc b
+	jr nc, .asm_23066
+.asm_23042
+	ld a, b
+	ld [hld], a
+	ld [hl], c
+	jr .asm_23066
+.asm_23047
+	cp $50
+	jr c, .asm_23066
+	ld a, [de]
+	inc e
+	sub $50
+	ld [hli], a
+	ld a, [de]
+	sbc $00
+	ld [hl], a
+	ld hl, wdb49
+	ld a, [hli]
+	ld c, a
+	ld b, [hl]
+	ld hl, wdb51
+	ld a, [hli]
+	sub c
+	ld a, [hl]
+	sbc b
+	jr c, .asm_23066
+	ld a, b
+	ld [hld], a
+	ld [hl], c
+.asm_23066
+	ret
+
+Func_23067:
+	ld e, OBJSTRUCT_Y_POS + 1
+	ld hl, wdb53
+	ld a, [de]
+	sub [hl]
+	cp $38
+	jr nc, .asm_2309c
+	ld a, [de]
+	inc e
+	sub $38
+	ld [hli], a
+	ld a, [de]
+	sbc $00
+	ld [hl], a
+	jr nc, .asm_23088
+	ld hl, wdb47
+	ld a, [hli]
+	ld c, a
+	ld b, [hl]
+	ld hl, wdb53 + 1
+	jr .asm_23097
+.asm_23088
+	ld hl, wdb47
+	ld a, [hli]
+	ld c, a
+	ld b, [hl]
+	ld hl, wdb53
+	ld a, [hli]
+	sub c
+	ld a, [hl]
+	sbc b
+	jr nc, .asm_230bb
+.asm_23097
+	ld a, b
+	ld [hld], a
+	ld [hl], c
+	jr .asm_230bb
+.asm_2309c
+	cp $48
+	jr c, .asm_230bb
+	ld a, [de]
+	inc e
+	sub $48
+	ld [hli], a
+	ld a, [de]
+	sbc $00
+	ld [hl], a
+	ld hl, wdb4b
+	ld a, [hli]
+	ld c, a
+	ld b, [hl]
+	ld hl, wdb53
+	ld a, [hli]
+	sub c
+	ld a, [hl]
+	sbc b
+	jr c, .asm_230bb
+	ld a, b
+	ld [hld], a
+	ld [hl], c
+.asm_230bb
+	ret
+; 0x230bc
+
+SECTION "Func_23171", ROMX[$7171], BANK[$8]
+
+Func_23171:
+	ld a, b
+	cp $f0
+	ld a, [sa000Unk71]
+	jr nz, .asm_231a7
+	cp $03
+	jr z, .asm_2318a
+.asm_2317d
+	ld e, 0.496
+	ld bc, -2.75
+	call ApplyUpwardsAcceleration_WithDampening
+	call SetMinimumVelocity_Up
+	jr .asm_231a1
+.asm_2318a
+	ld a, [sa000Unk50]
+	cp $11
+	jr z, .asm_2317d
+	ld e, 0.094
+	ld bc, -2.75
+	call ApplyUpwardsAcceleration
+	ld e, 0.109
+	ld bc, 0.25
+	call DecelerateIfOverMaxVelocity_Down
+.asm_231a1
+	ld e, OBJSTRUCT_UNK7D
+	ld a, $01
+	ld [de], a
+	ret
+
+.asm_231a7
+	bit 7, b
+	jp nz, .asm_23245
+	cp $03
+	jr z, .asm_231ed
+	bit 3, b
+	jr nz, .asm_231d1
+	bit 4, b
+	jr nz, .asm_231c5
+
+.asm_231b8
+	ld e, 0.496
+	ld bc, -1.5
+	call ApplyUpwardsAcceleration_WithDampening
+	call SetMinimumVelocity_Up
+	jr .asm_231a1
+
+.asm_231c5
+	ld e, 0.156
+	ld bc, 3.0
+	call ApplyDownwardsAcceleration_WithDampening
+	call SetMinimumVelocity_Down
+	ret
+
+.asm_231d1
+	bit 4, b
+	jr nz, .asm_231e1
+	ld e, 0.188
+	ld bc, 1.5
+	call ApplyRightAcceleration_WithDampening
+	call SetMinimumVelocity_Right
+	ret
+.asm_231e1
+	ld e, 0.188
+	ld bc, -1.5
+	call ApplyLeftAcceleration_WithDampening
+	call SetMinimumVelocity_Left
+	ret
+
+.asm_231ed
+	bit 3, b
+	jr nz, .asm_2321f
+	bit 4, b
+	jr nz, .asm_2320e
+	ld a, [sa000Unk50]
+	cp $11
+	jr z, .asm_231b8
+	ld e, 0.094
+	ld bc, -1.5
+	call ApplyUpwardsAcceleration
+	ld e, 0.109
+	ld bc, 0.25
+	call DecelerateIfOverMaxVelocity_Down
+	jr .asm_231a1
+
+.asm_2320e
+	ld e, 0.063
+	ld bc, 3.0
+	call ApplyDownwardsAcceleration
+	ld e, 0.109
+	ld bc, -0.25
+	call DecelerateIfOverMaxVelocity_Up
+	ret
+
+.asm_2321f
+	bit 4, b
+	jr nz, .asm_23234
+	ld e, 0.063
+	ld bc, 1.5
+	call ApplyRightAcceleration
+	ld e, 0.109
+	ld bc, -0.25
+	call DecelerateIfOverMaxVelocity_Left
+	ret
+.asm_23234
+	ld e, 0.063
+	ld bc, -1.5
+	call ApplyLeftAcceleration
+	ld e, 0.109
+	ld bc, 0.25
+	call DecelerateIfOverMaxVelocity_Right
+	ret
+
+.asm_23245
+	cp $02
+	jr z, .asm_23285
+	bit 3, b
+	jr nz, .asm_23269
+	bit 4, b
+	jr nz, .asm_2325d
+.asm_23251
+	ld e, 0.094
+	ld bc, -1.5
+	call ApplyUpwardsAcceleration_WithDampening
+	call SetMinimumVelocity_Up
+	ret
+.asm_2325d
+	ld e, 0.094
+	ld bc, 1.5
+	call ApplyDownwardsAcceleration_WithDampening
+	call SetMinimumVelocity_Down
+	ret
+
+.asm_23269
+	bit 4, b
+	jr nz, .asm_23279
+	ld e, 0.094
+	ld bc, 1.5
+	call ApplyRightAcceleration_WithDampening
+	call SetMinimumVelocity_Right
+	ret
+
+.asm_23279
+	ld e, 0.094
+	ld bc, -1.5
+	call ApplyLeftAcceleration_WithDampening
+	call SetMinimumVelocity_Left
+	ret
+
+.asm_23285
+	bit 3, b
+	jr nz, .asm_232b6
+	bit 4, b
+	jr nz, .asm_232a5
+	ld a, [sa000Unk50]
+	cp $12
+	jr z, .asm_23251
+	ld e, 0.047
+	ld bc, -1.5
+	call ApplyUpwardsAcceleration
+	ld e, 0.078
+	ld bc, 0.25
+	call DecelerateIfOverMaxVelocity_Down
+	ret
+
+.asm_232a5
+	ld e, 0.047
+	ld bc, 1.5
+	call ApplyDownwardsAcceleration
+	ld e, 0.078
+	ld bc, -0.25
+	call DecelerateIfOverMaxVelocity_Up
+	ret
+
+.asm_232b6
+	bit 4, b
+	jr nz, .asm_232cb
+	ld e, 0.047
+	ld bc, 1.5
+	call ApplyRightAcceleration
+	ld e, 0.078
+	ld bc, -0.25
+	call DecelerateIfOverMaxVelocity_Left
+	ret
+
+.asm_232cb
+	ld e, 0.047
+	ld bc, -1.5
+	call ApplyLeftAcceleration
+	ld e, 0.078
+	ld bc, 0.25
+	call DecelerateIfOverMaxVelocity_Right
+	ret
+
+SetMinimumVelocity_Up:
+	ld bc, -0.188
+	ld l, OBJSTRUCT_Y_VEL + 1
+	ld a, [hld]
+	rla
+	jr nc, .set_to_bc ; moving downwards
+	; moving upwards
+	ld a, [hli]
+	sub c
+	ld a, [hld]
+	sbc b
+	ret c ; exit if upwards velocity is higher than bc
+.set_to_bc
+	ld a, c
+	ld [hli], a
+	ld [hl], b
+	ret
+
+SetMinimumVelocity_Down:
+	ld bc, 0.188
+	ld l, OBJSTRUCT_Y_VEL + 1
+	ld a, [hld]
+	rla
+	jr c, .set_to_bc ; moving upwards
+	; moving downwards
+	ld a, [hli]
+	sub c
+	ld a, [hld]
+	sbc b
+	ret nc ; exit if downwards velocity is higher than bc
+.set_to_bc
+	ld a, c
+	ld [hli], a
+	ld [hl], b
+	ret
+
+SetMinimumVelocity_Left:
+	ld bc, -0.188
+	ld l, OBJSTRUCT_X_VEL + 1
+	ld a, [hld]
+	rla
+	jr nc, .set_to_bc ; moving right
+	ld a, [hli]
+	sub c
+	ld a, [hld]
+	sbc b
+	ret c ; exit if left velocity is higher than bc
+.set_to_bc
+	ld a, c
+	ld [hli], a
+	ld [hl], b
+	ret
+
+SetMinimumVelocity_Right:
+	ld bc, 0.188
+	ld l, OBJSTRUCT_X_VEL + 1
+	ld a, [hld]
+	rla
+	jr c, .set_to_bc ; moving left
+	ld a, [hli]
+	sub c
+	ld a, [hld]
+	sbc b
+	ret nc ; exit if right velocity is higher than bc
+.set_to_bc
+	ld a, c
+	ld [hli], a
+	ld [hl], b
+	ret
+
+; tests to see if object is moving upwards
+; with a velocity faster than bc
+; if yes, then apply deceleration with value
+; from input register e
+; input:
+; - bc = maximum upwards velocity
+; - e  = y deceleration
+DecelerateIfOverMaxVelocity_Up:
+	ld l, OBJSTRUCT_Y_VEL + 1
+	ld a, [hld]
+	rla
+	ret nc ; exit if moving downwards
+	ld a, [hli]
+	sub c
+	ld a, [hld]
+	sbc b
+	ret nc ; exit if y vel >= bc
+	jp DecelerateObjectY
+
+; tests to see if object is moving downwards
+; with a velocity faster than bc
+; if yes, then apply deceleration with value
+; from input register e
+; input:
+; - bc = maximum downwards velocity
+; - e  = y deceleration
+DecelerateIfOverMaxVelocity_Down:
+	ld l, OBJSTRUCT_Y_VEL + 1
+	ld a, [hld]
+	rla
+	ret c ; exit if moving upwards
+	ld a, [hli]
+	sub c
+	ld a, [hld]
+	sbc b
+	ret c ; exit if y vel < bc
+	jp DecelerateObjectX ; bug, should be DecelerateObjectY
+
+; tests to see if object is moving left
+; with a velocity faster than bc
+; if yes, then apply deceleration with value
+; from input register e
+; input:
+; - bc = maximum left velocity
+; - e  = y deceleration
+DecelerateIfOverMaxVelocity_Left:
+	ld l, OBJSTRUCT_X_VEL + 1
+	ld a, [hld]
+	rla
+	ret nc ; exit if moving right
+	ld a, [hli]
+	sub c
+	ld a, [hld]
+	sbc b
+	ret nc ; exit if x vel >= bc
+	jp DecelerateObjectX
+
+; tests to see if object is moving right
+; with a velocity faster than bc
+; if yes, then apply deceleration with value
+; from input register e
+; input:
+; - bc = maximum right velocity
+; - e  = y deceleration
+DecelerateIfOverMaxVelocity_Right:
+	ld l, OBJSTRUCT_X_VEL + 1
+	ld a, [hld]
+	rla
+	ret c ; exit if moving left
+	ld a, [hli]
+	sub c
+	ld a, [hld]
+	sbc b
+	ret c ; exit if x vel < bc
+	jp DecelerateObjectX
+; 0x23358

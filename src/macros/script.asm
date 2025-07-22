@@ -1,8 +1,8 @@
 	const_def
 
-	const SCRIPT_PAUSE_CMD ; $00
-MACRO script_pause
-	db SCRIPT_PAUSE_CMD
+	const SCRIPT_END_CMD ; $00
+MACRO script_end
+	db SCRIPT_END_CMD
 ENDM
 
 	const SET_FRAME_CMD ; $01
@@ -66,8 +66,16 @@ MACRO repeat_end
 	db REPEAT_END_CMD
 ENDM
 
-	const UNK0B_CMD ; $0b
-	const UNK0C_CMD ; $0c
+	const CALL_CMD ; $0b
+MACRO script_call
+	db CALL_CMD
+	dw \1 ; call address
+ENDM
+
+	const RET_CMD ; $0c
+MACRO script_ret
+	db RET_CMD
+ENDM
 
 	const EXEC_ASM_CMD ; $0d
 MACRO exec_asm
@@ -81,9 +89,19 @@ MACRO create_object
 	db \2, \3 ; object groups
 ENDM
 
-	const JUMPTABLE_CMD ; $0e
-MACRO jumptable
-	db JUMPTABLE_CMD
+MACRO exec_func_f77
+	exec_asm Func_f77
+	db \1 ; ?
+ENDM
+
+MACRO set_frame_with_orientation
+	exec_asm Func_7b2b
+	db \1, \2 ; frames
+ENDM
+
+	const VAR_JUMPTABLE_CMD ; $0e
+MACRO var_jumptable
+	db VAR_JUMPTABLE_CMD
 	db \1 ; number of entries
 ENDM
 
@@ -94,27 +112,41 @@ MACRO set_field
 	db \2 ; value
 ENDM
 
-	const UNK10_CMD ; $10
+	const SET_VAR_TO_FIELD_CMD ; $10
+MACRO set_var_to_field
+	db SET_VAR_TO_FIELD_CMD
+	db \1 ; which field
+ENDM
 
-	const JUMP_IF_NOT_UNK27_CMD ; $11
-MACRO jump_if_not_unk27
-	db JUMP_IF_NOT_UNK27_CMD
+	const JUMP_IF_NOT_VAR_CMD ; $11
+MACRO jump_if_not_var
+	db JUMP_IF_NOT_VAR_CMD
 	dw \1 ; address
 ENDM
 
-	const JUMP_IF_UNK27_CMD ; $12
-MACRO jump_if_unk27
-	db JUMP_IF_UNK27_CMD
+	const JUMP_IF_VAR_CMD ; $12
+MACRO jump_if_var
+	db JUMP_IF_VAR_CMD
 	dw \1 ; address
 ENDM
 
 	const UNK13_CMD ; $13
-	const UNK14_CMD ; $14
-	const UNK15_CMD ; $15
 
-	const SCRIPT_END_CMD ; $16
-MACRO script_end
-	db SCRIPT_END_CMD
+	const JUMP_IF_VAR_LT_CMD ; $14
+MACRO jump_if_var_lt
+	db JUMP_IF_VAR_LT_CMD
+	db \1 ; value
+	dw \2 ; address
+ENDM
+
+	const WAIT_VAR_CMD ; $15
+MACRO wait_var
+	db WAIT_VAR_CMD
+ENDM
+
+	const SCRIPT_STOP_CMD ; $16
+MACRO script_stop
+	db SCRIPT_STOP_CMD
 ENDM
 
 	const SET_DRAW_FUNC_CMD ; $17
@@ -132,8 +164,18 @@ MACRO set_frame_wait
 	db \2 ; number of frames
 ENDM
 
-	const UNK1A_CMD ; $1a
-	const UNK1B_CMD ; $1b
+	const SET_FIELD_TO_VAR_CMD ; $1a
+MACRO set_field_to_var
+	db SET_FIELD_TO_VAR_CMD
+	db \1 ; which field
+ENDM
+
+	const FAR_JUMP_CMD ; $1b
+MACRO far_jump
+	db FAR_JUMP_CMD
+	dab \1 ; address
+ENDM
+
 	const UNK1C_CMD ; $1c
 	const UNK1D_CMD ; $1d
 	const UNK1E_CMD ; $1e

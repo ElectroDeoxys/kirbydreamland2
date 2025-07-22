@@ -9,7 +9,7 @@ args = parser.parse_args()
 
 syms = reader.read_symbols()
 
-SCRIPT_PAUSE_CMD = 0x00
+SCRIPT_END_CMD = 0x00
 SET_FRAME_CMD = 0x01
 UNK02_CMD = 0x02
 UNK03_CMD = 0x03
@@ -20,23 +20,23 @@ SET_X_VEL_CMD = 0x07
 SET_Y_VEL_CMD = 0x08
 REPEAT_CMD = 0x09
 REPEAT_END_CMD = 0x0a
-UNK0B_CMD = 0x0b
-UNK0C_CMD = 0x0c
+CALL_CMD = 0x0b
+RET_CMD = 0x0c
 EXEC_ASM_CMD = 0x0d
-JUMPTABLE_CMD = 0x0e
+VAR_JUMPTABLE_CMD = 0x0e
 SET_FIELD_CMD = 0x0f
-UNK10_CMD = 0x10
-JUMP_IF_NOT_UNK27_CMD = 0x11
-JUMP_IF_UNK27_CMD = 0x12
+SET_VAR_TO_FIELD_CMD = 0x10
+JUMP_IF_NOT_VAR_CMD = 0x11
+JUMP_IF_VAR_CMD = 0x12
 UNK13_CMD = 0x13
-UNK14_CMD = 0x14
-UNK15_CMD = 0x15
-SCRIPT_END_CMD = 0x16
+JUMP_IF_VAR_LT_CMD = 0x14
+WAIT_VAR_CMD = 0x15
+SCRIPT_STOP_CMD = 0x16
 SET_DRAW_FUNC_CMD = 0x17
 UNK18_CMD = 0x18
 SET_FRAME_WAIT_CMD = 0x19
-UNK1A_CMD = 0x1a
-UNK1B_CMD = 0x1b
+SET_FIELD_TO_VAR_CMD = 0x1a
+FAR_JUMP_CMD = 0x1b
 UNK1C_CMD = 0x1c
 UNK1D_CMD = 0x1d
 UNK1E_CMD = 0x1e
@@ -111,11 +111,22 @@ class Parser:
         self.jump_addresses.add(addr)
         return (2, f"<{addr}>")
 
+    def parse_far_addr(self, data):
+        addr = data[0] + data[1] * 0x100
+        bank = data[2]
+        offs = (bank - 1) * 0x4000 + addr
+        return (3, f"Script_{offs:0x}")
+
+    def parse_call_addr(self, data):
+        addr = data[0] + data[1] * 0x100
+        offs = addr if addr < 0x4000 else (self.cur_bank - 1) * 0x4000 + addr
+        return (2, f"Script_{offs:0x}")
+
     def parse_address(self, data):
         addr = data[0] + data[1] * 0x100
         return (2, f"${addr:0x}")
 
-    def parse_jumptable(self, data):
+    def parse_var_jumptable(self, data):
         n_entries = data[0]
         table = ""
         for i in range(n_entries):
@@ -126,7 +137,7 @@ class Parser:
 
     def parse(self, offset):
         cmds = [
-            ("script_pause", []), # SCRIPT_PAUSE_CMD
+            ("script_end", []), # SCRIPT_END_CMD
             ("set_frame", [self.parse_int8]), # SET_FRAME_CMD
             ("unk02_cmd", None), # UNK02_CMD
             ("unk03_cmd", [self.parse_unk03]), # UNK03_CMD
@@ -137,23 +148,23 @@ class Parser:
             ("set_y_vel", [self.parse_vel]), # SET_Y_VEL_CMD
             ("repeat", [self.parse_int8]), # REPEAT_CMD
             ("repeat_end", []), # REPEAT_END_CMD
-            ("unk0b_cmd", None), # UNK0B_CMD
-            ("unk0c_cmd", None), # UNK0C_CMD
+            ("script_call", [self.parse_call_addr]), # CALL_CMD
+            ("script_ret", []), # RET_CMD
             ("exec_asm", [self.parse_address]), # EXEC_ASM_CMD
-            ("jumptable", [self.parse_jumptable]), # JUMPTABLE_CMD
+            ("var_jumptable", [self.parse_var_jumptable]), # VAR_JUMPTABLE_CMD
             ("set_field", [self.parse_field, self.parse_byte]), # SET_FIELD_CMD
-            ("unk10_cmd", None), # UNK10_CMD
-            ("jump_if_not_unk27", [self.parse_local_addr]), # JUMP_IF_NOT_UNK27_CMD
-            ("jump_if_unk27", [self.parse_local_addr]), # JUMP_IF_UNK27_CMD
+            ("set_var_to_field", [self.parse_field]), # SET_VAR_TO_FIELD_CMD
+            ("jump_if_not_var", [self.parse_local_addr]), # JUMP_IF_NOT_VAR_CMD
+            ("jump_if_var", [self.parse_local_addr]), # JUMP_IF_VAR_CMD
             ("unk13_cmd", None), # UNK13_CMD
-            ("unk14_cmd", None), # UNK14_CMD
-            ("unk15_cmd", None), # UNK15_CMD
-            ("script_end", []), # SCRIPT_END_CMD
+            ("jump_if_var_lt", [self.parse_byte, self.parse_local_addr]), # JUMP_IF_VAR_LT_CMD
+            ("wait_var", []), # WAIT_VAR_CMD
+            ("script_stop", []), # SCRIPT_STOP_CMD
             ("set_draw_func", [self.parse_home_func]), # SET_DRAW_FUNC_CMD
             ("unk18_cmd", None), # UNK18_CMD
             ("set_frame_wait", [self.parse_int8, self.parse_int8]), # SET_FRAME_WAIT_CMD
-            ("unk1a_cmd", None), # UNK1A_CMD
-            ("unk1b_cmd", None), # UNK1B_CMD
+            ("set_field_to_var", [self.parse_field]), # SET_FIELD_TO_VAR_CMD
+            ("far_jump", [self.parse_far_addr]), # FAR_JUMP_CMD
             ("unk1c_cmd", None), # UNK1C_CMD
             ("unk1d_cmd", None), # UNK1D_CMD
             ("unk1e_cmd", None), # UNK1E_CMD
@@ -172,27 +183,34 @@ class Parser:
         ]
 
         compound_cmds = {
-            "Func_f50": ("create_object", [self.parse_byte, self.parse_byte, self.parse_byte])
+            "Func_f50": ("create_object", [self.parse_byte, self.parse_byte, self.parse_byte]),
+            "Func_f77": ("exec_func_f77", [self.parse_byte]),
+            "Func_7b2b": ("set_frame_with_orientation", [self.parse_int8, self.parse_int8]),
         }
-        cur_bank = int(offset / 0x4000)
+        self.cur_bank = int(offset / 0x4000)
         pos = offset
         strings = []
 
         def get_local_address(a):
-            res = a if cur_bank == 0 else (a + 0x4000 * (cur_bank - 1))
+            res = a if self.cur_bank == 0 else (a + 0x4000 * (self.cur_bank - 1))
             return f"{res:0x}"
 
         while True:
             this_pos = pos
             cmd = reader.get_rom_byte(pos)
-            #print(f"0x{cmd:02x}")
+            if cmd > len(cmds):
+                print(f"Invalid command 0x{cmd:02x}")
+                print(strings)
+                raise Exception()
+
             cmd_str, cmd_funcs = cmds[cmd]
             pos += 1
 
             if cmd == EXEC_ASM_CMD:
                 buf = reader.get_rom_bytes(pos, 2)
                 addr = buf[0] + buf[1] * 0x100
-                if addr < 0x4000 and addr in syms and syms[addr] in compound_cmds:
+                addr = addr if addr < 0x4000 else addr + (self.cur_bank - 1) * 0x4000
+                if addr in syms and syms[addr] in compound_cmds:
                     cmd_str, cmd_funcs = compound_cmds[syms[addr]]
                     pos += 2
 
@@ -220,7 +238,7 @@ class Parser:
 
             strings.append((this_pos, s))
 
-            if cmd in [JUMP_CMD, SCRIPT_END_CMD, JUMPTABLE_CMD]:
+            if cmd in [SCRIPT_END_CMD, JUMP_CMD, SCRIPT_STOP_CMD, VAR_JUMPTABLE_CMD, FAR_JUMP_CMD, RET_CMD]:
                 if (pos % 0x4000) + 0x4000 not in self.jump_addresses:
                     break
 
@@ -242,7 +260,7 @@ class Parser:
 
         # if only one local address in script, rename to .loop
         if len(self.jump_addresses) == 1 and contains_jump_addr:
-            out_str = re.sub(r".script_.*", ".loop", out_str)
+            out_str = re.sub(r"\.script_.*", ".loop", out_str)
 
         return out_str
 

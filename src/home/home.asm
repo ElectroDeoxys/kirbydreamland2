@@ -661,7 +661,7 @@ Func_4ae::
 ; input:
 ; - hl = OAM data
 ; - de = object position
-LoadSprite:
+LoadSprite::
 	ld a, [wVirtualOAMPtr + 1]
 	rrca
 	rrca ; *4
@@ -711,7 +711,7 @@ LoadSprite:
 	ld d, a
 	ld a, [wVirtualOAMPtr + 1]
 	ld e, a
-	ldh a, [wObjectDirection]
+	ldh a, [hObjectOrientation]
 	rla
 	jr c, .loop_oam_mirrored
 .loop_oam
@@ -891,7 +891,7 @@ FarDecompress::
 
 SECTION "JumpHL", ROM0[$620]
 
-JumpHL:
+JumpHL::
 	jp hl
 
 ; input:
@@ -931,9 +931,11 @@ FillHL::
 	ret
 ; 0x63b
 
-SECTION "UpdateRNG", ROM0[$647]
+SECTION "Random", ROM0[$647]
 
-UpdateRNG::
+; advances RNG, and outputs in a
+; a random number between 0 and 255
+Random::
 	push de
 	push hl
 	ld hl, wRNG
@@ -1311,7 +1313,7 @@ Func_7ca:
 	ld l, OBJSTRUCT_X_ACC
 	ld [hli], a
 	ld [hl], a ; OBJSTRUCT_Y_ACC
-	ld l, OBJSTRUCT_DIRECTION
+	ld l, OBJSTRUCT_UNK45
 	ld [hli], a
 	ld [hl], a ; OBJSTRUCT_OAM_TILE_ID
 	ld l, OBJSTRUCT_UNK4A
@@ -1372,7 +1374,7 @@ Func_855:
 	ld [hl], a
 	ld l, OBJSTRUCT_OAM_FLAGS
 	ld [hl], a
-	ld l, OBJSTRUCT_REPEAT_STACK_POS
+	ld l, OBJSTRUCT_STACK_PTR
 	ld [hl], OBJSTRUCT_UNK38 + 1
 	ret
 
@@ -1511,9 +1513,16 @@ Func_90a:
 	dec a
 	ld [de], a
 	jp Func_8a1.asm_8d8
-; 0x914
 
-SECTION "Func_920", ROM0[$920]
+Func_914:
+	ld h, d
+	ldh a, [hff9b]
+	ld l, a
+	ld e, OBJSTRUCT_VAR
+	ld a, [de]
+	dec a
+	ld [hl], a
+	jp Func_8a1.asm_8d8
 
 ; set OBJSTRUCT_FRAME to arg
 Func_920:
@@ -1546,7 +1555,26 @@ Func_937:
 	inc bc
 	ld [de], a
 	jp Func_8a1.asm_8ce
-; 0x940
+
+Func_940:
+	ld a, [bc]
+	inc bc
+	ld e, a
+	ld a, [de]
+	ld e, OBJSTRUCT_VAR
+	ld [de], a
+	jp Func_8a1.asm_8ce
+
+Func_94a:
+	ld a, [bc]
+	inc bc
+	ld e, a
+	ld h, d
+	ld l, OBJSTRUCT_VAR
+	ld a, [hl]
+	ld [de], a
+	jp Func_8a1.asm_8ce
+; 0x955
 
 SECTION "Func_96c", ROM0[$96c]
 
@@ -1600,14 +1628,37 @@ Func_997:
 	ld b, a
 	ld c, e
 	jp Func_8a1.asm_8ce
-; 0x9a0
 
-SECTION "Func_9ba", ROM0[$9ba]
+Func_9a0:
+	; load arg to hl
+	ld a, [bc]
+	inc bc
+	ld l, a
+	ld a, [bc]
+	inc bc
+	ld h, a
+
+	ldh a, [hff9b]
+	sub OBJSTRUCT_UNK24
+	ld e, a
+	add a
+	add e
+	add OBJSTRUCT_UNK19
+	ld e, a
+	; e == OBJSTRUCT_UNK19 if [hff9b] == OBJSTRUCT_UNK24
+	; e == OBJSTRUCT_UNK1C if [hff9b] == OBJSTRUCT_UNK25
+
+	ld a, [bc]
+	ld [de], a
+	call Bankswitch
+	ld b, h
+	ld c, l
+	jp Func_8a1.asm_8ce
 
 ; branches to argument address
-; if OBJSTRUCT_UNK27 is 0
+; if OBJSTRUCT_VAR is 0
 Func_9ba:
-	ld e, OBJSTRUCT_UNK27
+	ld e, OBJSTRUCT_VAR
 	ld a, [de]
 	or a
 	jr nz, .asm_9c9
@@ -1624,9 +1675,9 @@ Func_9ba:
 	jp Func_8a1.asm_8ce
 
 ; branches to argument address
-; if OBJSTRUCT_UNK27 is non-0
+; if OBJSTRUCT_VAR is non-0
 Func_9ce:
-	ld e, OBJSTRUCT_UNK27
+	ld e, OBJSTRUCT_VAR
 	ld a, [de]
 	or a
 	jr z, .asm_9dd
@@ -1643,7 +1694,25 @@ Func_9ce:
 	jp Func_8a1.asm_8ce
 ; 0x9e2
 
-SECTION "Func_a0c", ROM0[$a0c]
+SECTION "Func_9f7", ROM0[$9f7]
+
+Func_9f7:
+	ld h, b
+	ld l, c
+	ld e, OBJSTRUCT_VAR
+	ld a, [de]
+	cp [hl]
+	jr c, .asm_a06
+	inc hl
+	ld a, [hli]
+	ld c, a
+	ld b, [hl]
+	jp Func_8a1.asm_8ce
+.asm_a06
+	inc bc
+	inc bc
+	inc bc
+	jp Func_8a1.asm_8ce
 
 Func_a0c:
 	ld e, OBJSTRUCT_X_VEL
@@ -1683,7 +1752,7 @@ Func_a41:
 	ld e, a
 	inc bc
 	ld h, d
-	ld l, OBJSTRUCT_REPEAT_STACK_POS
+	ld l, OBJSTRUCT_STACK_PTR
 	ld a, [hl]
 	dec a
 	ld l, a
@@ -1692,14 +1761,14 @@ Func_a41:
 	ld [hl], c
 	dec l
 	ld [hl], e ; number of repetitions
-	ld e, OBJSTRUCT_REPEAT_STACK_POS
+	ld e, OBJSTRUCT_STACK_PTR
 	ld a, l
 	ld [de], a
 	jp Func_8a1.asm_8ce
 
 Func_a56:
 	ld h, d
-	ld l, OBJSTRUCT_REPEAT_STACK_POS
+	ld l, OBJSTRUCT_STACK_PTR
 	ld a, [hl]
 	ld l, a
 	dec [hl] ; number of repetitions
@@ -1714,11 +1783,49 @@ Func_a56:
 	inc l
 	inc l
 	inc l
-	ld e, OBJSTRUCT_REPEAT_STACK_POS
+	ld e, OBJSTRUCT_STACK_PTR
 	ld a, l
 	ld [de], a
 	jp Func_8a1.asm_8ce
-; 0xa6f
+
+Func_a6f:
+	ld h, d
+	ld l, OBJSTRUCT_STACK_PTR
+	ld a, [hl]
+	dec a
+	ld l, a
+	ld a, [bc]
+	inc bc
+	ld e, a
+	ld a, [bc]
+	inc bc
+	ld [hl], b
+	dec l
+	ld [hl], c
+	ld b, a
+	ld c, e
+	ld e, OBJSTRUCT_STACK_PTR
+	ld a, l
+	ld [de], a
+	jp Func_8a1.asm_8ce
+; 0xa86
+
+SECTION "Func_ab4", ROM0[$ab4]
+
+Func_ab4:
+	ld h, d
+	ld l, OBJSTRUCT_STACK_PTR
+	ld a, [hl]
+	ld l, a
+	ld c, [hl]
+	inc l
+	ld b, [hl]
+	inc l
+	ld e, OBJSTRUCT_STACK_PTR
+	ld a, l
+	ld [de], a
+	jp Func_8a1.asm_8ce
+; 0xac4
 
 SECTION "Func_ae3", ROM0[$ae3]
 
@@ -1746,7 +1853,7 @@ SECTION "Func_b1f", ROM0[$b1f]
 Func_b1f:
 	ld h, b
 	ld l, c
-	ld e, OBJSTRUCT_UNK27
+	ld e, OBJSTRUCT_VAR
 	ld a, [de]
 	cp [hl]
 	jr nc, .skip_table
@@ -1976,9 +2083,325 @@ ApplyObjectYAcceleration::
 	adc b
 	ld [de], a
 	ret
-; 0xca2
 
-SECTION "ApplyObjectVelocities", ROM0[$da4]
+; input
+; - e = right acceleration
+; - bc = maximum velocity
+ApplyRightAcceleration_WithDampening::
+	ld h, d
+	ld l, OBJSTRUCT_X_VEL + 1
+	ld a, [hld]
+	rla
+	jr c, _ApplyRightAcceleration ; moving left
+	; moving right
+	; is velocity larget than bc?
+	ld a, [hli]
+	sub c
+	ld a, [hld]
+	sbc b
+	jr c, _ApplyRightAcceleration
+	; if so, decelerate it
+	ld e, 0.047
+	jp DecelerateObjectX
+
+; input
+; - e = right acceleration
+; - bc = maximum velocity
+ApplyRightAcceleration::
+	ld h, d
+	ld l, OBJSTRUCT_X_VEL
+;	fallthrough
+
+; input
+; - e = right acceleration
+; - bc = maximum velocity
+_ApplyRightAcceleration:
+	; add e from velocity
+	ld a, [hl]
+	add e
+	ld [hli], a
+	ld a, [hl]
+	adc 0
+	ld [hld], a
+	rla
+	ret c
+	; positive velocity
+	; is velocity larger than bc?
+	ld a, [hli]
+	sub c
+	ld a, [hl]
+	sbc b
+	ret c ; return if not
+	; yes, set velocity to bc
+	ld a, b
+	ld [hld], a
+	ld [hl], c
+	ret
+; 0xcc9
+
+SECTION "ApplyLeftAcceleration_WithDampening", ROM0[$cd3]
+
+; input
+; - e = left acceleration
+; - bc = maximum velocity
+ApplyLeftAcceleration_WithDampening::
+	ld h, d
+	ld l, OBJSTRUCT_X_VEL + 1
+	ld a, [hld]
+	rla
+	jr nc, _ApplyLeftAcceleration ; moving right
+	; moving left
+	; is velocity smaller than bc?
+	ld a, [hli]
+	sub c
+	ld a, [hld]
+	sbc b
+	jr nc, _ApplyLeftAcceleration
+	; if so, decelerate it
+	ld e, 0.047
+	jp DecelerateObjectX
+
+	ld a, c
+	cpl
+	add $01
+	ld c, a
+	ld a, b
+	cpl
+	adc $00
+	ld b, a
+
+; input
+; - e = left acceleration
+; - bc = maximum velocity
+ApplyLeftAcceleration::
+	ld h, d
+	ld l, OBJSTRUCT_X_VEL
+;	fallthrough
+
+; input:
+; - e = left acceleration
+; - bc = maximum velocity
+_ApplyLeftAcceleration:
+	; subtract e from velocity
+	ld a, [hl]
+	sub e
+	ld [hli], a
+	ld a, [hl]
+	sbc 0
+	ld [hld], a
+	rla
+	ret nc
+	; negative velocity
+	; is velocity smaller than bc?
+	ld a, [hli]
+	sub c
+	ld a, [hl]
+	sbc b
+	ret nc ; return if not
+	; yes, set velocity to bc
+	ld a, b
+	ld [hld], a
+	ld [hl], c
+	ret
+
+; applies deceleration to object's x velocity
+; given by input register e
+; input:
+; - e = x deceleration
+DecelerateObjectX::
+	ld h, d
+	ld l, OBJSTRUCT_X_VEL + 1
+	ld a, [hld]
+	rla
+	jr c, .neg_x_vel
+	; subtracting e reduces velocity
+	ld a, [hl]
+	sub e
+	ld [hli], a
+	ld a, [hl]
+	sbc 0
+	ld [hl], a
+	ret nc
+	; reduce to 0 x velocity
+	xor a
+	ld [hld], a
+	ld [hl], a
+	ret
+
+.neg_x_vel
+	; adding e reduces velocity
+	ld a, [hl]
+	add e
+	ld [hli], a
+	ld a, [hl]
+	adc 0
+	ld [hl], a
+	ret nc
+	; reduce to 0 x velocity
+	xor a
+	ld [hld], a
+	ld [hl], a
+	ret
+
+; input
+; - e = downwards acceleration
+; - bc = maximum velocity
+ApplyDownwardsAcceleration_WithDampening::
+	ld h, d
+	ld l, OBJSTRUCT_Y_VEL + 1
+	ld a, [hld]
+	rla
+	jr c, _ApplyDownwardsAcceleration ; moving upwards
+	; moving downwards
+	; is velocity larger than bc?
+	ld a, [hli]
+	sub c
+	ld a, [hld]
+	sbc b
+	jr c, _ApplyDownwardsAcceleration
+	; if so, decelerate it
+	ld e, 0.047
+	jp DecelerateObjectY
+
+; input:
+; - e = downwards acceleration
+; - bc = maximum velocity
+ApplyDownwardsAcceleration::
+	ld h, d
+	ld l, OBJSTRUCT_Y_VEL
+;	fallthrough
+
+; input:
+; - e = downwards acceleration
+; - bc = maximum velocity
+_ApplyDownwardsAcceleration:
+	; add e from velocity
+	ld a, [hl]
+	add e
+	ld [hli], a
+	ld a, [hl]
+	adc 0
+	ld [hld], a
+	rla
+	ret c
+	; positive velocity
+	; is velocity larger than bc?
+	ld a, [hli]
+	sub c
+	ld a, [hl]
+	sbc b
+	ret c ; return if not
+	; yes, set velocity to bc
+	ld a, b
+	ld [hld], a
+	ld [hl], c
+	ret
+; 0xd4a
+
+SECTION "ApplyUpwardsAcceleration_WithDampening", ROM0[$d54]
+
+; input
+; - e = upwards acceleration
+; - bc = maximum velocity
+ApplyUpwardsAcceleration_WithDampening::
+	ld h, d
+	ld l, OBJSTRUCT_Y_VEL + 1
+	ld a, [hld]
+	rla
+	jr nc, _ApplyUpwardsAcceleration ; moving downwards
+	; moving upwards
+	; is velocity smaller than bc?
+	ld a, [hli]
+	sub c
+	ld a, [hld]
+	sbc b
+	jr nc, _ApplyUpwardsAcceleration
+	; if so, decelerate it
+	ld e, 0.047
+	jp DecelerateObjectY
+
+	ld a, c
+	cpl
+	add $01
+	ld c, a
+	ld a, b
+	cpl
+	adc $00
+	ld b, a
+;	fallthrough
+
+; input:
+; - e = upwards acceleration
+; - bc = maximum velocity
+ApplyUpwardsAcceleration::
+	ld h, d
+	ld l, OBJSTRUCT_Y_VEL
+;	fallthrough
+
+; input:
+; - e = upwards acceleration
+; - bc = maximum velocity
+_ApplyUpwardsAcceleration:
+	; subtract e from velocity
+	ld a, [hl]
+	sub e
+	ld [hli], a
+	ld a, [hl]
+	sbc 0
+	ld [hld], a
+	rla
+	ret nc
+	; negative velocity
+	; is velocity smaller than bc?
+	ld a, [hli]
+	sub c
+	ld a, [hl]
+	sbc b
+	ret nc ; return if not
+	; yes, set velocity to bc
+	ld a, b
+	ld [hld], a
+	ld [hl], c
+	ret
+
+; applies deceleration to object's y velocity
+; given by input register e
+; input:
+; - e = y deceleration
+DecelerateObjectY::
+	ld h, d
+	ld l, OBJSTRUCT_Y_VEL + 1
+	ld a, [hld]
+	rla
+	jr c, .neg_y_vel
+	; subtracting e reduces velocity
+	ld a, [hl]
+	sub e
+	ld [hli], a
+	ld a, [hl]
+	sbc 0
+	ld [hl], a
+	ret nc
+	; reduce to 0 y velocity
+	xor a
+	ld [hld], a
+	ld [hl], a
+	ret
+
+.neg_y_vel
+	; adding e reduces velocity
+	ld a, [hl]
+	add e
+	ld [hli], a
+	ld a, [hl]
+	adc 0
+	ld [hl], a
+	ret nc
+	; reduce to 0 y velocity
+	xor a
+	ld [hld], a
+	ld [hl], a
+	ret
 
 ApplyObjectVelocities::
 	ld e, OBJSTRUCT_X_VEL
@@ -2021,22 +2444,34 @@ ApplyObjectVelocities::
 	; OBJSTRUCT_Y_POS += OBJSTRUCT_Y_VEL
 
 	ret
-; 0xdce
 
-SECTION "Func_df3", ROM0[$df3]
+Func_dce::
+	ld a, [sa000Unk6c]
+	rra
+	jr nc, .asm_dde
+	homecall Func_1f40a
+	jr .asm_df0
+.asm_dde
+	call Func_e2c
+	ld a, [sa000Unk5d]
+	cp $00
+	jr nz, .asm_df0
+	homecall Func_2f85b
+.asm_df0
+	jp LoadObjectSprite
 
 Func_df3::
 	call Func_3467
 Func_df6::
 	call Func_e2c
-	jp Func_f22
+	jp LoadObjectSprite
 ; 0xdfc
 
 SECTION "Func_e2c", ROM0[$e2c]
 
 ; does OBJSTRUCT_UNK09 = OBJSTRUCT_X_POS + 1 - wdb51
 ; and  OBJSTRUCT_UNK0B = OBJSTRUCT_Y_POS + 1 - wdb53
-Func_e2c:
+Func_e2c::
 	ld e, OBJSTRUCT_X_POS + 1
 	ld hl, wdb51
 	ld b, d
@@ -2066,9 +2501,9 @@ Func_e2c:
 	ret
 ; 0xe4b
 
-SECTION "Func_f22", ROM0[$f22]
+SECTION "LoadObjectSprite", ROM0[$f22]
 
-Func_f22:
+LoadObjectSprite:
 	ld e, OBJSTRUCT_FRAME
 	ld a, [de]
 	cp -1
@@ -2087,10 +2522,10 @@ Func_f22:
 	ld a, [hli]
 	ld h, [hl]
 	ld l, a
-	ld c, LOW(wObjectDirection)
-	ld e, OBJSTRUCT_DIRECTION
-	ld a, [de] ; OBJSTRUCT_DIRECTION
-	ld [$ff00+c], a ; wObjectDirection
+	ld c, LOW(hObjectOrientation)
+	ld e, OBJSTRUCT_UNK45
+	ld a, [de] ; OBJSTRUCT_UNK45
+	ld [$ff00+c], a ; hObjectOrientation
 	inc e
 	inc c
 	ld a, [de] ; OBJSTRUCT_OAM_TILE_ID
@@ -2116,7 +2551,7 @@ Func_f50::
 	ld a, [hli]
 	ld c, a
 	push hl
-	call .Func_f67
+	call Func_f67
 	pop bc
 	pop de
 	ld a, h
@@ -2126,7 +2561,7 @@ Func_f50::
 	ld [hl], d
 	ret
 
-.Func_f67:
+Func_f67:
 	ld h, d
 	ld l, OBJSTRUCT_Y_POS + 1
 	ld a, [hli]
@@ -2139,7 +2574,51 @@ Func_f50::
 	ld d, [hl]
 	push de
 	jp Func_7ca
-; 0xf77
+
+Func_f77::
+	ld a, [bc]
+	inc bc
+	ld e, a
+Func_f7a::
+	push de
+	push bc
+	ld a, $01
+	ldh [hff84], a
+	lb bc, HIGH(sa200), HIGH(sa500)
+	call Func_f67
+	pop bc
+	pop de
+	ld a, h
+	or a
+	ret z
+	ld l, OBJSTRUCT_PARENT_OBJ
+	ld [hl], d
+	ld l, OBJSTRUCT_UNK51
+	ld [hl], e
+	ret
+; 0xf92
+
+SECTION "Func_1067", ROM0[$1067]
+
+Func_1067:
+	ld h, HIGH(sObjects)
+	ld a, h
+.loop_objs
+	cp d
+	jr z, .next_obj
+	ld l, OBJSTRUCT_UNK19
+	set 5, [hl]
+	ld l, OBJSTRUCT_UNK1C
+	set 5, [hl]
+	ld l, OBJSTRUCT_UNK1F
+	set 5, [hl]
+.next_obj
+	inc h
+	ld a, h
+	cp HIGH(sObjectsEnd)
+	jr nz, .loop_objs
+	ret
+; 0x1080
 
 SECTION "Func_1099", ROM0[$1099]
 
@@ -2243,14 +2722,10 @@ Func_1166::
 	ld de, vTiles0
 	jp Decompress
 .asm_1183
-	ld a, BANK(Func_1f458)
-	call Bankswitch
-	call Func_1f458
+	homecall Func_1f458
 	call .Func_1196
 
-	ld a, BANK(Func_1f472)
-	call Bankswitch
-	call Func_1f472
+	homecall Func_1f472
 .Func_1196:
 	ld a, [wdf11]
 	ld h, $00
@@ -2299,12 +2774,8 @@ LevelLoop::
 .asm_11d4
 	call UpdateObjects
 
-	ld a, BANK(Func_1c259)
-	call Bankswitch
-	call Func_1c259
-	ld a, BANK(Func_1c3cb)
-	call Bankswitch
-	call Func_1c3cb
+	homecall Func_1c259
+	homecall Func_1c3cb
 
 	call Func_4ae
 	farcall UpdateHUD
@@ -2914,8 +3385,55 @@ Func_1584::
 	ret
 ; 0x1597
 
-SECTION "Func_15e3", ROM0[$15e3]
+SECTION "Func_15a8", ROM0[$15a8]
 
+Func_15a8:
+	ldh [hff84], a
+	call Func_15e3
+	ldh a, [hff84]
+	ld [hl], a
+Func_15b0:
+	call Func_15fc
+	ld d, h
+	ld e, l
+	ld a, [wda22]
+	ld l, a
+	ld a, [wda28]
+	ld h, a
+	ld [hl], e
+	inc l
+	ld [hl], d
+	inc l
+	ldh a, [hff84]
+	ld c, a
+	ld b, HIGH(wc500)
+	ld a, [bc]
+	ld [hli], a
+	inc b
+	ld a, [bc]
+	ld [hli], a
+	inc b
+	ld a, [bc]
+	ld [hli], a
+	inc b
+	ld a, [bc]
+	ld [hli], a
+	ld a, l
+	ld [wda22], a
+	ld a, [wda28]
+	ld hl, wda23
+	rra
+	jr nc, .asm_15e1
+	ld hl, wda24
+.asm_15e1
+	inc [hl]
+	ret
+
+; input:
+; - bc = x position
+; - de = y position
+; output:
+; - [hl] = ?
 Func_15e3::
 	ld hl, wcd2d
 	ld a, d
@@ -2996,8 +3514,1022 @@ Data_163e:
 	db  -32 ; RED_CANYON
 	db  -64 ; CLOUDY_PARK
 	db -128 ; DARK_CASTLE
-	assert_table_length NUM_LEVELS
-; 0x1645
+	db $ff
+	assert_table_length NUM_LEVELS + 1
+
+; input:
+; - bc = x position
+; - de = y position
+; output:
+; - a = ?
+Func_1646::
+	ld a, [wdb3d]
+	dec a
+	cp b
+	jr c, .asm_165c
+	ld a, [wdb3e]
+	dec a
+	cp d
+	jr c, .asm_165c
+	; (wdb3d > x pos) && (wdb3e > y pos)
+	call Func_15e3
+	ld l, [hl]
+	ld h, HIGH(wc900)
+	ld a, [hl]
+	ret
+.asm_165c
+	; (wdb3d <= x pos) || (wdb3e <= y pos)
+	xor a
+	ld hl, hff9c
+	ld [hli], a
+	ld [hl], a
+	ld a, $00
+	ret
+
+; input:
+; - [hff9c] = ?
+; output:
+; - a = ?
+Func_1665:
+	ld hl, hff9c
+	ld a, [hli]
+	ld h, [hl]
+	ld l, a
+	or h
+	jr z, .asm_1684
+	ld a, l
+	sub $10
+	ld l, a
+	jr nc, .asm_167f
+	ld a, d
+	or a
+	jr z, .asm_1684
+	ld a, [wdb3d]
+	cpl
+	inc a
+	add h
+	ld h, a
+.asm_167f
+	ld l, [hl]
+	ld h, HIGH(wc900)
+	ld a, [hl]
+	ret
+.asm_1684
+	ld a, $00
+	ret
+
+Func_1687:
+	ld hl, hff9c
+	ld a, [hli]
+	ld h, [hl]
+	ld l, a
+	or h
+	jr z, .asm_16a7
+	ld a, l
+	add $10
+	ld l, a
+	jr nc, .asm_16a2
+	ld a, [wdb3e]
+	dec a
+	cp d
+	jr z, .asm_16a7
+	ld a, [wdb3d]
+	add h
+	ld h, a
+.asm_16a2
+	ld l, [hl]
+	ld h, HIGH(wc900)
+	ld a, [hl]
+	ret
+.asm_16a7
+	ld a, $00
+	ret
+
+Func_16aa:
+	ld hl, hff9c
+	ld a, [hli]
+	ld h, [hl]
+	ld l, a
+	or h
+	jr z, .asm_16ca
+	inc l
+	ld a, l
+	and $0f
+	jr nz, .asm_16c5
+	ld a, [wdb3d]
+	dec a
+	cp b
+	jr z, .asm_16ca
+	ld a, l
+	sub $10
+	ld l, a
+	inc h
+.asm_16c5
+	ld l, [hl]
+	ld h, HIGH(wc900)
+	ld a, [hl]
+	ret
+.asm_16ca
+	ld a, $00
+	ret
+
+Func_16cd:
+	ld hl, hff9c
+	ld a, [hli]
+	ld h, [hl]
+	ld l, a
+	or h
+	jr z, .asm_16ec
+	dec l
+	ld a, l
+	and $0f
+	cp $0f
+	jr nz, .asm_16e7
+	ld a, b
+	or a
+	jr z, .asm_16ec
+	ld a, l
+	add $10
+	ld l, a
+	dec h
+.asm_16e7
+	ld l, [hl]
+	ld h, HIGH(wc900)
+	ld a, [hl]
+	ret
+.asm_16ec
+	ld a, $00
+	ret
+
+; input:
+; - bc = x position
+; - de = y position
+Func_16ef::
+	call Func_1646
+	and $07
+	ldh [hff9e], a
+	cp $01
+	jr z, .asm_16fc
+	and a
+	ret
+.asm_16fc
+	call Func_16aa
+	and $07
+	cp $01
+	jr c, .asm_170b
+	jr z, .asm_1714
+	cp $04
+	jr nc, .asm_1714
+.asm_170b
+	ld a, c
+	and $0f
+	ld l, a
+	ld a, $10
+	sub l
+	scf
+	ret
+.asm_1714
+	and a
+	ret
+; 0x1716
+
+SECTION "Func_17a3", ROM0[$17a3]
+
+; input:
+; - bc = x position
+; - de = y position
+Func_17a3::
+	call Func_1646
+	and $07
+	ldh [hff9e], a
+	cp $01
+	jr z, .asm_17b0
+	and a
+	ret
+.asm_17b0
+	call Func_16cd
+	and $07
+	cp $01
+	jr c, .asm_17bf
+	jr z, .asm_17c5
+	cp $04
+	jr nc, .asm_17c5
+.asm_17bf
+	ld a, c
+	and $0f
+	cpl
+	scf
+	ret
+.asm_17c5
+	and a
+	ret
+; 0x17c7
+
+SECTION "Func_184e", ROM0[$184e]
+
+; input:
+; - bc = x position
+; - de = y position
+Func_184e::
+	call Func_1646
+	ldh [hff9f], a
+	and $07
+	ldh [hff9e], a
+	ld hl, .PtrTable
+	add a ; *2
+	add l
+	ld l, a
+	incc h
+	ld a, [hli]
+	ld h, [hl]
+	ld l, a
+	jp hl
+
+.PtrTable:
+	dw .Func_188c ; $0
+	dw .Func_188e ; $1
+	dw .Func_188e ; $2
+	dw .Func_188e ; $3
+	dw .Func_1874 ; $4
+	dw .Func_1882 ; $5
+	dw .Func_188e ; $6
+	dw .Func_188e ; $7
+
+.Func_1874:
+	ld a, c
+	and $0f
+	ld l, a
+	ld a, e
+	and $0f
+	ld h, a
+	ld a, $0f
+	sub l
+	sub h
+	scf
+	ret
+
+.Func_1882:
+	ld a, e
+	and $0f
+	ld h, a
+	ld a, c
+	and $0f
+	sub h
+	scf
+	ret
+
+.Func_188c:
+	and a
+	ret
+
+.Func_188e:
+	call Func_1665
+	and $07
+	ld hl, $18a0
+	add a
+	add l
+	ld l, a
+	incc h
+	ld a, [hli]
+	ld h, [hl]
+	ld l, a
+	jp hl
+; 0x18a0
+
+SECTION "Func_18d7", ROM0[$18d7]
+
+Func_18d7:
+	call Func_1646
+	and $07
+	ldh [hff9e], a
+	ld hl, $18eb
+	add a ; *2
+	add l
+	ld l, a
+	incc h
+	ld a, [hli]
+	ld h, [hl]
+	ld l, a
+	jp hl
+
+.PtrTable:
+	dw .Func_1913
+	dw .Func_1915
+	dw .Func_1913
+	dw .Func_1913
+	dw .Func_1913
+	dw .Func_1913
+	dw .Func_18fb
+	dw .Func_1905
+
+.Func_18fb:
+	ld a, e
+	and $0f
+	ld h, a
+	ld a, c
+	and $0f
+	sub h
+	scf
+	ret
+
+.Func_1905:
+	ld a, c
+	and $0f
+	ld l, a
+	ld a, e
+	and $0f
+	ld h, a
+	ld a, $0f
+	sub l
+	sub h
+	scf
+	ret
+
+.Func_1913:
+	and a
+	ret
+
+.Func_1915:
+	call Func_1687
+	and $07
+	ld hl, $1927
+	add a ; *2
+	add l
+	ld l, a
+	incc h
+	ld a, [hli]
+	ld h, [hl]
+	ld l, a
+	jp hl
+; 0x1927
+
+SECTION "Func_1ab3", ROM0[$1ab3]
+
+Func_1ab3::
+	call GetObjectPosition
+	call Func_1646
+	and $c0
+	cp $80
+	ldh a, [hff9a]
+	ld d, a
+	ret
+; 0x1ac1
+
+SECTION "ApplyOffsetToObjectPosition", ROM0[$1ad9]
+
+; adds bc to object's x position
+; and de to object's y position
+ApplyOffsetToObjectPosition::
+	ld l, OBJSTRUCT_X_POS + 1
+	ld a, [hli]
+	add c
+	ld c, a
+	ld a, [hl]
+	adc b
+	ld b, a
+	ld l, OBJSTRUCT_Y_POS + 1
+	ld a, [hli]
+	add e
+	ld e, a
+	ld a, [hl]
+	adc d
+	ld d, a
+	ret
+
+; outputs object's positions
+; output:
+; - bc = x position
+; - de = y position
+GetObjectPosition::
+	ld h, d
+	ld l, OBJSTRUCT_X_POS + 1
+	ld a, [hli]
+	ld c, a
+	ld b, [hl]
+	ld l, OBJSTRUCT_Y_POS + 1
+	ld a, [hli]
+	ld e, a
+	ld d, [hl]
+	ret
+
+Func_1af6::
+	ld h, d
+	ldh a, [hffaf]
+	inc a
+	ld e, a
+	rla
+	sbc a
+	ld d, a
+	ld b, $00
+	ld c, b
+	call ApplyOffsetToObjectPosition
+	call Func_184e
+	jr c, .asm_1b4f
+	bit 3, c
+	jr z, .asm_1b28
+	ldh a, [hffb1]
+	ld l, a
+	rla
+	sbc a
+	ld h, a
+	add hl, bc
+	ld b, h
+	ld c, l
+	call Func_184e
+	jr nc, .asm_1b45
+	ld l, a
+	ldh a, [hff9e]
+	cp $04
+	ld a, l
+	jr c, .asm_1b4f
+	ldh a, [hffb1]
+	add l
+	jr .asm_1b4f
+.asm_1b28
+	ldh a, [hffb0]
+	ld l, a
+	rla
+	sbc a
+	ld h, a
+	add hl, bc
+	ld b, h
+	ld c, l
+	call Func_184e
+	jr nc, .asm_1b45
+	ld l, a
+	ldh a, [hff9e]
+	cp $04
+	ld a, l
+	jr c, .asm_1b4f
+	ldh a, [hffb0]
+	cpl
+	scf
+	adc l
+	jr .asm_1b4f
+.asm_1b45
+	ldh a, [hff9a]
+	ld d, a
+	ld e, OBJSTRUCT_UNK4D
+	ld a, $00
+	ld [de], a
+	scf
+	ret
+.asm_1b4f
+	inc a
+	jr nz, .asm_1b45
+	ldh a, [hff9a]
+	ld d, a
+	ldh a, [hff9e]
+	ld e, OBJSTRUCT_UNK4D
+	ld [de], a
+	ldh a, [hff9f]
+	ld e, OBJSTRUCT_UNK4E
+	ld [de], a
+	and a
+	ret
+; 0x1b61
+
+SECTION "Func_1b61", ROM0[$1b61]
+
+Func_1b61::
+	ld h, d
+	ldh a, [hffaf]
+	inc a
+	ld e, a
+	rla
+	sbc a
+	ld d, a
+	ld b, $00
+	ld c, b
+	call ApplyOffsetToObjectPosition
+	call Func_184e
+	jr c, Func_1bba
+	bit 3, c
+	jr z, .asm_1b93
+	ldh a, [hffb1]
+	ld l, a
+	rla
+	sbc a
+	ld h, a
+	add hl, bc
+	ld b, h
+	ld c, l
+	call Func_184e
+	jr nc, .asm_1bb0
+	ld l, a
+	ldh a, [hff9e]
+	cp $04
+	ld a, l
+	jr c, Func_1bba
+	ldh a, [hffb1]
+	add l
+	jr Func_1bba
+.asm_1b93
+	ldh a, [hffb0]
+	ld l, a
+	rla
+	sbc a
+	ld h, a
+	add hl, bc
+	ld b, h
+	ld c, l
+	call Func_184e
+	jr nc, .asm_1bb0
+	ld l, a
+	ldh a, [hff9e]
+	cp $04
+	ld a, l
+	jr c, Func_1bba
+	ldh a, [hffb0]
+	cpl
+	scf
+	adc l
+	jr Func_1bba
+.asm_1bb0
+	ldh a, [hff9a]
+	ld d, a
+	ld e, OBJSTRUCT_UNK4D
+	ld a, $00
+	ld [de], a
+	scf
+	ret
+
+Func_1bba::
+	inc a
+	ld l, a
+	rlca
+	sbc a
+	ld b, a
+	ldh a, [hff9a]
+	ld h, a
+	ld a, l
+	ld l, OBJSTRUCT_Y_POS
+	ld [hl], $80
+	inc l
+	add [hl]
+	ld [hli], a
+	ld a, b
+	adc [hl]
+	ld [hl], a
+	ldh a, [hff9e]
+	ld l, OBJSTRUCT_UNK4D
+	ld [hl], a
+	ldh a, [hff9f]
+	ld l, OBJSTRUCT_UNK4E
+	ld [hl], a
+	ld d, h
+	and a
+	ret
+; 0x1bda
+
+SECTION "Func_1c0a", ROM0[$1c0a]
+
+Func_1c0a:
+	ld h, d
+	ldh a, [hffae]
+	ld e, a
+	rla
+	sbc a
+	ld d, a
+	ld b, $00
+	ld c, b
+	call ApplyOffsetToObjectPosition
+	call Func_18d7
+	jr nc, .asm_1c24
+	ld l, a
+	dec a
+	rlca
+	jr nc, .asm_1c76
+	jp Func_1e6d
+.asm_1c24
+	bit 3, c
+	jr z, .asm_1c51
+	ldh a, [hffb1]
+	ld l, a
+	rla
+	sbc a
+	ld h, a
+	add hl, bc
+	ld b, h
+	ld c, l
+	call Func_18d7
+	jp nc, Func_1e6d
+	ld l, a
+	ldh a, [hff9e]
+	cp $07
+	jp z, Func_1e6d
+	cp $06
+	ld a, l
+	jr nz, .asm_1c4a
+	ldh a, [hffb1]
+	cpl
+	scf
+	adc l
+	ld l, a
+.asm_1c4a
+	dec a
+	rlca
+	jr nc, .asm_1c76
+	jp Func_1e6d
+.asm_1c51
+	ldh a, [hffb0]
+	ld l, a
+	rla
+	sbc a
+	ld h, a
+	add hl, bc
+	ld b, h
+	ld c, l
+	call Func_18d7
+	jp nc, Func_1e6d
+	ld l, a
+	ldh a, [hff9e]
+	cp $06
+	jp z, Func_1e6d
+	cp $07
+	ld a, l
+	jr nz, .asm_1c71
+	ldh a, [hffb0]
+	add l
+	ld l, a
+.asm_1c71
+	dec a
+	rlca
+	jp c, Func_1e6d
+.asm_1c76
+	ldh a, [hff9a]
+	ld h, a
+	ld a, l
+	ld l, OBJSTRUCT_Y_POS
+	ld [hl], $80
+	inc l
+	add [hl]
+	ld [hli], a
+	ld a, $00
+	adc [hl]
+	ld [hl], a
+	ld d, h
+	scf
+	ret
+
+Func_1c88::
+	xor a
+	ld [wdb7c], a
+	ld h, d
+	ldh a, [hffaf]
+	ld e, a
+	rla
+	sbc a
+	ld d, a
+	ld b, $00
+	ld c, b
+	call ApplyOffsetToObjectPosition
+	call Func_184e
+	jr nc, .asm_1cac
+	ld l, a
+	rlca
+	jr c, .asm_1d06
+	ldh a, [hff9a]
+	ld d, a
+	ld e, OBJSTRUCT_UNK4D
+	ldh a, [hff9e]
+	ld [de], a
+	jr .asm_1cfe
+.asm_1cac
+	bit 3, c
+	jr z, .asm_1cd3
+	ldh a, [hffb1]
+	ld l, a
+	rla
+	sbc a
+	ld h, a
+	add hl, bc
+	ld b, h
+	ld c, l
+	call Func_184e
+	jr nc, .asm_1cf6
+	ld l, a
+	ldh a, [hff9e]
+	cp $05
+	jr z, .asm_1cf6
+	cp $04
+	ld a, l
+	jr nz, .asm_1cce
+	ldh a, [hffb1]
+	add l
+	ld l, a
+.asm_1cce
+	rlca
+	jr c, .asm_1d38
+	jr .asm_1cf6
+.asm_1cd3
+	ldh a, [hffb0]
+	ld l, a
+	rla
+	sbc a
+	ld h, a
+	add hl, bc
+	ld b, h
+	ld c, l
+	call Func_184e
+	jr nc, .asm_1cf6
+	ld l, a
+	ldh a, [hff9e]
+	cp $04
+	jr z, .asm_1cf6
+	cp $05
+	ld a, l
+	jr nz, .asm_1cf3
+	ldh a, [hffb0]
+	cpl
+	scf
+	adc l
+	ld l, a
+.asm_1cf3
+	rlca
+	jr c, .asm_1d38
+.asm_1cf6
+	ldh a, [hff9a]
+	ld h, a
+	ld d, a
+	ld l, OBJSTRUCT_UNK4D
+	ld [hl], $00
+.asm_1cfe
+	ld e, OBJSTRUCT_UNK4F
+	ld a, [wdb7c]
+	ld [de], a
+	and a
+	ret
+.asm_1d06
+	ld a, $01
+	ld [wdb7c], a
+	ldh a, [hff9a]
+	ld h, a
+	ld c, l
+	ld l, OBJSTRUCT_UNK4D
+	ld a, [hl]
+	cp $04
+	jr nc, .asm_1d6e
+	ldh a, [hff9e]
+	ld e, $00
+	cp $04
+	jr c, .asm_1d5a
+	ld l, OBJSTRUCT_UNK4F
+	bit 0, [hl]
+	jr nz, .asm_1d3c
+	ld l, OBJSTRUCT_Y_POS
+	ld b, [hl]
+	ld l, OBJSTRUCT_Y_VEL
+	ld a, [hli]
+	scf
+	sbc b
+	ld a, [hl]
+	sbc $ff
+	bit 7, a
+	jr nz, .asm_1d3c
+	add c
+	jr nc, .asm_1d3c
+	jr .asm_1d6e
+.asm_1d38
+	ldh a, [hff9a]
+	ld h, a
+	ld c, l
+.asm_1d3c
+	ldh a, [hff9e]
+	cp $04
+	ld e, $00
+	jr c, .asm_1d5a
+	ld l, OBJSTRUCT_X_POS
+	ld b, [hl]
+	ld l, OBJSTRUCT_X_VEL
+	ld a, [hli]
+	jr z, .asm_1d54
+	scf
+	sbc b
+	ld a, [hl]
+	sbc $00
+	cpl
+	jr .asm_1d59
+.asm_1d54
+	scf
+	sbc b
+	ld a, [hl]
+	sbc $ff
+.asm_1d59
+	ld e, a
+.asm_1d5a
+	ld l, OBJSTRUCT_Y_POS
+	ld b, [hl]
+	ld l, OBJSTRUCT_Y_VEL
+	ld a, [hli]
+	scf
+	sbc b
+	ld a, [hl]
+	sbc $ff
+	add e
+	bit 7, a
+	jr nz, .asm_1cf6
+	add c
+	jp nc, .asm_1cf6
+.asm_1d6e
+	ld l, OBJSTRUCT_Y_POS
+	ld [hl], $80
+	inc l
+	ld a, c
+	add [hl]
+	ld [hli], a
+	ld a, $ff
+	adc [hl]
+	ld [hl], a
+	ldh a, [hff9e]
+	ld l, OBJSTRUCT_UNK4D
+	ld [hl], a
+	ldh a, [hff9f]
+	ld l, OBJSTRUCT_UNK4E
+	ld [hl], a
+	ld l, OBJSTRUCT_UNK4F
+	ld [hl], $00
+	ld d, h
+	scf
+	ret
+
+Func_1d8b:
+	ld h, d
+	ld l, OBJSTRUCT_X_VEL + 1
+	ldh a, [hffae]
+	ld e, a
+	rla
+	sbc a
+	ld d, a
+	bit 7, [hl]
+	jr nz, .moving_left
+
+; moving right
+	ldh a, [hffb1]
+	ld c, a
+	rla
+	sbc a
+	ld b, a
+	call ApplyOffsetToObjectPosition
+	call Func_17a3
+	jp nc, Func_1e6d
+	ld l, a
+	rlca
+	jp c, Func_1e2a
+	jp Func_1e6d
+.moving_left
+	ldh a, [hffb0]
+	ld c, a
+	rla
+	sbc a
+	ld b, a
+	call ApplyOffsetToObjectPosition
+	call Func_16ef
+	jp nc, Func_1e6d
+	ld l, a
+	dec a
+	rlca
+	jp nc, Func_1e4c
+	jp Func_1e6d
+
+Func_1dc7::
+	ld h, d
+	ld l, OBJSTRUCT_X_VEL + 1
+	ldh a, [hffae]
+	ld e, a
+	rla
+	sbc a
+	ld d, a
+	bit 7, [hl]
+	jr nz, .asm_1dfe
+	ldh a, [hffb1]
+	ld c, a
+	rla
+	sbc a
+	ld b, a
+	call ApplyOffsetToObjectPosition
+	call Func_17a3
+	jr nc, .asm_1de7
+	ld l, a
+	rlca
+	jp c, Func_1e2a
+.asm_1de7
+	ldh a, [hffb2]
+	ld l, a
+	rla
+	sbc a
+	ld h, a
+	add hl, de
+	ld d, h
+	ld e, l
+	call Func_17a3
+	jp nc, Func_1e6d
+	ld l, a
+	rlca
+	jp c, Func_1e2a
+	jp Func_1e6d
+.asm_1dfe
+	ldh a, [hffb0]
+	ld c, a
+	rla
+	sbc a
+	ld b, a
+	call ApplyOffsetToObjectPosition
+	call Func_16ef
+	jr nc, .asm_1e12
+	ld l, a
+	dec a
+	rlca
+	jp nc, Func_1e4c
+.asm_1e12
+	ldh a, [hffb2]
+	ld l, a
+	rla
+	sbc a
+	ld h, a
+	add hl, de
+	ld d, h
+	ld e, l
+	call Func_16ef
+	jp nc, Func_1e6d
+	ld l, a
+	dec a
+	rlca
+	jp nc, Func_1e4c
+	jp Func_1e6d
+
+Func_1e2a::
+	ld c, l
+	ldh a, [hff9a]
+	ld h, a
+	ld l, OBJSTRUCT_X_POS
+	ld b, [hl]
+	ld l, OBJSTRUCT_X_VEL
+	ld a, [hli]
+	scf
+	sbc b
+	ld a, [hl]
+	sbc $ff
+	add c
+	jp nc, Func_1e6d
+	ld l, OBJSTRUCT_X_POS
+	ld [hl], $80
+	inc l
+	ld a, c
+	add [hl]
+	ld [hli], a
+	ld a, $ff
+	adc [hl]
+	ld [hl], a
+	ld d, h
+	scf
+	ret
+
+Func_1e4c::
+	ld c, l
+	ldh a, [hff9a]
+	ld h, a
+	ld l, OBJSTRUCT_X_POS
+	ld b, [hl]
+	ld l, OBJSTRUCT_X_VEL
+	ld a, [hli]
+	scf
+	sbc b
+	ld a, [hl]
+	sbc $00
+	add c
+	jr c, Func_1e6d
+	ld l, OBJSTRUCT_X_POS
+	ld [hl], $80
+	inc l
+	ld a, c
+	add [hl]
+	ld [hli], a
+	ld a, $00
+	adc [hl]
+	ld [hl], a
+	ld d, h
+	scf
+	ret
+
+Func_1e6d::
+	ldh a, [hff9a]
+	ld d, a
+	and a
+	ret
+; 0x1e72
+
+SECTION "Func_2871", ROM0[$2871]
+
+Func_2871:
+	ld hl, sa000Unk6c
+	bit 0, [hl]
+	ret nz
+	set 0, [hl]
+	ld hl, sa000Unk76
+	ld [hl], $00
+	ret
+; 0x287f
 
 SECTION "Multiply", ROM0[$293e]
 
@@ -3177,9 +4709,7 @@ Func_2a2b::
 	ldh [rLCDC], a
 
 	call Func_46d
-	ld a, BANK(Func_20000)
-	call Bankswitch
-	call Func_20000
+	homecall Func_20000
 	pop bc
 	ld a, [bc]
 	ld h, HIGH(sObjects)
@@ -4576,16 +6106,14 @@ Func_3212::
 	ld de, vTiles1 tile $60
 	call Decompress
 .asm_3276
-	ld a, BANK(Func_20000)
-	call Bankswitch
-	call Func_20000
+	homecall Func_20000
 
 	ld a, $92
 	ld [wdb5e], a
 
-	ld bc, $60
-	ld de, $240
-	ld a, $ce
+	ld bc, 96
+	ld de, 576
+	ld a, UNK_OBJ_CE
 	lb hl, HIGH(sObjectGroup1), HIGH(sObjectGroup1End)
 	call CreateObject
 
@@ -4595,9 +6123,7 @@ Func_3212::
 	ld hl, $781c
 	call Func_1289
 
-	ld a, BANK(Func_1c1dc)
-	call Bankswitch
-	call Func_1c1dc
+	homecall Func_1c1dc
 
 	ld a, LCDCF_BGON | LCDCF_OBJON | LCDCF_OBJ16 | LCDCF_WINON | LCDCF_WIN9C00
 	ldh [rLCDC], a
@@ -4609,13 +6135,9 @@ Func_3212::
 	call Func_496
 	call UpdateObjects
 
-	ld a, BANK(Func_1c259)
-	call Bankswitch
-	call Func_1c259
+	homecall Func_1c259
 
-	ld a, BANK(Func_1c3cb)
-	call Bankswitch
-	call Func_1c3cb
+	homecall Func_1c3cb
 
 	call Func_4ae
 	farcall UpdateHUD
@@ -4661,9 +6183,7 @@ Func_32ff::
 	ld de, vTiles0
 	call Decompress
 
-	ld a, BANK(Func_20000)
-	call Bankswitch
-	call Func_20000
+	homecall Func_20000
 
 	ld a, BANK(LevelSelectionCoordinates)
 	call Bankswitch
@@ -4682,7 +6202,7 @@ Func_32ff::
 	ld e, a
 	ld a, [hl]
 	ld d, a
-	ld a, $9a
+	ld a, UNK_OBJ_9A
 	lb hl, HIGH(sObjectGroup1), HIGH(sObjectGroup1End)
 	call CreateObject
 	call Func_34cc
@@ -4690,9 +6210,7 @@ Func_32ff::
 	call Func_3467
 	call Func_3492
 
-	ld a, BANK(Func_1c1dc)
-	call Bankswitch
-	call Func_1c1dc
+	homecall Func_1c1dc
 
 	call Func_46d
 
@@ -4710,9 +6228,7 @@ Func_32ff::
 	call Func_496
 	call UpdateObjects
 
-	ld a, BANK(Func_1c259)
-	call Bankswitch
-	call Func_1c259
+	homecall Func_1c259
 
 	call Func_4ae
 	call DoFrame
@@ -4924,20 +6440,716 @@ Func_34cc:
 	ld e, a     ;
 	ld a, [hl]  ;
 	ld d, a     ;
-	ld a, $9d
-	ld h, HIGH(sObjectGroup3)
-	ld l, HIGH(sObjectGroup3End)
+	ld a, UNK_OBJ_9D
+	ld h, HIGH(sObjectGroup4)
+	ld l, HIGH(sObjectGroup4End)
 	call CreateObject
 	pop af
 	pop bc
 	ret
 ; 0x34fd
 
+SECTION "Data_359a", ROM0[$359a]
+
+Func_359a::
+	ld hl, hffb4
+	ldh a, [hJoypad1Pressed]
+	or [hl]
+	ld [hl], a
+	ret
+
+Func_35a2::
+	xor a
+	ldh [hffb4], a
+	ret
+; 0x35a6
+
+SECTION "Func_3602", ROM0[$3602]
+
+Func_3602::
+	ldh a, [hJoypad1Down]
+	and D_RIGHT | D_LEFT
+	jr z, .skip
+	bit D_RIGHT_F, a
+	ld a, $40 ; for d-right
+	jr nz, .got_val
+	ld a, $c0 ; for d-left
+.got_val
+	ld e, OBJSTRUCT_UNK45
+	ld [de], a
+.skip
+	ret
+
+Func_3614::
+	ld e, OBJSTRUCT_UNK7D
+	ld a, [de]
+	rra
+	ret
+
+Func_3619::
+	ld a, [wda36]
+	or a
+	jr nz, .no_carry
+	ldh a, [hJoypad1Down]
+	and D_UP
+	jr z, .no_carry
+	scf
+	ret
+.no_carry
+	and a
+	ret
+; 0x3629
+
+SECTION "Script_3650", ROM0[$3650]
+
+Func_3650::
+	ldh a, [hffb4]
+	and B_BUTTON
+	jr z, .asm_3664
+	ld hl, sa500 + OBJSTRUCT_UNK00
+.loop_objs
+	ld a, [hl]
+	cp $ff
+	jr z, .set_carry
+	inc h
+	ld a, h
+	cp HIGH(sObjectGroup3End)
+	jr nz, .loop_objs
+.asm_3664
+	call Func_35a2
+	and a
+	ret
+.set_carry
+	scf
+	ret
+; 0x366b
+
+SECTION "Script_369d", ROM0[$369d]
+
+Func_369d::
+	ldh a, [hJoypad1Down]
+	and D_DOWN
+	jr nz, .asm_36a5
+	and a
+	ret
+.asm_36a5
+	ld h, d
+	ld e, $4d
+	ld a, [de]
+	cp $02
+	jr nz, .asm_36e4
+	ldh a, [hffaf]
+	inc a
+	ld e, a
+	rla
+	sbc a
+	ld d, a
+	ldh a, [hffb1]
+	ld c, a
+	rla
+	sbc a
+	ld b, a
+	call ApplyOffsetToObjectPosition
+	call Func_184e
+	jr nc, .asm_36c8
+	ldh a, [hff9e]
+	cp $02
+	jr nz, .asm_36e1
+.asm_36c8
+	ldh a, [hffb3]
+	ld l, a
+	rla
+	sbc a
+	ld h, a
+	add hl, bc
+	ld b, h
+	ld c, l
+	call Func_184e
+	jr nc, .asm_36dc
+	ldh a, [hff9e]
+	cp $02
+	jr nz, .asm_36e1
+.asm_36dc
+	ldh a, [hff9a]
+	ld d, a
+	scf
+	ret
+.asm_36e1
+	ldh a, [hff9a]
+	ld d, a
+.asm_36e4
+	and a
+	ret
+
+Func_36e6::
+	ldh a, [hJoypad1Down]
+	and D_UP
+	jr nz, .asm_36ee
+	and a
+	ret
+.asm_36ee
+	ld h, d
+	ld l, OBJSTRUCT_X_POS + 1
+	ld c, [hl]
+	inc l
+	ld b, [hl]
+	ld l, OBJSTRUCT_Y_POS + 1
+	ld e, [hl]
+	inc l
+	ld d, [hl]
+	call Func_1646
+	cp $10
+	jr z, .asm_3716
+	cp $90
+	jr z, .asm_3716
+	cp $18
+	jr z, .asm_370d
+.asm_3708
+	and a
+	ldh a, [hff9a]
+	ld d, a
+	ret
+.asm_370d
+	ld a, [wLevel]
+	call Func_1611
+	or a
+	jr nz, .asm_3708
+.asm_3716
+	ld a, [wcd4d]
+	or a
+	jr nz, .asm_3708
+	call Func_1067
+	scf
+	ldh a, [hff9a]
+	ld d, a
+	ret
+
+Func_3724::
+	ldh a, [hJoypad1Pressed]
+	and SELECT
+	jr nz, .asm_372c
+	and a
+	ret
+.asm_372c
+	ld e, SFX_28
+	farcall PlaySFX
+	ldh a, [hff9a]
+	ld d, a
+	scf
+	ret
+; 0x373b
+
+SECTION "Script_3765", ROM0[$3765]
+
+Func_3765::
+	ld a, [sa000Unk70]
+	or a
+	jr nz, .no_carry
+	call Func_1ab3
+	jr nz, .no_carry
+	ld e, 0.0
+	ld bc, 1.25
+	call ApplyDownwardsAcceleration
+	scf
+	ret
+.no_carry
+	and a
+	ret
+; 0x377c
+
+SECTION "Script_37f4", ROM0[$37f4]
+
+Func_37f4::
+	call Func_846
+Func_37f7::
+	ld a, $08
+	call Bankswitch
+	jp $7358 ; Func_23358
+; 0x37ff
+
+SECTION "Func_3894", ROM0[$3894]
+
+; input:
+; - h  = acceleration
+; - l  = deceleration
+; - bc = max velocity
+Func_3894::
+	ldh a, [hJoypad1Down]
+	and D_RIGHT | D_LEFT
+	jr z, .decelerate
+	bit D_RIGHT_F, a
+	ld e, OBJSTRUCT_UNK45
+	jr z, .d_left
+; d-right
+	ld a, $40
+	ld [de], a ; OBJSTRUCT_UNK45
+	ld e, h ; acceleration
+	jp ApplyRightAcceleration_WithDampening
+.d_left
+	ld a, $c0
+	ld [de], a ; OBJSTRUCT_UNK45
+	ld e, h ; acceleration
+	ld a, c
+	cpl
+	add 1
+	ld c, a
+	ld a, b
+	cpl
+	adc 0
+	ld b, a
+	; bc = -bc
+	jp ApplyLeftAcceleration_WithDampening
+
+.decelerate
+	ld e, l
+	jp DecelerateObjectX
+; 0x38bc
+
+SECTION "Script_391a", ROM0[$391a]
+
+Func_391a::
+	call Func_b6df
+	jr Func_3927
+Func_391f::
+	call Func_1dc7
+	jr Func_3927
+Func_3924::
+	call Func_1d8b
+Func_3927:
+	jr nc, .no_carry
+	ld e, OBJSTRUCT_UNK45
+	ld a, [de]
+	ld b, a
+	ld e, OBJSTRUCT_X_VEL + 1
+	ld a, [de]
+	xor b
+	rla
+	jr c, .set_carry
+	; zero x velocity
+	ld e, OBJSTRUCT_X_VEL
+	xor a
+	ld [de], a
+	inc e
+	ld [de], a
+.set_carry
+	scf
+	ret
+.no_carry
+	and a
+	ret
+; 0x393e
+
+SECTION "Script_3992", ROM0[$3992]
+
+Func_3992::
+	call Func_1c88
+	jr nc, .no_carry
+	ldh a, [hff9f]
+	cp $31
+	call z, Func_3c63
+	ld h, d
+	ld l, OBJSTRUCT_Y_VEL + 1
+	ld a, [hld]
+	rla
+	jr c, .set_y_vel_zero ; moving upwards
+	ld a, [hli]
+	sub LOW(0.7)
+	ld a, [hl]
+	sbc HIGH(0.7)
+	jr c, .set_y_vel_zero ; y vel < 0.7
+	; y vel >= 0.7
+	ld e, OBJSTRUCT_UNK52
+	ld a, $02
+	ld [de], a
+.set_y_vel_zero
+	ld e, OBJSTRUCT_Y_VEL
+	xor a
+	ld [de], a
+	inc e
+	ld [de], a
+	scf
+	ret
+.no_carry
+	and a
+	ret
+; 0x39bc
+
+SECTION "Func_39c1", ROM0[$39c1]
+
+Func_39c1::
+	call Func_1c0a
+	jr nc, .no_carry
+	ld h, d
+	ld l, OBJSTRUCT_Y_VEL + 1
+	ld a, [hld]
+	rla
+	jr nc, .asm_39da ; moving downwards
+	ld a, [hli]
+	sub LOW(-0.75)
+	ld a, [hl]
+	sbc HIGH(-0.75)
+	jr nc, .asm_39da ; y vel >= -0.75
+	; ; y vel < -0.75
+	ld a, $01
+	ld e, OBJSTRUCT_UNK52
+	ld [de], a
+.asm_39da
+	ldh a, [hff9e]
+	cp $01
+	jr z, .set_y_vel_zero
+	ld e, OBJSTRUCT_X_VEL
+	xor a
+	ld [de], a
+	inc e
+	ld [de], a
+.set_y_vel_zero
+	xor a
+	ld e, OBJSTRUCT_Y_VEL
+	ld [de], a
+	inc e
+	ld [de], a
+	scf
+	ret
+.no_carry
+	and a
+	ret
+; 0x39f0
+
+SECTION "Script_3a5c", ROM0[$3a5c]
+
+Script_3a5c::
+	set_var_to_field OBJSTRUCT_UNK52
+	jump_if_not_var .script_3a6a
+	set_field OBJSTRUCT_UNK52, $00
+	play_sfx SFX_05
+	exec_func_f77 $00
+.script_3a6a
+	script_ret
+
+; each animal friend has its own y positioning
+AdjustAnimalFriendYPosition::
+	push bc
+	ld a, [sa000Unk71]
+	ld hl, .YOffsets
+	add l
+	ld l, a
+	incc h
+	ld a, [hl] ; y offset
+	ld c, a
+	rla
+	sbc a
+	ld b, a
+	ld h, d
+	ld l, OBJSTRUCT_Y_POS + 1
+	ld a, [hl]
+	add c
+	ld [hli], a
+	ld a, [hl]
+	adc b
+	ld [hl], a
+	pop bc
+	ret
+
+.YOffsets:
+	db  0 ; NONE
+	db -4 ; RICK
+	db -2 ; KINE
+	db -6 ; COO
+; 0x3a8b
+
+SECTION "Func_3aaa", ROM0[$3aaa]
+
+; input:
+; - a = ?
+; - hl = ?
+Func_3aaa::
+	ld [sa000Unk62], a
+	ld a, [hli]
+	ld [sa000Unk5d], a
+	ld e, OBJSTRUCT_UNK45
+	ld a, [de]
+	rla
+	ld a, [hli]
+	jr nc, .asm_3aba
+	cpl
+	inc a
+.asm_3aba
+	ld c, a
+	rla
+	sbc a
+	ld b, a
+	ld e, OBJSTRUCT_X_POS + 1
+	ld a, [de]
+	inc e
+	add c
+	ld [sa000Unk5e], a
+	ld a, [de]
+	adc b
+	ld [sa000Unk5f], a
+	ld a, [hli]
+	ld c, a
+	rla
+	sbc a
+	ld b, a
+	ld e, OBJSTRUCT_Y_POS + 1
+	ld a, [de]
+	inc e
+	add c
+	ld [sa000Unk60], a
+	ld a, [de]
+	adc b
+	ld [sa000Unk61], a
+	ld a, [hli]
+	ldh [hffa2], a
+	ld a, [hl]
+	ldh [hffa3], a
+	ret
+; 0x3ae4
+
+SECTION "Func_3ae9", ROM0[$3ae9]
+
+Func_3ae9::
+	ld a, $ff
+	ld [wdf15], a
+	ld a, [sa000Unk5d]
+	inc a
+	jr nz, .asm_3af6
+	and a
+	ret
+.asm_3af6
+	xor a
+	ld [wdf0b], a
+	ld hl, hffa3
+	ld e, $60
+	ld a, [de]
+	sub [hl]
+	ld c, a
+	inc e
+	ld a, [de]
+	sbc $00
+	ld b, a
+	ld a, c
+	and $f0
+	ld c, a
+	push bc
+	dec e
+	ld a, [de]
+	add [hl]
+	sub c
+	swap a
+	and $0f
+	inc a
+	ld [wdf0e], a
+	dec l
+	ld e, $5e
+	ld a, [de]
+	sub [hl]
+	ld [wdf0f], a
+	ld c, a
+	inc e
+	ld a, [de]
+	sbc $00
+	ld [wdf10], a
+	ld b, a
+	ld a, c
+	and $f0
+	ld c, a
+	dec e
+	ld a, [de]
+	add [hl]
+	sub c
+	swap a
+	and $0f
+	inc a
+	ld [wdf0c], a
+	ld [wdf0d], a
+	pop de
+	jr .asm_3b5b
+.asm_3b3f
+	ld hl, wdf0f
+	ld a, [hli]
+	ld c, a
+	ld b, [hl]
+	ld a, [wdf0c]
+	ld [wdf0d], a
+	ld a, e
+	add $10
+	ld e, a
+	incc d
+	jr .asm_3b5b
+.asm_3b54
+	ld a, c
+	add $10
+	ld c, a
+	incc b
+.asm_3b5b
+	call Func_3b8f
+	jr nc, .asm_3b65
+	ld a, $01
+	ld [wdf0b], a
+.asm_3b65
+	ld a, [wdf0d]
+	dec a
+	ld [wdf0d], a
+	jr nz, .asm_3b54
+	ld a, [wdf0e]
+	dec a
+	ld [wdf0e], a
+	jr nz, .asm_3b3f
+	ld a, [wdf0b]
+	or a
+	jr nz, .asm_3b82
+	ldh a, [hff9a]
+	ld d, a
+	and a
+	ret
+.asm_3b82
+	ldh a, [hff9a]
+	ld d, a
+	call Func_2871
+	ld e, $0f
+	call Func_f7a
+	scf
+	ret
+
+Func_3b8f:
+	call Func_1646
+	ld [wdf13], a
+	ld h, a
+	and $07
+	cp $01
+	jr nz, .asm_3bf2
+	ld a, h
+	cp $21
+	jr z, .asm_3bcd
+	cp $29
+	jr nz, .asm_3bad
+	ld a, [wdf15]
+	inc a
+	jr z, .asm_3bf2
+	jr .asm_3bcd
+.asm_3bad
+	cp $41
+	jr c, .asm_3bf2
+	cp $79
+	jr nc, .asm_3bf2
+	rra
+	rra
+	rra
+	and $1f
+	sub $08
+	push hl
+	ld hl, $3bf4
+	add l
+	ld l, a
+	incc h
+	ld h, [hl]
+	ld a, [wdf15]
+	cp h
+	pop hl
+	jr nz, .asm_3bf2
+.asm_3bcd
+	push bc
+	push de
+	ld a, l
+	ldh [hff80], a
+	call Func_3c02
+	ldh a, [hff80]
+	inc a
+	call Func_15a8
+	ld a, [wdf13]
+	cp $71
+	ld e, SFX_19
+	jr nz, .asm_3be6
+	ld e, SFX_53
+.asm_3be6
+	farcall PlaySFX
+	pop de
+	pop bc
+	scf
+	ret
+.asm_3bf2
+	and a
+	ret
+; 0x3bf4
+
+SECTION "Func_3c02", ROM0[$3c02]
+
+Func_3c02:
+	call Func_3c0e
+	ret z
+	ld [hl], $05
+	ret
+; 0x3c09
+
+SECTION "Func_3c0e", ROM0[$3c0e]
+
+Func_3c0e:
+	ld hl, sa200Unka5
+	push bc
+	push de
+	ld a, e
+	and $f0
+	or $08
+	ld e, a
+	ld a, c
+	and $f0
+	or $08
+	ld c, a
+	ld a, UNK_OBJ_01
+	call CreateObject
+	ld a, h
+	or a
+	ld l, OBJSTRUCT_UNK51
+	pop de
+	pop bc
+	ret
+; 0x3c2b
+
+SECTION "Func_3c63", ROM0[$3c63]
+
+Func_3c63::
+	ld b, $08
+	ld hl, wcd56
+.asm_3c68
+	ld a, [hli]
+	or a
+	jr z, .asm_3c72
+	inc l
+	inc l
+	dec b
+	jr nz, .asm_3c68
+	ret
+.asm_3c72
+	dec l
+	ld [hl], $20
+	inc l
+	ldh a, [hff9c]
+	ld c, a
+	ld [hli], a
+	ldh a, [hff9d]
+	ld b, a
+	ld [hl], a
+	ld a, [bc]
+	inc a
+	ld [bc], a
+	ldh [hff84], a
+	ld e, c
+	swap c
+	call Func_15b0
+	ld hl, wdf12
+	inc [hl]
+	ldh a, [hff9a]
+	ld d, a
+	and a
+	ret
+; 0x3c92
+
 SECTION "Data_3f00", ROM0[$3f00], ALIGN[8]
 
 Data_3f00::
 	table_width 2
-	dw Func_8fa ; SCRIPT_PAUSE_CMD
+	dw Func_8fa ; SCRIPT_END_CMD
 	dw Func_920 ; SET_FRAME_CMD
 	dw $959 ; UNK02_CMD
 	dw Func_96c ; UNK03_CMD
@@ -4948,23 +7160,23 @@ Data_3f00::
 	dw Func_a18 ; SET_Y_VEL_CMD
 	dw Func_a41 ; REPEAT_CMD
 	dw Func_a56 ; REPEAT_END_CMD
-	dw $a6f ; UNK0B_CMD
-	dw $ab4 ; UNK0C_CMD
+	dw Func_a6f ; CALL_CMD
+	dw Func_ab4 ; RET_CMD
 	dw Func_ae3 ; EXEC_ASM_CMD
-	dw Func_b1f ; JUMPTABLE_CMD
+	dw Func_b1f ; VAR_JUMPTABLE_CMD
 	dw Func_937 ; SET_FIELD_CMD
-	dw $940 ; UNK10_CMD
-	dw $9ba ; JUMP_IF_NOT_UNK27_CMD
-	dw Func_9ce ; JUMP_IF_UNK27_CMD
+	dw Func_940 ; SET_VAR_TO_FIELD_CMD
+	dw Func_9ba ; JUMP_IF_NOT_VAR_CMD
+	dw Func_9ce ; JUMP_IF_VAR_CMD
 	dw $9e2 ; UNK13_CMD
-	dw $9f7 ; UNK14_CMD
-	dw $914 ; UNK15_CMD
-	dw Func_8f1 ; SCRIPT_END_CMD
+	dw Func_9f7 ; JUMP_IF_VAR_LT_CMD
+	dw Func_914 ; WAIT_VAR_CMD
+	dw Func_8f1 ; SCRIPT_STOP_CMD
 	dw Func_97c ; SET_DRAW_FUNC_CMD
 	dw $a24 ; UNK18_CMD
 	dw Func_928 ; SET_FRAME_WAIT_CMD
-	dw $94a ; UNK1A_CMD
-	dw $9a0 ; UNK1B_CMD
+	dw Func_94a ; SET_FIELD_TO_VAR_CMD
+	dw Func_9a0 ; FAR_JUMP_CMD
 	dw $a86 ; UNK1C_CMD
 	dw $ac4 ; UNK1D_CMD
 	dw $b3e ; UNK1E_CMD

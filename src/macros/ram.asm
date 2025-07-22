@@ -41,7 +41,7 @@ MACRO obj_struct
 \1Unk24:: db ; $24
 \1Unk25:: db ; $25
 \1Unk26:: db ; $26
-\1Unk27:: db ; $27
+\1Var:: db ; $27
 \1Unk28:: db ; $28
 \1Unk29:: db ; $29
 \1Unk2a:: db ; $2a

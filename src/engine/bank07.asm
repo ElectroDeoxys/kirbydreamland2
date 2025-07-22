@@ -872,7 +872,7 @@ Func_1c508:
 	ld h, HIGH(Data_1fa00)
 	push hl
 	ld a, [hl]
-	lb hl, HIGH(sObjectGroup3), HIGH(sObjectGroup3End)
+	lb hl, HIGH(sObjectGroup4), HIGH(sObjectGroup4End)
 	call CreateObject
 	ld d, h
 	pop hl
@@ -1982,7 +1982,7 @@ TitleScreen:
 
 	farcall Func_20000
 
-	ld a, $f8
+	ld a, KIRBY_TITLE_SCREEN
 	lb hl, HIGH(sObjects), HIGH(sObjectsEnd)
 	call CreateObject
 
@@ -2034,7 +2034,7 @@ TitleScreen:
 .wait_input_or_demo
 	call Func_496
 	farcall UpdateObjects
-	call UpdateRNG
+	call Random
 	call Func_4ae
 	call DoFrame
 	call ReadJoypad
@@ -2070,258 +2070,316 @@ TitleScreen:
 	jp Func_437
 ; 0x1e107
 
+SECTION "Data_1f402", ROMX[$7402], BANK[$7]
+
+Data_1f402:
+	db  1,  2
+	db  0, -2
+	db -1,  2
+	db  0, -2
+
+Func_1f40a::
+	ld h, d
+	ld a, [sa000Unk76]
+	or a
+	jr nz, .asm_1f420
+	ld l, OBJSTRUCT_UNK19
+	set 5, [hl]
+	ld l, OBJSTRUCT_UNK1C
+	set 5, [hl]
+	ld l, OBJSTRUCT_UNK1F
+	set 5, [hl]
+	call Func_e2c
+.asm_1f420
+	ld bc, sa000Unk76
+	ld a, [bc]
+	ld hl, Data_1f402
+	add a ; *2
+	add l
+	ld l, a
+	incc h
+	ld a, [hli]
+	ld h, [hl]
+	ld l, a
+	ld e, OBJSTRUCT_UNK09
+	ld a, [de]
+	add h
+	ld [de], a
+	ld e, OBJSTRUCT_UNK0B
+	ld a, [de]
+	add l
+	ld [de], a
+	ld a, [bc] ; OBJSTRUCT_UNK76
+	inc a
+	ld [bc], a
+	cp $04
+	ret c
+	ld h, d
+	ld l, OBJSTRUCT_UNK19
+	res 5, [hl]
+	ld l, OBJSTRUCT_UNK1C
+	res 5, [hl]
+	ld l, OBJSTRUCT_UNK1F
+	res 5, [hl]
+	ld l, OBJSTRUCT_UNK6C
+	res 0, [hl]
+	ret
+; 0x1f452
+
 SECTION "Data_1f700", ROMX[$7700], BANK[$7], ALIGN[8]
 
 Data_1f700::
-	dwb $4001, $01 ; $00
-	dwb $45c2, $07 ; $01
-	dwb $4c3a, $07 ; $02
-	dwb $6ec0, $07 ; $03
-	dwb $5409, $03 ; $04
-	dwb $5437, $03 ; $05
-	dwb $55e3, $03 ; $06
-	dwb $4000, $03 ; $07
-	dwb $4034, $03 ; $08
-	dwb $6328, $03 ; $09
-	dwb $659f, $03 ; $0a
-	dwb $6609, $03 ; $0b
-	dwb $44f1, $03 ; $0c
-	dwb $480a, $03 ; $0d
-	dwb $5be5, $03 ; $0e
-	dwb $40ca, $04 ; $0f
-	dwb $4239, $04 ; $10
-	dwb $4000, $01 ; $11
-	dwb $5f1b, $03 ; $12
-	dwb $5fef, $03 ; $13
-	dwb $6178, $0e ; $14
-	dwb $6800, $03 ; $15
-	dwb $687d, $03 ; $16
-	dwb $7012, $03 ; $17
-	dwb $7191, $03 ; $18
-	dwb $4b2d, $05 ; $19
-	dwb $4b8f, $05 ; $1a
-	dwb $4d3c, $05 ; $1b
-	dwb $73f1, $03 ; $1c
-	dwb $7966, $03 ; $1d
-	dwb $432c, $1a ; $1e
-	dwb $45ac, $1a ; $1f
-	dwb $45bf, $1a ; $20
-	dwb $45c8, $1a ; $21
-	dwb $4605, $1a ; $22
-	dwb $4899, $07 ; $23
-	dwb $46b1, $07 ; $24
-	dwb $4926, $07 ; $25
-	dwb $7c2d, $04 ; $26
-	dwb $7d83, $04 ; $27
-	dwb $7add, $03 ; $28
-	dwb $7d31, $03 ; $29
-	dwb $7d2b, $03 ; $2a
-	dwb $7d2c, $03 ; $2b
-	dwb $5333, $08 ; $2c
-	dwb $5603, $08 ; $2d
-	dwb $5782, $08 ; $2e
-	dwb $461f, $1a ; $2f
-	dwb $581c, $03 ; $30
-	dwb $58b1, $03 ; $31
-	dwb $409f, $05 ; $32
-	dwb $42c2, $05 ; $33
-	dwb $5083, $05 ; $34
-	dwb $5753, $05 ; $35
-	dwb $5b88, $05 ; $36
-	dwb $5d8f, $05 ; $37
-	dwb $5de5, $05 ; $38
-	dwb $608e, $05 ; $39
-	dwb $63bc, $05 ; $3a
-	dwb $650d, $05 ; $3b
-	dwb $668e, $05 ; $3c
-	dwb $6694, $05 ; $3d
-	dwb $6ae9, $05 ; $3e
-	dwb $6c21, $05 ; $3f
-	dwb $6e19, $05 ; $40
-	dwb $6f41, $05 ; $41
-	dwb $72f6, $05 ; $42
-	dwb $7909, $05 ; $43
-	dwb $6c86, $03 ; $44
-	dwb $631e, $0e ; $45
-	dwb $6399, $0e ; $46
-	dwb $6e2e, $03 ; $47
-	dwb $7554, $05 ; $48
-	dwb $772b, $05 ; $49
-	dwb $7773, $05 ; $4a
-	dwb $77cd, $05 ; $4b
-	dwb $7826, $05 ; $4c
-	dwb $6798, $1c ; $4d
-	dwb $6840, $1c ; $4e
-	dwb $689c, $1c ; $4f
-	dwb $68f9, $1c ; $50
-	dwb $69f7, $1c ; $51
-	dwb $6a1e, $1c ; $52
-	dwb $6a4a, $1c ; $53
-	dwb $6a67, $1c ; $54
-	dwb $6ac5, $1c ; $55
-	dwb $6bd2, $1c ; $56
-	dwb $6beb, $1c ; $57
-	dwb $6c50, $1c ; $58
-	dwb $6c6b, $1c ; $59
-	dwb $6c90, $1c ; $5a
-	dwb $6cab, $1c ; $5b
-	dwb $6cc6, $1c ; $5c
-	dwb $6d69, $1c ; $5d
-	dwb $6dce, $1c ; $5e
-	dwb $6e24, $1c ; $5f
-	dwb $6e5b, $1c ; $60
-	dwb $6eb2, $1c ; $61
-	dwb $6f23, $1c ; $62
-	dwb $6f68, $1c ; $63
-	dwb $6f83, $1c ; $64
-	dwb $6fa1, $1c ; $65
-	dwb $7115, $1c ; $66
-	dwb $7186, $1c ; $67
-	dwb $71ab, $1c ; $68
-	dwb $720d, $1c ; $69
-	dwb $722e, $1c ; $6a
-	dwb $724f, $1c ; $6b
-	dwb $7279, $1c ; $6c
-	dwb $7296, $1c ; $6d
-	dwb $742b, $1c ; $6e
-	dwb $7463, $1c ; $6f
-	dwb $7494, $1c ; $70
-	dwb $74c5, $1c ; $71
-	dwb $7530, $1c ; $72
-	dwb $7555, $1c ; $73
-	dwb $75b6, $1c ; $74
-	dwb $762d, $1c ; $75
-	dwb $76b4, $1c ; $76
-	dwb $5bca, $0e ; $77
-	dwb $5c11, $0e ; $78
-	dwb $5c3d, $0e ; $79
-	dwb $5c69, $0e ; $7a
-	dwb $5fde, $0e ; $7b
-	dwb $5c95, $0e ; $7c
-	dwb $5cda, $0e ; $7d
-	dwb $5cf8, $0e ; $7e
-	dwb $5d16, $0e ; $7f
-	dwb $5d6f, $0e ; $80
-	dwb $5d99, $0e ; $81
-	dwb $5dbd, $0e ; $82
-	dwb $5de1, $0e ; $83
-	dwb $5e05, $0e ; $84
-	dwb $610c, $0e ; $85
-	dwb $5e29, $0e ; $86
-	dwb $5e94, $0e ; $87
-	dwb $5edf, $0e ; $88
-	dwb $5f28, $0e ; $89
-	dwb $5fa9, $0e ; $8a
-	dwb $6e04, $18 ; $8b
-	dwb $74f7, $18 ; $8c
-	dwb $751f, $18 ; $8d
-	dwb $7543, $18 ; $8e
-	dwb $756b, $18 ; $8f
-	dwb $7593, $18 ; $90
-	dwb $75e1, $18 ; $91
-	dwb $768b, $18 ; $92
-	dwb $6e87, $18 ; $93
-	dwb $72f6, $18 ; $94
-	dwb $70e3, $18 ; $95
-	dwb $73e6, $18 ; $96
-	dwb $7412, $18 ; $97
-	dwb $7363, $18 ; $98
-	dwb $71d6, $18 ; $99
-	dab Script_3c4e6 ; $9a
-	dwb $47e3, $0f ; $9b
-	dwb $451d, $0f ; $9c
-	dwb $4554, $0f ; $9d
-	dwb $6c93, $08 ; $9e
-	dwb $6cbe, $08 ; $9f
-	dwb $5f84, $08 ; $a0
-	dwb $4774, $1a ; $a1
-	dwb $5ee0, $08 ; $a2
-	dwb $60b5, $08 ; $a3
-	dwb $4a62, $07 ; $a4
-	dwb $4789, $1a ; $a5
-	dwb $4807, $1a ; $a6
-	dwb $676b, $0f ; $a7
-	dab Script_3e920 ; $a8
-	dab Script_3ec16 ; $a9
-	dab Script_3ec47 ; $aa
-	dwb $4eee, $1a ; $ab
-	dwb $4f08, $1a ; $ac
-	dwb $4f1d, $1a ; $ad
-	dwb $4f37, $1a ; $ae
-	dwb $4f4c, $1a ; $af
-	dwb $4f66, $1a ; $b0
-	dwb $4f7b, $1a ; $b1
-	dwb $4f95, $1a ; $b2
-	dwb $4fb4, $1a ; $b3
-	dwb $5121, $1a ; $b4
-	dwb $517e, $1a ; $b5
-	dwb $51db, $1a ; $b6
-	dwb $5238, $1a ; $b7
-	dwb $5295, $1a ; $b8
-	dwb $52ec, $1a ; $b9
-	dwb $5343, $1a ; $ba
-	dwb $535d, $1a ; $bb
-	dwb $5377, $1a ; $bc
-	dwb $5391, $1a ; $bd
-	dwb $53ab, $1a ; $be
-	dwb $602b, $1a ; $bf
-	dwb $625c, $1a ; $c0
-	dwb $69f6, $1a ; $c1
-	dwb $6eeb, $1a ; $c2
-	dwb $6267, $1a ; $c3
-	dwb $6371, $1a ; $c4
-	dwb $63af, $1a ; $c5
-	dwb $64ec, $1a ; $c6
-	dwb $68e8, $1a ; $c7
-	dwb $6940, $1a ; $c8
-	dwb $694e, $1a ; $c9
-	dwb $4187, $06 ; $ca
-	dwb $46c1, $06 ; $cb
-	dwb $4124, $0e ; $cc
-	dwb $492c, $0e ; $cd
-	dwb $5d19, $0f ; $ce
-	dwb $5d44, $0f ; $cf
-	dwb $5dbe, $0f ; $d0
-	dwb $5bd0, $06 ; $d1
-	dwb $5c11, $06 ; $d2
-	dwb $7230, $06 ; $d3
-	dwb $40c8, $1d ; $d4
-	dwb $4921, $1d ; $d5
-	dwb $4d39, $1d ; $d6
-	dwb $5c45, $1d ; $d7
-	dwb $63c5, $1d ; $d8
-	dwb $74bf, $1d ; $d9
-	dwb $4379, $19 ; $da
-	dwb $4409, $19 ; $db
-	dwb $440d, $19 ; $dc
-	dwb $447f, $19 ; $dd
-	dwb $4437, $19 ; $de
-	dwb $4513, $19 ; $df
-	dwb $4548, $19 ; $e0
-	dwb $4c50, $19 ; $e1
-	dwb $4571, $19 ; $e2
-	dwb $4c9d, $19 ; $e3
-	dwb $4cb9, $19 ; $e4
-	dwb $4cd5, $19 ; $e5
-	dwb $4cf1, $19 ; $e6
-	dwb $4d0d, $19 ; $e7
-	dwb $4d29, $19 ; $e8
-	dwb $4d45, $19 ; $e9
-	dwb $4d61, $19 ; $ea
-	dwb $4d7d, $19 ; $eb
-	dwb $4d99, $19 ; $ec
-	dwb $4db5, $19 ; $ed
-	dwb $4dd1, $19 ; $ee
-	dwb $4ded, $19 ; $ef
-	dwb $4e09, $19 ; $f0
-	dwb $4e25, $19 ; $f1
-	dwb $4e41, $19 ; $f2
-	dwb $4e5d, $19 ; $f3
-	dwb $4e8b, $19 ; $f4
-	dwb $7aed, $19 ; $f5
-	dwb $662c, $0e ; $f6
-	dwb $6d03, $0e ; $f7
-	dab Script_218e7 ; $f8
+	table_width 3
+	dab Script_4001 ; UNK_OBJ_00
+	dwb $45c2, $07 ; UNK_OBJ_01
+	dwb $4c3a, $07 ; UNK_OBJ_02
+	dwb $6ec0, $07 ; UNK_OBJ_03
+	dwb $5409, $03 ; UNK_OBJ_04
+	dwb $5437, $03 ; UNK_OBJ_05
+	dwb $55e3, $03 ; UNK_OBJ_06
+	dwb $4000, $03 ; UNK_OBJ_07
+	dwb $4034, $03 ; UNK_OBJ_08
+	dwb $6328, $03 ; UNK_OBJ_09
+	dwb $659f, $03 ; UNK_OBJ_0A
+	dwb $6609, $03 ; UNK_OBJ_0B
+	dwb $44f1, $03 ; UNK_OBJ_0C
+	dwb $480a, $03 ; UNK_OBJ_0D
+	dwb $5be5, $03 ; UNK_OBJ_0E
+	dwb $40ca, $04 ; UNK_OBJ_0F
+	dwb $4239, $04 ; UNK_OBJ_10
+	dwb $4000, $01 ; UNK_OBJ_11
+	dwb $5f1b, $03 ; UNK_OBJ_12
+	dwb $5fef, $03 ; UNK_OBJ_13
+	dwb $6178, $0e ; UNK_OBJ_14
+	dwb $6800, $03 ; UNK_OBJ_15
+	dwb $687d, $03 ; UNK_OBJ_16
+	dwb $7012, $03 ; UNK_OBJ_17
+	dwb $7191, $03 ; UNK_OBJ_18
+	dwb $4b2d, $05 ; UNK_OBJ_19
+	dwb $4b8f, $05 ; UNK_OBJ_1A
+	dwb $4d3c, $05 ; UNK_OBJ_1B
+	dwb $73f1, $03 ; UNK_OBJ_1C
+	dwb $7966, $03 ; UNK_OBJ_1D
+	dwb $432c, $1a ; UNK_OBJ_1E
+	dwb $45ac, $1a ; UNK_OBJ_1F
+	dwb $45bf, $1a ; UNK_OBJ_20
+	dwb $45c8, $1a ; UNK_OBJ_21
+	dwb $4605, $1a ; UNK_OBJ_22
+	dwb $4899, $07 ; UNK_OBJ_23
+	dwb $46b1, $07 ; UNK_OBJ_24
+	dwb $4926, $07 ; UNK_OBJ_25
+	dwb $7c2d, $04 ; UNK_OBJ_26
+	dwb $7d83, $04 ; UNK_OBJ_27
+	dwb $7add, $03 ; UNK_OBJ_28
+	dwb $7d31, $03 ; UNK_OBJ_29
+	dwb $7d2b, $03 ; UNK_OBJ_2A
+	dwb $7d2c, $03 ; UNK_OBJ_2B
+	dwb $5333, $08 ; UNK_OBJ_2C
+	dwb $5603, $08 ; UNK_OBJ_2D
+	dwb $5782, $08 ; UNK_OBJ_2E
+	dwb $461f, $1a ; UNK_OBJ_2F
+	dwb $581c, $03 ; UNK_OBJ_30
+	dwb $58b1, $03 ; UNK_OBJ_31
+	dwb $409f, $05 ; UNK_OBJ_32
+	dwb $42c2, $05 ; UNK_OBJ_33
+	dwb $5083, $05 ; UNK_OBJ_34
+	dwb $5753, $05 ; UNK_OBJ_35
+	dwb $5b88, $05 ; UNK_OBJ_36
+	dwb $5d8f, $05 ; UNK_OBJ_37
+	dwb $5de5, $05 ; UNK_OBJ_38
+	dwb $608e, $05 ; UNK_OBJ_39
+	dwb $63bc, $05 ; UNK_OBJ_3A
+	dwb $650d, $05 ; UNK_OBJ_3B
+	dwb $668e, $05 ; UNK_OBJ_3C
+	dwb $6694, $05 ; UNK_OBJ_3D
+	dwb $6ae9, $05 ; UNK_OBJ_3E
+	dwb $6c21, $05 ; UNK_OBJ_3F
+	dwb $6e19, $05 ; UNK_OBJ_40
+	dwb $6f41, $05 ; UNK_OBJ_41
+	dwb $72f6, $05 ; UNK_OBJ_42
+	dwb $7909, $05 ; UNK_OBJ_43
+	dwb $6c86, $03 ; UNK_OBJ_44
+	dwb $631e, $0e ; UNK_OBJ_45
+	dwb $6399, $0e ; UNK_OBJ_46
+	dwb $6e2e, $03 ; UNK_OBJ_47
+	dwb $7554, $05 ; UNK_OBJ_48
+	dwb $772b, $05 ; UNK_OBJ_49
+	dwb $7773, $05 ; UNK_OBJ_4A
+	dwb $77cd, $05 ; UNK_OBJ_4B
+	dwb $7826, $05 ; UNK_OBJ_4C
+	dwb $6798, $1c ; UNK_OBJ_4D
+	dwb $6840, $1c ; UNK_OBJ_4E
+	dwb $689c, $1c ; UNK_OBJ_4F
+	dwb $68f9, $1c ; UNK_OBJ_50
+	dwb $69f7, $1c ; UNK_OBJ_51
+	dwb $6a1e, $1c ; UNK_OBJ_52
+	dwb $6a4a, $1c ; UNK_OBJ_53
+	dwb $6a67, $1c ; UNK_OBJ_54
+	dwb $6ac5, $1c ; UNK_OBJ_55
+	dwb $6bd2, $1c ; UNK_OBJ_56
+	dwb $6beb, $1c ; UNK_OBJ_57
+	dwb $6c50, $1c ; UNK_OBJ_58
+	dwb $6c6b, $1c ; UNK_OBJ_59
+	dwb $6c90, $1c ; UNK_OBJ_5A
+	dwb $6cab, $1c ; UNK_OBJ_5B
+	dwb $6cc6, $1c ; UNK_OBJ_5C
+	dwb $6d69, $1c ; UNK_OBJ_5D
+	dwb $6dce, $1c ; UNK_OBJ_5E
+	dwb $6e24, $1c ; UNK_OBJ_5F
+	dwb $6e5b, $1c ; UNK_OBJ_60
+	dwb $6eb2, $1c ; UNK_OBJ_61
+	dwb $6f23, $1c ; UNK_OBJ_62
+	dwb $6f68, $1c ; UNK_OBJ_63
+	dwb $6f83, $1c ; UNK_OBJ_64
+	dwb $6fa1, $1c ; UNK_OBJ_65
+	dwb $7115, $1c ; UNK_OBJ_66
+	dwb $7186, $1c ; UNK_OBJ_67
+	dwb $71ab, $1c ; UNK_OBJ_68
+	dwb $720d, $1c ; UNK_OBJ_69
+	dwb $722e, $1c ; UNK_OBJ_6A
+	dwb $724f, $1c ; UNK_OBJ_6B
+	dwb $7279, $1c ; UNK_OBJ_6C
+	dwb $7296, $1c ; UNK_OBJ_6D
+	dwb $742b, $1c ; UNK_OBJ_6E
+	dwb $7463, $1c ; UNK_OBJ_6F
+	dwb $7494, $1c ; UNK_OBJ_70
+	dwb $74c5, $1c ; UNK_OBJ_71
+	dwb $7530, $1c ; UNK_OBJ_72
+	dwb $7555, $1c ; UNK_OBJ_73
+	dwb $75b6, $1c ; UNK_OBJ_74
+	dwb $762d, $1c ; UNK_OBJ_75
+	dwb $76b4, $1c ; UNK_OBJ_76
+	dwb $5bca, $0e ; UNK_OBJ_77
+	dwb $5c11, $0e ; UNK_OBJ_78
+	dwb $5c3d, $0e ; UNK_OBJ_79
+	dwb $5c69, $0e ; UNK_OBJ_7A
+	dwb $5fde, $0e ; UNK_OBJ_7B
+	dwb $5c95, $0e ; UNK_OBJ_7C
+	dwb $5cda, $0e ; UNK_OBJ_7D
+	dwb $5cf8, $0e ; UNK_OBJ_7E
+	dwb $5d16, $0e ; UNK_OBJ_7F
+	dwb $5d6f, $0e ; UNK_OBJ_80
+	dwb $5d99, $0e ; UNK_OBJ_81
+	dwb $5dbd, $0e ; UNK_OBJ_82
+	dwb $5de1, $0e ; UNK_OBJ_83
+	dwb $5e05, $0e ; UNK_OBJ_84
+	dwb $610c, $0e ; UNK_OBJ_85
+	dwb $5e29, $0e ; UNK_OBJ_86
+	dwb $5e94, $0e ; UNK_OBJ_87
+	dwb $5edf, $0e ; UNK_OBJ_88
+	dwb $5f28, $0e ; UNK_OBJ_89
+	dwb $5fa9, $0e ; UNK_OBJ_8A
+	dwb $6e04, $18 ; UNK_OBJ_8B
+	dwb $74f7, $18 ; UNK_OBJ_8C
+	dwb $751f, $18 ; UNK_OBJ_8D
+	dwb $7543, $18 ; UNK_OBJ_8E
+	dwb $756b, $18 ; UNK_OBJ_8F
+	dwb $7593, $18 ; UNK_OBJ_90
+	dwb $75e1, $18 ; UNK_OBJ_91
+	dwb $768b, $18 ; UNK_OBJ_92
+	dwb $6e87, $18 ; UNK_OBJ_93
+	dwb $72f6, $18 ; UNK_OBJ_94
+	dwb $70e3, $18 ; UNK_OBJ_95
+	dwb $73e6, $18 ; UNK_OBJ_96
+	dwb $7412, $18 ; UNK_OBJ_97
+	dwb $7363, $18 ; UNK_OBJ_98
+	dwb $71d6, $18 ; UNK_OBJ_99
+	dab Script_3c4e6 ; UNK_OBJ_9A
+	dwb $47e3, $0f ; UNK_OBJ_9B
+	dwb $451d, $0f ; UNK_OBJ_9C
+	dwb $4554, $0f ; UNK_OBJ_9D
+	dwb $6c93, $08 ; UNK_OBJ_9E
+	dwb $6cbe, $08 ; UNK_OBJ_9F
+	dwb $5f84, $08 ; UNK_OBJ_A0
+	dwb $4774, $1a ; UNK_OBJ_A1
+	dwb $5ee0, $08 ; UNK_OBJ_A2
+	dwb $60b5, $08 ; UNK_OBJ_A3
+	dwb $4a62, $07 ; UNK_OBJ_A4
+	dwb $4789, $1a ; UNK_OBJ_A5
+	dwb $4807, $1a ; UNK_OBJ_A6
+	dwb $676b, $0f ; UNK_OBJ_A7
+	dab Script_3e920 ; KIRBY_FILE_SELECT
+	dab Script_3ec16 ; BOMB_FILE_SELECT
+	dab Script_3ec47 ; EXPLOSION_FILE_SELECT
+	dwb $4eee, $1a ; UNK_OBJ_AB
+	dwb $4f08, $1a ; UNK_OBJ_AC
+	dwb $4f1d, $1a ; UNK_OBJ_AD
+	dwb $4f37, $1a ; UNK_OBJ_AE
+	dwb $4f4c, $1a ; UNK_OBJ_AF
+	dwb $4f66, $1a ; UNK_OBJ_B0
+	dwb $4f7b, $1a ; UNK_OBJ_B1
+	dwb $4f95, $1a ; UNK_OBJ_B2
+	dwb $4fb4, $1a ; UNK_OBJ_B3
+	dwb $5121, $1a ; UNK_OBJ_B4
+	dwb $517e, $1a ; UNK_OBJ_B5
+	dwb $51db, $1a ; UNK_OBJ_B6
+	dwb $5238, $1a ; UNK_OBJ_B7
+	dwb $5295, $1a ; UNK_OBJ_B8
+	dwb $52ec, $1a ; UNK_OBJ_B9
+	dwb $5343, $1a ; UNK_OBJ_BA
+	dwb $535d, $1a ; UNK_OBJ_BB
+	dwb $5377, $1a ; UNK_OBJ_BC
+	dwb $5391, $1a ; UNK_OBJ_BD
+	dwb $53ab, $1a ; UNK_OBJ_BE
+	dwb $602b, $1a ; UNK_OBJ_BF
+	dwb $625c, $1a ; UNK_OBJ_C0
+	dwb $69f6, $1a ; UNK_OBJ_C1
+	dwb $6eeb, $1a ; UNK_OBJ_C2
+	dwb $6267, $1a ; UNK_OBJ_C3
+	dwb $6371, $1a ; UNK_OBJ_C4
+	dwb $63af, $1a ; UNK_OBJ_C5
+	dwb $64ec, $1a ; UNK_OBJ_C6
+	dwb $68e8, $1a ; UNK_OBJ_C7
+	dwb $6940, $1a ; UNK_OBJ_C8
+	dwb $694e, $1a ; UNK_OBJ_C9
+	dwb $4187, $06 ; UNK_OBJ_CA
+	dwb $46c1, $06 ; UNK_OBJ_CB
+	dwb $4124, $0e ; UNK_OBJ_CC
+	dwb $492c, $0e ; UNK_OBJ_CD
+	dwb $5d19, $0f ; UNK_OBJ_CE
+	dwb $5d44, $0f ; UNK_OBJ_CF
+	dwb $5dbe, $0f ; UNK_OBJ_D0
+	dwb $5bd0, $06 ; UNK_OBJ_D1
+	dwb $5c11, $06 ; UNK_OBJ_D2
+	dwb $7230, $06 ; UNK_OBJ_D3
+	dwb $40c8, $1d ; UNK_OBJ_D4
+	dwb $4921, $1d ; UNK_OBJ_D5
+	dwb $4d39, $1d ; UNK_OBJ_D6
+	dwb $5c45, $1d ; UNK_OBJ_D7
+	dwb $63c5, $1d ; UNK_OBJ_D8
+	dwb $74bf, $1d ; UNK_OBJ_D9
+	dwb $4379, $19 ; UNK_OBJ_DA
+	dwb $4409, $19 ; UNK_OBJ_DB
+	dwb $440d, $19 ; UNK_OBJ_DC
+	dwb $447f, $19 ; UNK_OBJ_DD
+	dwb $4437, $19 ; UNK_OBJ_DE
+	dwb $4513, $19 ; UNK_OBJ_DF
+	dwb $4548, $19 ; UNK_OBJ_E0
+	dwb $4c50, $19 ; UNK_OBJ_E1
+	dwb $4571, $19 ; UNK_OBJ_E2
+	dwb $4c9d, $19 ; UNK_OBJ_E3
+	dwb $4cb9, $19 ; UNK_OBJ_E4
+	dwb $4cd5, $19 ; UNK_OBJ_E5
+	dwb $4cf1, $19 ; UNK_OBJ_E6
+	dwb $4d0d, $19 ; UNK_OBJ_E7
+	dwb $4d29, $19 ; UNK_OBJ_E8
+	dwb $4d45, $19 ; UNK_OBJ_E9
+	dwb $4d61, $19 ; UNK_OBJ_EA
+	dwb $4d7d, $19 ; UNK_OBJ_EB
+	dwb $4d99, $19 ; UNK_OBJ_EC
+	dwb $4db5, $19 ; UNK_OBJ_ED
+	dwb $4dd1, $19 ; UNK_OBJ_EE
+	dwb $4ded, $19 ; UNK_OBJ_EF
+	dwb $4e09, $19 ; UNK_OBJ_F0
+	dwb $4e25, $19 ; UNK_OBJ_F1
+	dwb $4e41, $19 ; UNK_OBJ_F2
+	dwb $4e5d, $19 ; UNK_OBJ_F3
+	dwb $4e8b, $19 ; UNK_OBJ_F4
+	dwb $7aed, $19 ; UNK_OBJ_F5
+	dwb $662c, $0e ; UNK_OBJ_F6
+	dwb $6d03, $0e ; UNK_OBJ_F7
+	dab Script_218e7 ; KIRBY_TITLE_SCREEN
+	assert_table_length NUM_OBJECT_TYPES
 ; 0x1e9eb
 
 SECTION "Func_1f458", ROMX[$7458], BANK[$7]
