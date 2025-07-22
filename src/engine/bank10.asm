@@ -23,12 +23,12 @@ StartIntro:
 
 	; clear BG maps
 	hlbgcoord 0, 0
-	ld bc, SCRN_VX_B * SCRN_VY_B
+	ld bc, TILEMAP_AREA
 	ld a, $00
 	call FillHL
 
 	hlbgcoord 0, 0, vBGMap1
-	ld bc, SCRN_VX_B * SCRN_VY_B
+	ld bc, TILEMAP_AREA
 	ld a, $00
 	call FillHL
 
@@ -61,7 +61,7 @@ StartIntro:
 	call DrawStartIntroLineSeparators
 
 	; enable LCD
-	ld a, LCDCF_BGON | LCDCF_OBJ16 | LCDCF_WIN9C00
+	ld a, LCDC_BG_ON | LCDC_OBJ_16 | LCDC_WIN_9C00
 	ldh [rLCDC], a
 
 	call Func_46d
@@ -204,11 +204,11 @@ Func_43b84:
 	ld [hl], a
 	inc l
 	ld a, e
-	add SCRN_VX_B
+	add TILEMAP_WIDTH
 	ld e, a
 	incc d
 	ld a, c
-	add SCRN_VX_B
+	add TILEMAP_WIDTH
 	ld c, a
 	incc b
 	ldh a, [hff81]
@@ -252,11 +252,11 @@ Func_43bcc:
 	ld [hl], a
 	inc l
 	ld a, e
-	add SCRN_VX_B
+	add TILEMAP_WIDTH
 	ld e, a
 	incc d
 	ld a, c
-	add SCRN_VX_B
+	add TILEMAP_WIDTH
 	ld c, a
 	incc b
 	ldh a, [hff81]
@@ -300,11 +300,11 @@ Func_43c15:
 	ld [hl], a
 	inc l
 	ld a, e
-	add SCRN_VX_B
+	add TILEMAP_WIDTH
 	ld e, a
 	incc d
 	ld a, c
-	add SCRN_VX_B
+	add TILEMAP_WIDTH
 	ld c, a
 	incc b
 	ldh a, [hff81]
@@ -324,7 +324,7 @@ DrawStartIntroLineSeparators:
 	ld hl, wcf00 + $a0
 	ld a, [hl]
 	hlbgcoord 0, 5
-	ld b, SCRN_VX_B
+	ld b, TILEMAP_WIDTH
 .loop_line_upper_1
 	ld [hli], a
 	dec b
@@ -332,7 +332,7 @@ DrawStartIntroLineSeparators:
 	ld hl, wcf00 + $c0
 	ld a, [hl]
 	hlbgcoord 0, 6
-	ld b, SCRN_VX_B
+	ld b, TILEMAP_WIDTH
 .loop_line_bottom_1
 	ld [hli], a
 	dec b
@@ -341,7 +341,7 @@ DrawStartIntroLineSeparators:
 	ld hl, wd060
 	ld a, [hl]
 	hlbgcoord 0, 11
-	ld b, SCRN_VX_B
+	ld b, TILEMAP_WIDTH
 .loop_line_upper_2
 	ld [hli], a
 	dec b
@@ -349,7 +349,7 @@ DrawStartIntroLineSeparators:
 	ld hl, wd080
 	ld a, [hl]
 	hlbgcoord 0, 12
-	ld b, SCRN_VX_B
+	ld b, TILEMAP_WIDTH
 .loop_line_bottom_2
 	ld [hli], a
 	dec b

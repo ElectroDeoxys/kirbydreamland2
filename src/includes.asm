@@ -7,7 +7,6 @@ INCLUDE "macros/data.asm"
 
 INCLUDE "constants/audio_constants.asm"
 INCLUDE "constants/gfx_constants.asm"
-INCLUDE "constants/input_constants.asm"
 INCLUDE "constants/kirby_constants.asm"
 INCLUDE "constants/level_constants.asm"
 INCLUDE "constants/menu_constants.asm"

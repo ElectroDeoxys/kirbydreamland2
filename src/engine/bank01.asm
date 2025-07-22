@@ -148,7 +148,7 @@ Func_450e:
 	jp Func_37f4
 .asm_452f
 	ldh a, [hJoypad1Pressed]
-	and A_BUTTON
+	and PAD_A
 	jr z, .no_a_btn
 	ld e, $01
 	ld bc, $4697
@@ -161,14 +161,14 @@ Func_450e:
 	jp Func_37f4
 .asm_454a
 	ldh a, [hJoypad1Down]
-	and D_DOWN
+	and PAD_DOWN
 	jr z, .no_d_down
 	ld e, $01
 	ld bc, $49fa
 	jp Func_37f4
 .no_d_down
 	ldh a, [hffb4]
-	and B_BUTTON
+	and PAD_B
 	jr z, .asm_4566
 	ld e, $01
 	ld bc, $729d
@@ -364,11 +364,11 @@ SECTION "Func_7a55", ROMX[$7a55], BANK[$1]
 
 Func_7a55:
 	ldh a, [hJoypad1Down]
-	and D_RIGHT | D_LEFT
+	and PAD_RIGHT | PAD_LEFT
 	jr z, .no_carry
 	ld h, d
 	ld de, $fff9
-	bit D_RIGHT_F, a
+	bit B_PAD_RIGHT, a
 	jr z, .d_left
 	ld bc, 7
 	call ApplyOffsetToObjectPosition
@@ -616,9 +616,9 @@ Func_7baf:
 	ld a, [de]
 	rla
 	ldh a, [hJoypad1Down]
-	bit D_LEFT_F, a
+	bit B_PAD_LEFT, a
 	jr nc, .asm_7bbb
-	bit D_RIGHT_F, a
+	bit B_PAD_RIGHT, a
 .asm_7bbb
 	jr z, .skip
 	; alternate between input frame h

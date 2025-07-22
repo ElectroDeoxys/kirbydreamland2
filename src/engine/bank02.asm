@@ -487,10 +487,10 @@ Func_b5a1:
 
 Func_b663:
 	ldh a, [hJoypad1Down]
-	and D_RIGHT | D_LEFT
+	and PAD_RIGHT | PAD_LEFT
 	jr z, .asm_b6c3
 	ld h, d
-	bit D_RIGHT_F, a
+	bit B_PAD_RIGHT, a
 	ld de, $0
 	jr z, .asm_b696
 	ldh a, [hffb1]

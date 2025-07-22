@@ -338,9 +338,9 @@ Func_3c841:
 	jr .skip_a_btn_or_start
 .check_a_btn_or_start
 	ldh a, [hJoypad1Pressed]
-	bit A_BUTTON_F, a
+	bit B_PAD_A, a
 	jr nz, .a_btn_or_start
-	bit START_F, a
+	bit B_PAD_START, a
 	jr nz, .a_btn_or_start
 .skip_a_btn_or_start
 	call ApplyObjectXAcceleration
@@ -362,9 +362,9 @@ Func_3c841:
 	cp $10
 	jr c, .asm_3c88f
 	ldh a, [hJoypad1Down]
-	bit D_RIGHT_F, a
+	bit B_PAD_RIGHT, a
 	jr nz, .d_right
-	bit D_LEFT_F, a
+	bit B_PAD_LEFT, a
 	jr nz, .d_left
 	ret
 .asm_3c88f
@@ -755,13 +755,13 @@ UpdateFileSelectMenuCursorPosition:
 Func_3ea2e:
 	ldh a, [hJoypad1Pressed]
 	ld e, OBJSTRUCT_UNK39
-	bit D_UP_F, a
+	bit B_PAD_UP, a
 	jr nz, .d_up
-	bit D_DOWN_F, a
+	bit B_PAD_DOWN, a
 	jr nz, .d_down
-	bit B_BUTTON_F, a
+	bit B_PAD_B, a
 	jr nz, .b_btn
-	and A_BUTTON | START
+	and PAD_A | PAD_START
 	jr nz, .a_btn_or_start
 	ret
 .d_up
@@ -825,13 +825,13 @@ Func_3ea2e:
 Func_3eaa1:
 	ldh a, [hJoypad1Pressed]
 	ld e, OBJSTRUCT_UNK3B
-	bit D_RIGHT_F, a
+	bit B_PAD_RIGHT, a
 	jr nz, .d_right
-	bit D_LEFT_F, a
+	bit B_PAD_LEFT, a
 	jr nz, .d_left
-	bit B_BUTTON_F, a
+	bit B_PAD_B, a
 	jr nz, .b_btn
-	and A_BUTTON | START
+	and PAD_A | PAD_START
 	jr nz, .a_btn_or_start
 	ret
 .d_right
@@ -875,13 +875,13 @@ Func_3eaa1:
 Func_3eaef:
 	ldh a, [hJoypad1Pressed]
 	ld e, OBJSTRUCT_UNK3B
-	bit D_RIGHT_F, a
+	bit B_PAD_RIGHT, a
 	jr nz, .d_right
-	bit D_LEFT_F, a
+	bit B_PAD_LEFT, a
 	jr nz, .d_left
-	bit B_BUTTON_F, a
+	bit B_PAD_B, a
 	jr nz, .b_btn
-	and A_BUTTON | START
+	and PAD_A | PAD_START
 	jr nz, .a_btn_or_start
 	ret
 .d_right
@@ -1530,7 +1530,7 @@ InitFileSelectMenu:
 	ld a, $e4
 	ld [hl], a ; wcd0b
 
-	ld a, LCDCF_BGON | LCDCF_OBJON | LCDCF_OBJ16 | LCDCF_WIN9C00
+	ld a, LCDC_BG_ON | LCDC_OBJ_ON | LCDC_OBJ_16 | LCDC_WIN_9C00
 	ldh [rLCDC], a
 
 	call Func_46d

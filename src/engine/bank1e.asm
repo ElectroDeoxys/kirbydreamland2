@@ -181,10 +181,10 @@ ClearAllSFXChannels:
 	ret
 
 SFXChannelDefaultConfigs:
-	db AUD1SWEEP_DOWN, AUDLEN_DUTY_12_5, AUDENV_UP, $00, AUDHIGH_RESTART, $00
-	db AUDLEN_DUTY_12_5, AUDENV_UP, $00, AUDHIGH_RESTART
-	db AUD3ENA_ON, $00, AUD3LEVEL_MUTE, $00, AUDHIGH_RESTART, $00
-	db $00, AUDENV_UP, AUD4POLY_15STEP, $80
+	db AUD1SWEEP_DOWN, AUD1LEN_DUTY_12_5, AUD1ENV_UP, $00, AUD1HIGH_RESTART, $00
+	db AUD2LEN_DUTY_12_5, AUD2ENV_UP, $00, AUD2HIGH_RESTART
+	db AUD3ENA_ON, $00, AUD3LEVEL_MUTE, $00, AUD3HIGH_RESTART, $00
+	db $00, AUD4ENV_UP, AUD4POLY_15STEP, AUD4GO_RESTART
 
 UpdateActiveSFXChannels:
 	ld a, [wChannelSFXFlags + CHANNEL1]
@@ -745,7 +745,7 @@ SGBTransfer:
 	ret z
 
 	ld b, a ; number of packets
-	ld c, LOW(rP1)
+	ld c, LOW(rJOYP)
 .loop_packets
 	push bc
 
@@ -824,38 +824,38 @@ _DetectSGB:
 	call SGBTransfer
 	call SGBWait_Long
 
-	ldh a, [rP1]
+	ldh a, [rJOYP]
 	and P1F_0 | P1F_1
 	cp P1F_0 | P1F_1
 	jr nz, .detected
 	ld a, P1F_5
-	ldh [rP1], a
-	ldh a, [rP1]
-	ldh a, [rP1]
+	ldh [rJOYP], a
+	ldh a, [rJOYP]
+	ldh a, [rJOYP]
 	call SGBWait_Long
 
 	ld a, P1F_4 | P1F_5
-	ldh [rP1], a
+	ldh [rJOYP], a
 	call SGBWait_Long
 
 	ld a, P1F_4
-	ldh [rP1], a
-	ldh a, [rP1]
-	ldh a, [rP1]
-	ldh a, [rP1]
-	ldh a, [rP1]
-	ldh a, [rP1]
-	ldh a, [rP1]
+	ldh [rJOYP], a
+	ldh a, [rJOYP]
+	ldh a, [rJOYP]
+	ldh a, [rJOYP]
+	ldh a, [rJOYP]
+	ldh a, [rJOYP]
+	ldh a, [rJOYP]
 	call SGBWait_Long
 
 	ld a, P1F_4 | P1F_5
-	ldh [rP1], a
-	ldh a, [rP1]
-	ldh a, [rP1]
-	ldh a, [rP1]
+	ldh [rJOYP], a
+	ldh a, [rJOYP]
+	ldh a, [rJOYP]
+	ldh a, [rJOYP]
 	call SGBWait_Long
 
-	ldh a, [rP1]
+	ldh a, [rJOYP]
 	and P1F_0 | P1F_1
 	cp P1F_0 | P1F_1
 	jr nz, .detected
@@ -898,11 +898,11 @@ SGBVRAMTransfer:
 	; bg map needs to hold incremental values
 	; $80, $81, $82...
 	hlbgcoord 0, 0
-	ld de, SCRN_VX_B - SCRN_X_B
+	ld de, TILEMAP_WIDTH - SCREEN_WIDTH
 	ld a, $80
 	ld c, 13 ; number of rows to fill
 .loop_rows
-	ld b, SCRN_X_B
+	ld b, SCREEN_WIDTH
 .loop_bytes
 	ld [hli], a
 	inc a
@@ -914,7 +914,7 @@ SGBVRAMTransfer:
 	jr nz, .loop_rows
 
 	; turn on BG
-	ld a, LCDCF_BGON
+	ld a, LCDC_BG_ON
 	ldh [rLCDC], a
 
 	call StopTimerAndTurnLCDOn

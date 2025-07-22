@@ -416,7 +416,7 @@ LoadLevel:
 	ld [de], a
 	call Func_3131
 
-	ld a, LCDCF_BGON | LCDCF_OBJON | LCDCF_OBJ16 | LCDCF_WINON | LCDCF_WIN9C00
+	ld a, LCDC_BG_ON | LCDC_OBJ_ON | LCDC_OBJ_16 | LCDC_WIN_ON | LCDC_WIN_9C00
 	ldh [rLCDC], a
 
 	call Func_46d
@@ -1093,7 +1093,7 @@ Func_21a2c:
 	ret
 .read_input
 	ldh a, [hJoypad1Pressed]
-	and A_BUTTON | B_BUTTON | START
+	and PAD_A | PAD_B | PAD_START
 	ret z ; no input
 
 	ld e, SFX_2D
@@ -1122,367 +1122,367 @@ Func_21a73:
 Demo1Inputs:
 	db NO_INPUT, 0
 	db NO_INPUT, 49
-	db D_RIGHT, 142
+	db PAD_RIGHT, 142
 	db NO_INPUT, 8
-	db B_BUTTON, 12
+	db PAD_B, 12
 	db NO_INPUT, 34
-	db D_RIGHT, 47
-	db A_BUTTON | D_RIGHT, 16
-	db D_RIGHT, 21
+	db PAD_RIGHT, 47
+	db PAD_A | PAD_RIGHT, 16
+	db PAD_RIGHT, 21
 	db NO_INPUT, 32
-	db B_BUTTON, 7
+	db PAD_B, 7
 	db NO_INPUT, 33
-	db D_RIGHT, 38
-	db A_BUTTON | D_RIGHT, 16
-	db D_RIGHT, 21
+	db PAD_RIGHT, 38
+	db PAD_A | PAD_RIGHT, 16
+	db PAD_RIGHT, 21
 	db NO_INPUT, 28
-	db B_BUTTON, 11
+	db PAD_B, 11
 	db NO_INPUT, 63
-	db B_BUTTON, 7
+	db PAD_B, 7
 	db NO_INPUT, 17
-	db D_RIGHT, 40
-	db A_BUTTON | D_RIGHT, 12
-	db D_RIGHT, 13
+	db PAD_RIGHT, 40
+	db PAD_A | PAD_RIGHT, 12
+	db PAD_RIGHT, 13
 	db NO_INPUT, 1
-	db B_BUTTON, 9
+	db PAD_B, 9
 	db NO_INPUT, 37
-	db B_BUTTON, 9
+	db PAD_B, 9
 	db NO_INPUT, 26
-	db D_RIGHT, 3
-	db A_BUTTON | D_RIGHT, 8
-	db D_RIGHT, 11
-	db B_BUTTON | D_RIGHT, 8
-	db D_RIGHT, 11
+	db PAD_RIGHT, 3
+	db PAD_A | PAD_RIGHT, 8
+	db PAD_RIGHT, 11
+	db PAD_B | PAD_RIGHT, 8
+	db PAD_RIGHT, 11
 	db NO_INPUT, 36
-	db A_BUTTON | D_RIGHT, 29
-	db D_RIGHT, 8
+	db PAD_A | PAD_RIGHT, 29
+	db PAD_RIGHT, 8
 	db NO_INPUT, 38
-	db B_BUTTON, 7
+	db PAD_B, 7
 	db NO_INPUT, 19
-	db D_RIGHT, 14
+	db PAD_RIGHT, 14
 	db NO_INPUT, 9
-	db D_RIGHT, 2
+	db PAD_RIGHT, 2
 	db NO_INPUT, 17
-	db D_RIGHT, 22
-	db A_BUTTON | D_RIGHT, 13
-	db D_RIGHT, 10
+	db PAD_RIGHT, 22
+	db PAD_A | PAD_RIGHT, 13
+	db PAD_RIGHT, 10
 	db NO_INPUT, 48
-	db B_BUTTON, 18
+	db PAD_B, 18
 	db NO_INPUT, 19
-	db D_DOWN, 12
+	db PAD_DOWN, 12
 	db NO_INPUT, 68
-	db D_RIGHT, 40
-	db A_BUTTON | D_RIGHT, 10
-	db D_RIGHT, 28
-	db B_BUTTON | D_RIGHT, 36
-	db D_RIGHT, 28
+	db PAD_RIGHT, 40
+	db PAD_A | PAD_RIGHT, 10
+	db PAD_RIGHT, 28
+	db PAD_B | PAD_RIGHT, 36
+	db PAD_RIGHT, 28
 	db NO_INPUT, 22
-	db A_BUTTON, 4
+	db PAD_A, 4
 	db NO_INPUT, 12
-	db B_BUTTON, 54
+	db PAD_B, 54
 	db NO_INPUT, 44
-	db D_RIGHT, 18
+	db PAD_RIGHT, 18
 	db NO_INPUT, 11
-	db D_UP, 17
+	db PAD_UP, 17
 	db NO_INPUT, 2
-	db D_RIGHT, 19
-	db A_BUTTON | D_RIGHT, 10
-	db D_RIGHT, 18
+	db PAD_RIGHT, 19
+	db PAD_A | PAD_RIGHT, 10
+	db PAD_RIGHT, 18
 	db NO_INPUT, 14
-	db A_BUTTON, 7
+	db PAD_A, 7
 	db NO_INPUT, 29
-	db A_BUTTON, 2
-	db A_BUTTON | D_RIGHT, 4
-	db D_RIGHT, 19
+	db PAD_A, 2
+	db PAD_A | PAD_RIGHT, 4
+	db PAD_RIGHT, 19
 	db NO_INPUT, 1
-	db B_BUTTON, 35
+	db PAD_B, 35
 	db NO_INPUT, 33
-	db D_LEFT, 4
+	db PAD_LEFT, 4
 	db NO_INPUT, 1
-	db B_BUTTON, 31
+	db PAD_B, 31
 	db NO_INPUT, 19
-	db D_RIGHT, 19
-	db A_BUTTON | D_RIGHT, 9
-	db D_RIGHT, 6
-	db B_BUTTON | D_RIGHT, 2
-	db B_BUTTON, 46
+	db PAD_RIGHT, 19
+	db PAD_A | PAD_RIGHT, 9
+	db PAD_RIGHT, 6
+	db PAD_B | PAD_RIGHT, 2
+	db PAD_B, 46
 	db NO_INPUT, 43
-	db D_LEFT, 22
-	db A_BUTTON | D_LEFT, 9
-	db D_LEFT, 31
+	db PAD_LEFT, 22
+	db PAD_A | PAD_LEFT, 9
+	db PAD_LEFT, 31
 	db NO_INPUT, 45
-	db A_BUTTON, 2
-	db A_BUTTON | D_LEFT, 5
-	db D_LEFT, 7
+	db PAD_A, 2
+	db PAD_A | PAD_LEFT, 5
+	db PAD_LEFT, 7
 	db NO_INPUT, 11
-	db B_BUTTON, 45
+	db PAD_B, 45
 	db NO_INPUT, 17
-	db D_RIGHT, 4
+	db PAD_RIGHT, 4
 	db NO_INPUT, 20
-	db B_BUTTON, 33
+	db PAD_B, 33
 	db NO_INPUT, 18
-	db D_LEFT, 17
-	db A_BUTTON | D_LEFT, 12
-	db D_LEFT, 7
-	db B_BUTTON | D_LEFT, 1
-	db B_BUTTON, 43
+	db PAD_LEFT, 17
+	db PAD_A | PAD_LEFT, 12
+	db PAD_LEFT, 7
+	db PAD_B | PAD_LEFT, 1
+	db PAD_B, 43
 	db NO_INPUT, 29
-	db D_RIGHT, 29
-	db A_BUTTON | D_RIGHT, 15
-	db D_RIGHT, 22
+	db PAD_RIGHT, 29
+	db PAD_A | PAD_RIGHT, 15
+	db PAD_RIGHT, 22
 	db NO_INPUT, 61
-	db D_RIGHT, 5
-	db B_BUTTON | D_RIGHT, 2
-	db B_BUTTON, 43
+	db PAD_RIGHT, 5
+	db PAD_B | PAD_RIGHT, 2
+	db PAD_B, 43
 	db NO_INPUT, 27
-	db D_LEFT, 5
+	db PAD_LEFT, 5
 	db NO_INPUT, 2
-	db B_BUTTON, 35
+	db PAD_B, 35
 	db NO_INPUT, 16
-	db D_RIGHT, 11
+	db PAD_RIGHT, 11
 	db NO_INPUT, 17
-	db D_RIGHT, 5
-	db A_BUTTON | D_RIGHT, 13
-	db D_RIGHT, 15
-	db B_BUTTON | D_RIGHT, 3
-	db B_BUTTON, 40
+	db PAD_RIGHT, 5
+	db PAD_A | PAD_RIGHT, 13
+	db PAD_RIGHT, 15
+	db PAD_B | PAD_RIGHT, 3
+	db PAD_B, 40
 	db NO_INPUT, 29
-	db D_LEFT, 25
+	db PAD_LEFT, 25
 	db NO_INPUT, 72
-	db D_LEFT, 9
+	db PAD_LEFT, 9
 	db NO_INPUT, 22
-	db D_LEFT, 12
+	db PAD_LEFT, 12
 	db NO_INPUT, 5
-	db B_BUTTON, 45
+	db PAD_B, 45
 	db NO_INPUT, 24
-	db B_BUTTON | D_RIGHT, 11
-	db B_BUTTON, 27
+	db PAD_B | PAD_RIGHT, 11
+	db PAD_B, 27
 	db NO_INPUT, 19
-	db D_LEFT, 9
+	db PAD_LEFT, 9
 	db NO_INPUT, 60
-	db D_LEFT, 1
-	db A_BUTTON | D_LEFT, 18
-	db D_LEFT, 4
+	db PAD_LEFT, 1
+	db PAD_A | PAD_LEFT, 18
+	db PAD_LEFT, 4
 	db NO_INPUT, 3
-	db B_BUTTON, 42
+	db PAD_B, 42
 	db NO_INPUT, 57
-	db D_RIGHT, 5
+	db PAD_RIGHT, 5
 	db NO_INPUT, 52
-	db B_BUTTON, 44
+	db PAD_B, 44
 	db NO_INPUT, 135
-	db D_LEFT, 2
+	db PAD_LEFT, 2
 	db NO_INPUT, 104
-	db A_BUTTON, 6
-	db A_BUTTON | D_LEFT, 14
-	db D_LEFT, 4
+	db PAD_A, 6
+	db PAD_A | PAD_LEFT, 14
+	db PAD_LEFT, 4
 	db NO_INPUT, 12
-	db D_RIGHT, 6
+	db PAD_RIGHT, 6
 	db NO_INPUT, 65
-	db B_BUTTON, 83
+	db PAD_B, 83
 	db NO_INPUT, 140
-	db START, 1
+	db PAD_START, 1
 	db $40
 Demo1InputsEnd:
 
 Demo2Inputs:
 	db NO_INPUT, 0
 	db NO_INPUT, 104
-	db D_RIGHT, 63
+	db PAD_RIGHT, 63
 	db NO_INPUT, 3
-	db B_BUTTON, 65
+	db PAD_B, 65
 	db NO_INPUT, 17
-	db D_RIGHT, 52
-	db B_BUTTON | D_RIGHT, 6
-	db B_BUTTON, 27
+	db PAD_RIGHT, 52
+	db PAD_B | PAD_RIGHT, 6
+	db PAD_B, 27
 	db NO_INPUT, 16
-	db D_LEFT, 4
+	db PAD_LEFT, 4
 	db NO_INPUT, 36
-	db B_BUTTON, 47
+	db PAD_B, 47
 	db NO_INPUT, 15
-	db D_RIGHT, 4
+	db PAD_RIGHT, 4
 	db NO_INPUT, 16
-	db B_BUTTON, 70
+	db PAD_B, 70
 	db NO_INPUT, 30
-	db SELECT, 10
+	db PAD_SELECT, 10
 	db NO_INPUT, 58
-	db D_RIGHT, 91
-	db A_BUTTON | D_RIGHT, 16
-	db D_RIGHT, 8
-	db B_BUTTON | D_RIGHT, 4
-	db B_BUTTON, 4
+	db PAD_RIGHT, 91
+	db PAD_A | PAD_RIGHT, 16
+	db PAD_RIGHT, 8
+	db PAD_B | PAD_RIGHT, 4
+	db PAD_B, 4
 	db NO_INPUT, 28
-	db D_RIGHT, 5
+	db PAD_RIGHT, 5
 	db NO_INPUT, 15
-	db D_DOWN, 14
+	db PAD_DOWN, 14
 	db NO_INPUT, 97
-	db B_BUTTON, 31
+	db PAD_B, 31
 	db NO_INPUT, 12
-	db D_RIGHT, 16
-	db A_BUTTON | D_RIGHT, 23
-	db D_RIGHT, 26
+	db PAD_RIGHT, 16
+	db PAD_A | PAD_RIGHT, 23
+	db PAD_RIGHT, 26
 	db NO_INPUT, 27
-	db B_BUTTON, 26
+	db PAD_B, 26
 	db NO_INPUT, 15
-	db A_BUTTON, 11
-	db A_BUTTON | D_RIGHT, 22
-	db D_RIGHT, 16
-	db A_BUTTON | D_RIGHT, 42
+	db PAD_A, 11
+	db PAD_A | PAD_RIGHT, 22
+	db PAD_RIGHT, 16
+	db PAD_A | PAD_RIGHT, 42
 	db NO_INPUT, 31
-	db B_BUTTON, 24
+	db PAD_B, 24
 	db NO_INPUT, 16
-	db D_LEFT, 1
+	db PAD_LEFT, 1
 	db NO_INPUT, 34
-	db B_BUTTON, 39
+	db PAD_B, 39
 	db NO_INPUT, 16
-	db A_BUTTON, 2
-	db A_BUTTON | D_RIGHT, 22
-	db D_RIGHT, 39
-	db A_BUTTON | D_RIGHT, 15
-	db D_RIGHT, 95
+	db PAD_A, 2
+	db PAD_A | PAD_RIGHT, 22
+	db PAD_RIGHT, 39
+	db PAD_A | PAD_RIGHT, 15
+	db PAD_RIGHT, 95
 	db NO_INPUT, 2
-	db D_LEFT, 8
+	db PAD_LEFT, 8
 	db NO_INPUT, 1
-	db B_BUTTON, 41
-	db B_BUTTON | D_RIGHT, 29
-	db B_BUTTON, 39
+	db PAD_B, 41
+	db PAD_B | PAD_RIGHT, 29
+	db PAD_B, 39
 	db NO_INPUT, 2
-	db D_RIGHT, 85
+	db PAD_RIGHT, 85
 	db NO_INPUT, 4
-	db B_BUTTON, 158
+	db PAD_B, 158
 	db NO_INPUT, 24
-	db SELECT, 9
+	db PAD_SELECT, 9
 	db NO_INPUT, 63
-	db A_BUTTON, 13
-	db A_BUTTON | D_RIGHT, 6
-	db D_RIGHT, 6
+	db PAD_A, 13
+	db PAD_A | PAD_RIGHT, 6
+	db PAD_RIGHT, 6
 	db NO_INPUT, 7
-	db B_BUTTON, 10
+	db PAD_B, 10
 	db NO_INPUT, 35
-	db D_DOWN, 13
+	db PAD_DOWN, 13
 	db NO_INPUT, 54
-	db D_RIGHT, 25
+	db PAD_RIGHT, 25
 	db NO_INPUT, 27
-	db D_LEFT, 4
+	db PAD_LEFT, 4
 	db NO_INPUT, 32
-	db B_BUTTON, 22
+	db PAD_B, 22
 	db NO_INPUT, 17
-	db A_BUTTON, 13
-	db A_BUTTON | D_RIGHT, 19
-	db D_RIGHT, 10
-	db A_BUTTON | D_RIGHT, 20
-	db D_RIGHT, 5
+	db PAD_A, 13
+	db PAD_A | PAD_RIGHT, 19
+	db PAD_RIGHT, 10
+	db PAD_A | PAD_RIGHT, 20
+	db PAD_RIGHT, 5
 	db NO_INPUT, 2
-	db D_LEFT, 6
+	db PAD_LEFT, 6
 	db NO_INPUT, 2
-	db B_BUTTON, 37
+	db PAD_B, 37
 	db NO_INPUT, 12
-	db D_RIGHT, 19
+	db PAD_RIGHT, 19
 	db NO_INPUT, 2
-	db D_UP, 19
+	db PAD_UP, 19
 	db NO_INPUT, 41
-	db B_BUTTON, 25
+	db PAD_B, 25
 	db NO_INPUT, 6
-	db D_RIGHT, 16
+	db PAD_RIGHT, 16
 	db NO_INPUT, 2
-	db D_LEFT, 7
+	db PAD_LEFT, 7
 	db NO_INPUT, 2
-	db B_BUTTON, 19
+	db PAD_B, 19
 	db NO_INPUT, 18
-	db A_BUTTON, 19
-	db A_BUTTON | D_LEFT, 7
-	db A_BUTTON, 3
+	db PAD_A, 19
+	db PAD_A | PAD_LEFT, 7
+	db PAD_A, 3
 	db NO_INPUT, 4
-	db D_RIGHT, 5
+	db PAD_RIGHT, 5
 	db NO_INPUT, 54
-	db B_BUTTON, 25
+	db PAD_B, 25
 	db NO_INPUT, 16
-	db A_BUTTON, 26
+	db PAD_A, 26
 	db NO_INPUT, 13
-	db D_RIGHT, 6
-	db A_BUTTON | D_RIGHT, 20
-	db D_RIGHT, 5
+	db PAD_RIGHT, 6
+	db PAD_A | PAD_RIGHT, 20
+	db PAD_RIGHT, 5
 	db NO_INPUT, 25
-	db B_BUTTON, 27
+	db PAD_B, 27
 	db NO_INPUT, 12
-	db D_LEFT, 9
-	db A_BUTTON | D_LEFT, 29
-	db D_LEFT, 17
-	db A_BUTTON | D_LEFT, 30
-	db A_BUTTON, 1
+	db PAD_LEFT, 9
+	db PAD_A | PAD_LEFT, 29
+	db PAD_LEFT, 17
+	db PAD_A | PAD_LEFT, 30
+	db PAD_A, 1
 	db NO_INPUT, 16
-	db D_RIGHT, 18
-	db A_BUTTON | D_RIGHT, 31
-	db D_RIGHT, 19
-	db A_BUTTON | D_RIGHT, 29
-	db A_BUTTON, 2
+	db PAD_RIGHT, 18
+	db PAD_A | PAD_RIGHT, 31
+	db PAD_RIGHT, 19
+	db PAD_A | PAD_RIGHT, 29
+	db PAD_A, 2
 	db NO_INPUT, 23
-	db D_LEFT, 14
-	db A_BUTTON | D_LEFT, 14
-	db D_LEFT, 35
-	db A_BUTTON | D_LEFT, 32
-	db D_LEFT, 1
+	db PAD_LEFT, 14
+	db PAD_A | PAD_LEFT, 14
+	db PAD_LEFT, 35
+	db PAD_A | PAD_LEFT, 32
+	db PAD_LEFT, 1
 	db NO_INPUT, 24
-	db D_RIGHT, 14
-	db A_BUTTON | D_RIGHT, 19
-	db A_BUTTON | B_BUTTON | D_RIGHT, 7
-	db A_BUTTON | B_BUTTON, 11
-	db A_BUTTON, 2
+	db PAD_RIGHT, 14
+	db PAD_A | PAD_RIGHT, 19
+	db PAD_A | PAD_B | PAD_RIGHT, 7
+	db PAD_A | PAD_B, 11
+	db PAD_A, 2
 	db NO_INPUT, 119
-	db D_RIGHT, 17
-	db A_BUTTON | D_RIGHT, 26
-	db D_RIGHT, 2
-	db D_RIGHT | D_UP, 4
-	db D_UP, 20
+	db PAD_RIGHT, 17
+	db PAD_A | PAD_RIGHT, 26
+	db PAD_RIGHT, 2
+	db PAD_RIGHT | PAD_UP, 4
+	db PAD_UP, 20
 	db NO_INPUT, 24
-	db D_RIGHT, 40
+	db PAD_RIGHT, 40
 	db NO_INPUT, 4
-	db D_LEFT, 7
+	db PAD_LEFT, 7
 	db NO_INPUT, 2
-	db B_BUTTON, 15
+	db PAD_B, 15
 	db NO_INPUT, 10
-	db D_LEFT, 45
+	db PAD_LEFT, 45
 	db NO_INPUT, 3
-	db D_RIGHT, 8
+	db PAD_RIGHT, 8
 	db NO_INPUT, 54
-	db D_LEFT, 15
+	db PAD_LEFT, 15
 	db NO_INPUT, 24
-	db B_BUTTON, 35
+	db PAD_B, 35
 	db NO_INPUT, 11
-	db D_RIGHT, 10
-	db A_BUTTON | D_RIGHT, 9
-	db D_RIGHT, 6
+	db PAD_RIGHT, 10
+	db PAD_A | PAD_RIGHT, 9
+	db PAD_RIGHT, 6
 	db NO_INPUT, 5
-	db D_LEFT, 5
-	db B_BUTTON | D_LEFT, 19
-	db D_LEFT, 31
+	db PAD_LEFT, 5
+	db PAD_B | PAD_LEFT, 19
+	db PAD_LEFT, 31
 	db NO_INPUT, 12
-	db D_RIGHT, 7
-	db A_BUTTON | D_RIGHT, 11
-	db D_RIGHT, 5
+	db PAD_RIGHT, 7
+	db PAD_A | PAD_RIGHT, 11
+	db PAD_RIGHT, 5
 	db NO_INPUT, 4
-	db D_LEFT, 8
+	db PAD_LEFT, 8
 	db NO_INPUT, 1
-	db B_BUTTON, 24
+	db PAD_B, 24
 	db NO_INPUT, 12
-	db A_BUTTON, 12
+	db PAD_A, 12
 	db NO_INPUT, 12
-	db B_BUTTON, 33
+	db PAD_B, 33
 	db NO_INPUT, 94
-	db B_BUTTON, 30
+	db PAD_B, 30
 	db NO_INPUT, 13
-	db D_RIGHT, 37
+	db PAD_RIGHT, 37
 	db NO_INPUT, 73
-	db D_RIGHT, 6
+	db PAD_RIGHT, 6
 	db NO_INPUT, 4
-	db D_LEFT, 6
+	db PAD_LEFT, 6
 	db NO_INPUT, 77
-	db B_BUTTON, 43
+	db PAD_B, 43
 	db NO_INPUT, 58
-	db D_LEFT, 24
+	db PAD_LEFT, 24
 	db NO_INPUT, 49
-	db D_UP, 42
+	db PAD_UP, 42
 	db NO_INPUT, 3
-	db B_BUTTON, 152
+	db PAD_B, 152
 	db NO_INPUT, 134
 	db $08
 Demo2InputsEnd:
@@ -1490,166 +1490,166 @@ Demo2InputsEnd:
 Demo3Inputs:
 	db NO_INPUT, 0
 	db NO_INPUT, 79
-	db D_RIGHT, 139
-	db D_RIGHT | D_DOWN, 3
-	db D_DOWN, 16
+	db PAD_RIGHT, 139
+	db PAD_RIGHT | PAD_DOWN, 3
+	db PAD_DOWN, 16
 	db NO_INPUT, 38
-	db B_BUTTON, 25
+	db PAD_B, 25
 	db NO_INPUT, 15
-	db D_RIGHT, 23
-	db D_RIGHT | D_UP, 15
-	db D_RIGHT, 80
+	db PAD_RIGHT, 23
+	db PAD_RIGHT | PAD_UP, 15
+	db PAD_RIGHT, 80
 	db NO_INPUT, 7
-	db B_BUTTON, 19
+	db PAD_B, 19
 	db NO_INPUT, 29
-	db D_RIGHT, 5
-	db D_RIGHT | D_UP, 14
-	db D_RIGHT, 36
+	db PAD_RIGHT, 5
+	db PAD_RIGHT | PAD_UP, 14
+	db PAD_RIGHT, 36
 	db NO_INPUT, 62
-	db B_BUTTON, 26
+	db PAD_B, 26
 	db NO_INPUT, 13
-	db D_UP, 8
-	db D_RIGHT | D_UP, 3
-	db D_RIGHT, 53
-	db D_RIGHT | D_DOWN, 4
-	db D_DOWN, 44
+	db PAD_UP, 8
+	db PAD_RIGHT | PAD_UP, 3
+	db PAD_RIGHT, 53
+	db PAD_RIGHT | PAD_DOWN, 4
+	db PAD_DOWN, 44
 	db NO_INPUT, 142
-	db SELECT, 9
+	db PAD_SELECT, 9
 	db NO_INPUT, 92
-	db D_RIGHT, 21
-	db B_BUTTON | D_RIGHT, 8
-	db D_RIGHT, 15
+	db PAD_RIGHT, 21
+	db PAD_B | PAD_RIGHT, 8
+	db PAD_RIGHT, 15
 	db NO_INPUT, 19
-	db D_DOWN, 15
+	db PAD_DOWN, 15
 	db NO_INPUT, 58
-	db D_RIGHT, 21
-	db D_RIGHT | D_UP, 16
-	db D_UP, 2
+	db PAD_RIGHT, 21
+	db PAD_RIGHT | PAD_UP, 16
+	db PAD_UP, 2
 	db NO_INPUT, 15
-	db B_BUTTON, 65
+	db PAD_B, 65
 	db NO_INPUT, 6
-	db D_RIGHT, 20
+	db PAD_RIGHT, 20
 	db NO_INPUT, 122
-	db D_RIGHT, 31
-	db D_RIGHT | D_DOWN, 45
-	db D_RIGHT, 40
+	db PAD_RIGHT, 31
+	db PAD_RIGHT | PAD_DOWN, 45
+	db PAD_RIGHT, 40
 	db NO_INPUT, 36
-	db D_UP, 3
+	db PAD_UP, 3
 	db NO_INPUT, 3
-	db B_BUTTON, 16
+	db PAD_B, 16
 	db NO_INPUT, 18
-	db D_UP, 24
-	db D_RIGHT | D_UP, 1
-	db D_RIGHT, 22
+	db PAD_UP, 24
+	db PAD_RIGHT | PAD_UP, 1
+	db PAD_RIGHT, 22
 	db NO_INPUT, 6
-	db B_BUTTON, 22
+	db PAD_B, 22
 	db NO_INPUT, 28
-	db D_RIGHT, 66
-	db D_RIGHT | D_DOWN, 22
-	db D_RIGHT, 16
+	db PAD_RIGHT, 66
+	db PAD_RIGHT | PAD_DOWN, 22
+	db PAD_RIGHT, 16
 	db NO_INPUT, 2
-	db B_BUTTON, 10
+	db PAD_B, 10
 	db NO_INPUT, 26
-	db D_DOWN, 8
+	db PAD_DOWN, 8
 	db NO_INPUT, 3
-	db D_RIGHT, 20
+	db PAD_RIGHT, 20
 	db NO_INPUT, 2
-	db D_UP, 11
+	db PAD_UP, 11
 	db NO_INPUT, 93
-	db D_RIGHT, 13
-	db D_RIGHT | D_UP, 17
-	db D_RIGHT, 22
+	db PAD_RIGHT, 13
+	db PAD_RIGHT | PAD_UP, 17
+	db PAD_RIGHT, 22
 	db NO_INPUT, 7
-	db B_BUTTON, 41
+	db PAD_B, 41
 	db NO_INPUT, 5
-	db D_LEFT, 21
-	db D_LEFT | D_DOWN, 29
-	db D_DOWN, 1
+	db PAD_LEFT, 21
+	db PAD_LEFT | PAD_DOWN, 29
+	db PAD_DOWN, 1
 	db NO_INPUT, 4
-	db D_RIGHT, 7
+	db PAD_RIGHT, 7
 	db NO_INPUT, 24
-	db D_RIGHT, 3
-	db D_RIGHT | D_UP, 20
-	db D_RIGHT, 1
-	db B_BUTTON, 18
+	db PAD_RIGHT, 3
+	db PAD_RIGHT | PAD_UP, 20
+	db PAD_RIGHT, 1
+	db PAD_B, 18
 	db NO_INPUT, 11
-	db D_RIGHT, 23
-	db B_BUTTON, 154
+	db PAD_RIGHT, 23
+	db PAD_B, 154
 	db NO_INPUT, 2
-	db D_LEFT, 39
-	db D_LEFT | D_DOWN, 5
-	db D_LEFT, 9
-	db D_LEFT | D_DOWN, 3
-	db D_DOWN, 8
-	db D_RIGHT | D_DOWN, 1
-	db D_RIGHT, 11
+	db PAD_LEFT, 39
+	db PAD_LEFT | PAD_DOWN, 5
+	db PAD_LEFT, 9
+	db PAD_LEFT | PAD_DOWN, 3
+	db PAD_DOWN, 8
+	db PAD_RIGHT | PAD_DOWN, 1
+	db PAD_RIGHT, 11
 	db NO_INPUT, 59
-	db D_RIGHT, 1
-	db D_RIGHT | D_UP, 20
-	db D_UP, 2
+	db PAD_RIGHT, 1
+	db PAD_RIGHT | PAD_UP, 20
+	db PAD_UP, 2
 	db NO_INPUT, 4
-	db B_BUTTON, 17
+	db PAD_B, 17
 	db NO_INPUT, 24
-	db SELECT, 7
+	db PAD_SELECT, 7
 	db NO_INPUT, 23
-	db D_LEFT, 8
-	db B_BUTTON, 4
-	db B_BUTTON | D_LEFT, 4
-	db D_LEFT, 23
+	db PAD_LEFT, 8
+	db PAD_B, 4
+	db PAD_B | PAD_LEFT, 4
+	db PAD_LEFT, 23
 	db NO_INPUT, 3
-	db D_RIGHT, 14
+	db PAD_RIGHT, 14
 	db NO_INPUT, 8
-	db B_BUTTON, 9
+	db PAD_B, 9
 	db NO_INPUT, 0
 	db NO_INPUT, 26
-	db D_UP, 20
+	db PAD_UP, 20
 	db NO_INPUT, 2
-	db B_BUTTON, 10
+	db PAD_B, 10
 	db NO_INPUT, 84
-	db B_BUTTON, 6
+	db PAD_B, 6
 	db NO_INPUT, 127
-	db B_BUTTON, 22
+	db PAD_B, 22
 	db NO_INPUT, 16
-	db D_RIGHT, 16
-	db D_RIGHT | D_UP, 9
-	db D_UP, 23
+	db PAD_RIGHT, 16
+	db PAD_RIGHT | PAD_UP, 9
+	db PAD_UP, 23
 	db NO_INPUT, 123
-	db D_DOWN, 12
+	db PAD_DOWN, 12
 	db NO_INPUT, 184
-	db D_LEFT, 2
-	db D_LEFT | D_UP, 22
-	db D_LEFT, 3
+	db PAD_LEFT, 2
+	db PAD_LEFT | PAD_UP, 22
+	db PAD_LEFT, 3
 	db NO_INPUT, 66
-	db D_RIGHT, 6
+	db PAD_RIGHT, 6
 	db NO_INPUT, 32
-	db D_RIGHT, 40
-	db A_BUTTON | D_RIGHT, 9
-	db D_RIGHT, 13
+	db PAD_RIGHT, 40
+	db PAD_A | PAD_RIGHT, 9
+	db PAD_RIGHT, 13
 	db NO_INPUT, 1
-	db D_RIGHT, 1
+	db PAD_RIGHT, 1
 	db NO_INPUT, 2
-	db D_UP, 14
+	db PAD_UP, 14
 	db NO_INPUT, 45
-	db D_RIGHT, 52
+	db PAD_RIGHT, 52
 	db NO_INPUT, 20
-	db B_BUTTON, 13
-	db B_BUTTON | D_DOWN, 7
-	db B_BUTTON | D_RIGHT | D_DOWN, 8
-	db D_RIGHT | D_DOWN, 13
-	db D_RIGHT, 52
+	db PAD_B, 13
+	db PAD_B | PAD_DOWN, 7
+	db PAD_B | PAD_RIGHT | PAD_DOWN, 8
+	db PAD_RIGHT | PAD_DOWN, 13
+	db PAD_RIGHT, 52
 	db NO_INPUT, 7
-	db D_RIGHT, 4
-	db D_RIGHT | D_DOWN, 4
-	db D_RIGHT, 2
-	db B_BUTTON, 29
-	db D_RIGHT, 45
+	db PAD_RIGHT, 4
+	db PAD_RIGHT | PAD_DOWN, 4
+	db PAD_RIGHT, 2
+	db PAD_B, 29
+	db PAD_RIGHT, 45
 	db NO_INPUT, 5
-	db D_RIGHT, 5
-	db B_BUTTON | D_RIGHT, 14
-	db B_BUTTON, 2
-	db B_BUTTON | D_RIGHT, 12
-	db B_BUTTON | D_UP, 3
-	db B_BUTTON, 127
+	db PAD_RIGHT, 5
+	db PAD_B | PAD_RIGHT, 14
+	db PAD_B, 2
+	db PAD_B | PAD_RIGHT, 12
+	db PAD_B | PAD_UP, 3
+	db PAD_B, 127
 	db NO_INPUT, 153
 	db $08
 Demo3InputsEnd:

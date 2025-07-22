@@ -19,7 +19,7 @@ _VBlank:
 
 	; disable LCD
 	ld hl, rLCDC
-	res LCDCB_ON, [hl]
+	res B_LCDC_ENABLE, [hl]
 
 	xor a
 	ldh [hRequestLCDOff], a
@@ -214,19 +214,19 @@ Func_24d:
 	or a
 	jr z, .set_obj_on
 ; set obj off
-	res LCDCB_OBJON, [hl]
+	res B_LCDC_OBJS, [hl]
 	jr .asm_271
 .set_obj_on
-	set LCDCB_OBJON, [hl]
+	set B_LCDC_OBJS, [hl]
 
 .asm_271
 	; switch off Stat interrupt flag
 	ldh a, [rIF]
-	and $ff ^ IEF_STAT
+	and $ff ^ IF_STAT
 	ldh [rIF], a
 	; switch off V-blank interrupts
 	ldh a, [rIE]
-	and $ff ^ IEF_VBLANK
+	and $ff ^ IE_VBLANK
 	ldh [rIE], a
 	ei
 
@@ -248,7 +248,7 @@ UpdateAudio:
 	pop af
 	call UnsafeBankswitch
 	ldh a, [rIE]
-	or IEF_VBLANK
+	or IE_VBLANK
 	ldh [rIE], a
 ;	fallthrough
 
@@ -276,7 +276,7 @@ Func_2aa::
 	push bc
 	push de
 	ld hl, rLCDC
-	bit LCDCB_WINON, [hl]
+	bit B_LCDC_WINDOW, [hl]
 	jr z, InterruptRet
 
 	; window is on
@@ -287,7 +287,7 @@ Func_2aa::
 	jr nz, .loop_wait
 
 	; disable obj and set default BGP
-	res LCDCB_OBJON, [hl]
+	res B_LCDC_OBJS, [hl]
 	ld a, $e4
 	ldh [rBGP], a
 	jp InterruptRet
@@ -318,7 +318,7 @@ _Timer:
 	ld a, TRUE
 	ld [wTimerExecuted], a
 	ldh a, [rLCDC]
-	bit LCDCB_ON, a
+	bit B_LCDC_ENABLE, a
 	jp z, UpdateAudio ; lcd off
 	jp InterruptRet
 
@@ -358,11 +358,11 @@ ReadJoypad::
 	or a
 	ret nz
 	ld b, 2 ; number of joypads
-	ldh a, [rP1]
+	ldh a, [rJOYP]
 	ld c, a
 	jr .start_read_inputs
 .loop_read_joypads
-	ldh a, [rP1]
+	ldh a, [rJOYP]
 	cp c
 	jr z, .no_change
 .start_read_inputs
@@ -380,19 +380,19 @@ ReadJoypad::
 
 ; can only get four inputs at a time
 ; take d-pad first
-	ld a, P1F_GET_DPAD
-	ldh [rP1], a
-	ldh a, [rP1]
-	ldh a, [rP1]
+	ld a, JOYP_GET_CTRL_PAD
+	ldh [rJOYP], a
+	ldh a, [rJOYP]
+	ldh a, [rJOYP]
 	swap a
 	and %11110000
 	ld d, a
 
 ; take the buttons values next
-	ld a, P1F_GET_BTN
-	ldh [rP1], a
+	ld a, JOYP_GET_BUTTONS
+	ldh [rJOYP], a
 REPT 6
-	ldh a, [rP1]
+	ldh a, [rJOYP]
 ENDR
 	and %1111
 	or d
@@ -400,8 +400,8 @@ ENDR
 	; button bits on lower nybble, d-pad on higher nybble
 	call .WriteInput
 
-	ld a, P1F_GET_NONE
-	ldh [rP1], a
+	ld a, JOYP_GET_NONE
+	ldh [rJOYP], a
 	dec b
 	jr nz, .loop_read_joypads
 
@@ -466,11 +466,11 @@ ENDR
 
 	; if all buttons are down
 	ldh a, [hJoypad1Down]
-	cp A_BUTTON | B_BUTTON | SELECT | START
+	cp PAD_A | PAD_B | PAD_SELECT | PAD_START
 	ret nz ; no reset
 	; ...and they weren't pressed at the same time
 	ldh a, [hJoypad1Pressed]
-	cp A_BUTTON | B_BUTTON | SELECT | START
+	cp PAD_A | PAD_B | PAD_SELECT | PAD_START
 	ret z ; no reset
 	; ...and at least one of them was pressed now
 	or a
@@ -529,14 +529,14 @@ Func_452::
 
 	di
 	ld hl, rIF
-	res IEB_VBLANK, [hl]
-	res IEB_STAT, [hl]
+	res B_IF_VBLANK, [hl]
+	res B_IF_STAT, [hl]
 
 	; set Timer to be executed as soon as possible
 	ld a, -1
 	ldh [rTIMA], a
 	; start Timer
-	ld a, TACF_START | TACF_4KHZ
+	ld a, TAC_START | TAC_4KHZ
 	ldh [rTAC], a
 	ei
 	ret
@@ -559,10 +559,10 @@ StopTimerAndTurnLCDOn::
 	bit 0, [hl]
 	jr z, .wait_timer
 
-	xor a ; TACF_STOP
+	xor a ; TAC_STOP
 	ldh [rTAC], a
 	ld hl, rLCDC
-	set LCDCB_ON, [hl]
+	set B_LCDC_ENABLE, [hl]
 	ret
 
 Func_496::
@@ -717,13 +717,13 @@ LoadSprite::
 .loop_oam
 	ld a, [hli]
 	add c
-	cp SCRN_Y + OAM_Y_OFS
+	cp SCREEN_HEIGHT_PX + OAM_Y_OFS
 	jr nc, .y_out_of_range_1
 	ld [de], a ; y
 	inc e
 	ld a, [hli]
 	add b
-	cp SCRN_X + OAM_X_OFS
+	cp SCREEN_WIDTH_PX + OAM_X_OFS
 	jr nc, .x_out_of_range_1
 	ld [de], a ; x
 	inc e
@@ -759,7 +759,7 @@ LoadSprite::
 .loop_oam_mirrored
 	ld a, [hli]
 	add c
-	cp SCRN_Y + OAM_Y_OFS
+	cp SCREEN_HEIGHT_PX + OAM_Y_OFS
 	jr nc, .y_out_of_range_2
 	ld [de], a ; y
 	inc e
@@ -767,7 +767,7 @@ LoadSprite::
 	cpl
 	sub 8 - 1
 	add b
-	cp SCRN_X + OAM_X_OFS
+	cp SCREEN_WIDTH_PX + OAM_X_OFS
 	jr nc, .x_out_of_range_2
 	ld [de], a ; x
 	inc e
@@ -778,7 +778,7 @@ LoadSprite::
 	inc e
 	ldh a, [hOAMFlags]
 	xor [hl]
-	xor OAMF_XFLIP
+	xor OAM_XFLIP
 	inc hl
 	ld [de], a ; attributes
 	inc e
@@ -2791,7 +2791,7 @@ LevelLoop::
 	cp $02
 	jr nz, .check_break
 	ld a, [wJoypad1Pressed]
-	and A_BUTTON | B_BUTTON | START
+	and PAD_A | PAD_B | PAD_START
 	jr z, .check_break
 	ld a, $09
 	ld [sa000Unk82], a
@@ -4705,7 +4705,7 @@ Func_2a2b::
 	push bc
 	call Decompress
 
-	ld a, LCDCF_BGON | LCDCF_OBJON | LCDCF_OBJ16 | LCDCF_WIN9C00
+	ld a, LCDC_BG_ON | LCDC_OBJ_ON | LCDC_OBJ_16 | LCDC_WIN_9C00
 	ldh [rLCDC], a
 
 	call Func_46d
@@ -6125,7 +6125,7 @@ Func_3212::
 
 	homecall Func_1c1dc
 
-	ld a, LCDCF_BGON | LCDCF_OBJON | LCDCF_OBJ16 | LCDCF_WINON | LCDCF_WIN9C00
+	ld a, LCDC_BG_ON | LCDC_OBJ_ON | LCDC_OBJ_16 | LCDC_WIN_ON | LCDC_WIN_9C00
 	ldh [rLCDC], a
 
 	call Func_46d
@@ -6174,7 +6174,7 @@ Func_32ff::
 	ld e, MUSIC_LEVEL_SELECT
 	farcall PlayMusic
 
-	ld a, LCDCF_BGON | LCDCF_OBJON | LCDCF_OBJ16 | LCDCF_WIN9C00
+	ld a, LCDC_BG_ON | LCDC_OBJ_ON | LCDC_OBJ_16 | LCDC_WIN_9C00
 	ldh [rLCDC], a
 
 	ld a, $0f
@@ -6468,9 +6468,9 @@ SECTION "Func_3602", ROM0[$3602]
 
 Func_3602::
 	ldh a, [hJoypad1Down]
-	and D_RIGHT | D_LEFT
+	and PAD_RIGHT | PAD_LEFT
 	jr z, .skip
-	bit D_RIGHT_F, a
+	bit B_PAD_RIGHT, a
 	ld a, $40 ; for d-right
 	jr nz, .got_val
 	ld a, $c0 ; for d-left
@@ -6491,7 +6491,7 @@ Func_3619::
 	or a
 	jr nz, .no_carry
 	ldh a, [hJoypad1Down]
-	and D_UP
+	and PAD_UP
 	jr z, .no_carry
 	scf
 	ret
@@ -6504,7 +6504,7 @@ SECTION "Script_3650", ROM0[$3650]
 
 Func_3650::
 	ldh a, [hffb4]
-	and B_BUTTON
+	and PAD_B
 	jr z, .asm_3664
 	ld hl, sa500 + OBJSTRUCT_UNK00
 .loop_objs
@@ -6528,7 +6528,7 @@ SECTION "Script_369d", ROM0[$369d]
 
 Func_369d::
 	ldh a, [hJoypad1Down]
-	and D_DOWN
+	and PAD_DOWN
 	jr nz, .asm_36a5
 	and a
 	ret
@@ -6583,7 +6583,7 @@ Func_369d::
 
 Func_36e6::
 	ldh a, [hJoypad1Down]
-	and D_UP
+	and PAD_UP
 	jr nz, .asm_36ee
 	and a
 	ret
@@ -6626,7 +6626,7 @@ Func_36e6::
 
 Func_3724::
 	ldh a, [hJoypad1Pressed]
-	and SELECT
+	and PAD_SELECT
 	jr nz, .asm_372c
 	and a
 	ret
@@ -6675,9 +6675,9 @@ SECTION "Func_3894", ROM0[$3894]
 ; - bc = max velocity
 Func_3894::
 	ldh a, [hJoypad1Down]
-	and D_RIGHT | D_LEFT
+	and PAD_RIGHT | PAD_LEFT
 	jr z, .decelerate
-	bit D_RIGHT_F, a
+	bit B_PAD_RIGHT, a
 	ld e, OBJSTRUCT_UNK45
 	jr z, .d_left
 ; d-right

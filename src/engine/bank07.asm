@@ -1176,7 +1176,7 @@ Func_1dada::
 	ld [wda01], a
 	ld [wda00], a
 
-	ld a, LCDCF_BGON | LCDCF_OBJ16 | LCDCF_OBJON | LCDCF_WIN9C00
+	ld a, LCDC_BG_ON | LCDC_OBJ_16 | LCDC_OBJ_ON | LCDC_WIN_9C00
 	ldh [rLCDC], a
 	ret
 
@@ -1195,7 +1195,7 @@ Func_1db06:
 
 	; switch on LYC==LY
 	ld hl, rSTAT
-	set STATB_LYC, [hl]
+	set B_STAT_LYC, [hl]
 	ret
 ; 0x1db1b
 
@@ -2004,7 +2004,7 @@ TitleScreen:
 
 	call Func_1584
 
-	ld a, LCDCF_BGON | LCDCF_OBJ16 | LCDCF_OBJON | LCDCF_WIN9C00
+	ld a, LCDC_BG_ON | LCDC_OBJ_16 | LCDC_OBJ_ON | LCDC_WIN_9C00
 	ldh [rLCDC], a
 
 	call Func_46d

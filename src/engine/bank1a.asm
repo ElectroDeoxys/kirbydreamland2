@@ -9,7 +9,7 @@ Init::
 	ldh [rLCDC], a
 
 	; enable SRAM (it will always stay enabled)
-	ld a, CART_SRAM_ENABLE
+	ld a, RAMG_SRAM_ENABLE
 	ld [rRAMG], a
 
 	; clear VRAM
@@ -28,7 +28,7 @@ Init::
 	ld sp, wStackTop
 
 	; clear OAM
-	ld hl, _OAMRAM
+	ld hl, STARTOF(OAM)
 	ld bc, $100
 	ld a, $00
 	call FillHL
@@ -48,7 +48,7 @@ Init::
 	; init IF and enable some interrupts
 	xor a
 	ldh [rIF], a
-	ld a, IEF_VBLANK | IEF_STAT | IEF_TIMER
+	ld a, IE_VBLANK | IE_STAT | IE_TIMER
 	ldh [rIE], a
 
 	; set Timer to be executed
@@ -59,10 +59,10 @@ Init::
 	; 4k Hz / 68 ~ 59 Hz
 	ld a, -68
 	ldh [rTMA], a
-	xor a ; TACF_STOP
+	xor a ; TAC_STOP
 	ldh [rTAC], a
 
-	ld a, STATF_LYC
+	ld a, STAT_LYC
 	ldh [rSTAT], a
 	ld a, $ff
 	ldh [rLYC], a
@@ -123,7 +123,7 @@ Init::
 
 	; finally, enable interrupts and start timer
 	ei
-	ld a, TACF_START | TACF_4KHZ
+	ld a, TAC_START | TAC_4KHZ
 	ldh [rTAC], a
 
 	; hand control over to the main game loop
@@ -240,7 +240,7 @@ Func_68205:
 	dec c
 	jr nz, .loop_copy
 
-	; c = $0 = LOW(rP1)
+	; c = $0 = LOW(rJOYP)
 	ld hl, wcd09
 	ld de, wBGOBPals
 	ld b, wBGOBPalsEnd - wBGOBPals
