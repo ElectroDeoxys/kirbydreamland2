@@ -14,7 +14,7 @@ _VBlank:
 
 .wait_vblank
 	ldh a, [rLY]
-	cp $91
+	cp LY_VBLANK + 1
 	jr nz, .wait_vblank
 
 	; disable LCD
@@ -31,7 +31,7 @@ _VBlank:
 	jp c, .skip_dma_and_scroll ; can be jr
 	ld a, HIGH(wVirtualOAM1)
 	jr z, .got_virtual_oam ; wda0f == 1
-	inc a ; $c1
+	inc a ; HIGH(wVirtualOAM2)
 .got_virtual_oam
 	ldh [hTransferVirtualOAM + $1], a
 	call hTransferVirtualOAM
@@ -997,21 +997,25 @@ Func_675::
 Func_684::
 	ld a, [wda0f]
 	or a
-	jr nz, .asm_693
+	jr nz, .decrement_counter
+	; if wda0f == 0 && !wda39, exit
 	ld a, [wda39]
 	or a
 	ret z
+
 	xor a
 	ld [wda39], a
-.asm_693
-	ld hl, wda33
+.decrement_counter
+	ld hl, wFadeCounter
 	dec [hl]
-	ret nz
-	ld a, [wda34]
-	cp LOW(wcd0c)
-	jr z, .asm_6bf
+	ret nz ; still counting down
+
+	; apply active fade pal
+	ld a, [wActiveFadePal]
+	cp LOW(wFadePalsEnd)
+	jr z, .fade_end
 	ld e, a
-	ld d, HIGH(wcd0c)
+	ld d, HIGH(wFadePals)
 	ld a, [wda38]
 	or a
 	jr nz, .asm_6c9
@@ -1026,36 +1030,38 @@ Func_684::
 	inc e
 	ld [hl], a
 	ld a, e
-	ld [wda34], a
+	ld [wActiveFadePal], a
 .asm_6b8
-	ld a, [wda32]
-	ld [wda33], a
+	ld a, [wFadeStepDuration]
+	ld [wFadeCounter], a
 	ret
-.asm_6bf
+
+.fade_end
 	xor a
 .asm_6c0
 	ld [wda36], a
 	ld hl, StatHandler_Default
 	jp UnsafeSetVBlankTrampoline
+
 .asm_6c9
-	ld a, [wcd0c]
+	ld a, [wSGBPalSequenceSize]
 	or a
 	jr nz, .asm_6d5
-	xor a
+	xor a ; FALSE
 	ld [wda38], a
 	jr .asm_6c0
 .asm_6d5
 	dec a
-	ld [wcd0c], a
+	ld [wSGBPalSequenceSize], a
 	jr nz, .asm_6ef
 	ld a, [wda37]
 	cp $ff
 	jr z, .asm_6ef
 	cp $01
-	ld a, $ff
-	jr z, .asm_6e9
-	xor a
-.asm_6e9
+	ldpal a, SHADE_BLACK, SHADE_BLACK, SHADE_BLACK, SHADE_BLACK
+	jr z, .all_black
+	xor a ; all white
+.all_black
 	ld hl, wBGOBPals
 	ld [hli], a ; wBGP
 	ld [hli], a ; wOBP0
@@ -1065,10 +1071,10 @@ Func_684::
 	ld h, a
 	inc e
 	ld a, e
-	ld [wda34], a
+	ld [wActiveFadePal], a
 	ldh a, [hROMBank]
 	push af
-	ld a, $1e
+	ld a, BANK(SGBSetPalette_WithoutATF_NoWait)
 	call UnsafeBankswitch
 	ld e, h
 	call SGBSetPalette_WithoutATF_NoWait
@@ -2858,7 +2864,7 @@ Func_1220::
 	push hl
 	ld a, [hli]
 	cp $60
-	ld e, $04
+	ld e, 4
 	jr nz, .asm_1279
 	farcall Func_68276
 	jr .asm_1281
@@ -4723,9 +4729,9 @@ Func_2a2b::
 	farcall Func_7a011
 
 	ld a, [wdd2e]
-	add $03
+	add SGB_PALSEQUENCE_03
 	ld d, a
-	ld e, $04
+	ld e, 4
 	farcall Func_68246
 
 .asm_2ac4
@@ -4741,9 +4747,9 @@ Func_2a2b::
 	jr nz, .asm_2ac4
 .asm_2adc
 	ld a, [wdd2e]
-	add $03
+	add SGB_PALSEQUENCE_03
 	ld d, a
-	ld e, $04
+	ld e, 4
 	farcall Func_6827b
 	call Func_437
 	farcall Func_1dada
@@ -4759,12 +4765,13 @@ Func_2af8::
 	ld hl, hJoypad1Down
 	ld [hl], a ; $00
 
-	ld a, $e4
-	ld [wcd09], a
-	ld a, $d0
-	ld [wcd0a], a
-	ld a, $e4
-	ld [wcd0b], a
+	; set palettes
+	ldpal a, SHADE_WHITE, SHADE_LIGHT, SHADE_DARK, SHADE_BLACK
+	ld [wFadePals3BGP], a
+	ldpal a, SHADE_WHITE, SHADE_WHITE, SHADE_LIGHT, SHADE_BLACK
+	ld [wFadePals3OBP0], a
+	ldpal a, SHADE_WHITE, SHADE_LIGHT, SHADE_DARK, SHADE_BLACK
+	ld [wFadePals3OBP1], a
 	ret
 ; 0x2b13
 
@@ -6051,14 +6058,14 @@ Data_31fe:
 	data_31fe $0f, $55a7, $58b1
 
 Func_3212::
-	ld a, $01
+	ld a, TRUE
 	ld [wdf03], a
-	ld a, $e4
-	ld [wcd09], a
-	ld a, $d0
-	ld [wcd0a], a
-	ld a, $90
-	ld [wcd0b], a
+	ldpal a, SHADE_WHITE, SHADE_LIGHT, SHADE_DARK, SHADE_BLACK
+	ld [wFadePals3BGP], a
+	ldpal a, SHADE_WHITE, SHADE_WHITE, SHADE_LIGHT, SHADE_BLACK
+	ld [wFadePals3OBP0], a
+	ldpal a, SHADE_WHITE, SHADE_WHITE, SHADE_LIGHT, SHADE_DARK
+	ld [wFadePals3OBP1], a
 	call Func_33cb
 
 	ld e, MUSIC_15
@@ -6129,7 +6136,7 @@ Func_3212::
 	ldh [rLCDC], a
 
 	call Func_46d
-	ld e, $04
+	ld e, 4
 	farcall Func_6824e
 .asm_32b8
 	call Func_496
@@ -6151,7 +6158,7 @@ Func_3212::
 	and a
 	jr nz, .asm_32b8
 .asm_32f1
-	ld e, $04
+	ld e, 4
 	farcall Func_68280
 	call Func_437
 	ret
@@ -6161,14 +6168,14 @@ Func_32ff::
 	ldh [rLYC], a
 	ld [wLYC], a
 
-	ld a, $00
+	ld a, FALSE
 	ld [wdf03], a
-	ld a, $e4
-	ld [wcd09], a
-	ld a, $e0
-	ld [wcd0a], a
-	ld a, $e4
-	ld [wcd0b], a
+	ldpal a, SHADE_WHITE, SHADE_LIGHT, SHADE_DARK, SHADE_BLACK
+	ld [wFadePals3BGP], a
+	ldpal a, SHADE_WHITE, SHADE_WHITE, SHADE_DARK, SHADE_BLACK
+	ld [wFadePals3OBP0], a
+	ldpal a, SHADE_WHITE, SHADE_LIGHT, SHADE_DARK, SHADE_BLACK
+	ld [wFadePals3OBP1], a
 	call Func_33cb
 
 	ld e, MUSIC_LEVEL_SELECT
@@ -6221,7 +6228,7 @@ Func_32ff::
 	ld a, [wLevel]
 	add $1b
 	ld d, a
-	ld e, $04
+	ld e, 4
 	farcall Func_68246
 
 .asm_3396
@@ -6235,15 +6242,15 @@ Func_32ff::
 	ld hl, wdd2d
 	ld a, [hl]
 	and a
-	jr nz, .asm_33b7
+	jr nz, .load_level_pals
 	ld a, [wda46]
 	and a
 	jr nz, .asm_3396
-.asm_33b7
+.load_level_pals
 	ld a, [wLevel]
-	add $1b
+	add SGB_LEVEL_PALSEQUENCES
 	ld d, a
-	ld e, $04
+	ld e, 4
 	farcall Func_6827b
 	call Func_437
 	ret

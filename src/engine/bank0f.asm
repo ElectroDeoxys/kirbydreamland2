@@ -568,7 +568,7 @@ FileSelectMenu:
 	ld a, [wdf0a]
 	cp $06
 	jr z, .loop_selection
-	lb de, $01, $04
+	lb de, SGB_PALSEQUENCE_01, 4
 	farcall Func_6827b
 	call Func_437
 	ret
@@ -1522,9 +1522,9 @@ InitFileSelectMenu:
 	ld e, MUSIC_FILE_SELECT_MENU
 	farcall PlayMusic
 
-	ld hl, wcd09
+	ld hl, wFadePals3
 	ld a, $e4
-	ld [hli], a ; wcd09
+	ld [hli], a ; wFadePals3
 	ld a, $d0
 	ld [hli], a ; wcd0a
 	ld a, $e4
@@ -1539,7 +1539,7 @@ InitFileSelectMenu:
 	ld [wdf0a], a
 	call ReadJoypad
 
-	lb de, $01, $04
+	lb de, $01, 4
 	farcall Func_68246
 	ret
 ; 0x3ee8c

@@ -136,6 +136,120 @@ DEF NUM_SGB_SFX EQU const_value
 	const SGB_PALS_33 ; $33
 	const SGB_PALS_34 ; $34
 	const SGB_PALS_35 ; $35
+	const SGB_PALS_36 ; $36
+	const SGB_PALS_37 ; $37
+	const SGB_PALS_38 ; $38
+	const SGB_PALS_39 ; $39
+	const SGB_PALS_3A ; $3A
+	const SGB_PALS_3B ; $3B
+	const SGB_PALS_3C ; $3C
+	const SGB_PALS_3D ; $3D
+	const SGB_PALS_3E ; $3E
+	const SGB_PALS_3F ; $3F
+	const SGB_PALS_40 ; $40
+	const SGB_PALS_41 ; $41
+	const SGB_PALS_42 ; $42
+	const SGB_PALS_43 ; $43
+	const SGB_PALS_44 ; $44
+	const SGB_PALS_45 ; $45
+	const SGB_PALS_46 ; $46
+	const SGB_PALS_47 ; $47
+	const SGB_PALS_48 ; $48
+	const SGB_PALS_49 ; $49
+	const SGB_PALS_4A ; $4a
+	const SGB_PALS_4B ; $4b
+	const SGB_PALS_4C ; $4c
+	const SGB_PALS_4D ; $4d
+	const SGB_PALS_4E ; $4e
+	const SGB_PALS_4F ; $4f
+	const SGB_PALS_50 ; $50
+	const SGB_PALS_51 ; $51
+	const SGB_PALS_52 ; $52
+	const SGB_PALS_53 ; $53
+	const SGB_PALS_54 ; $54
+	const SGB_PALS_55 ; $55
+	const SGB_PALS_56 ; $56
+	const SGB_PALS_57 ; $57
+	const SGB_PALS_58 ; $58
+	const SGB_PALS_59 ; $59
+	const SGB_PALS_5A ; $5a
+	const SGB_PALS_5B ; $5b
+	const SGB_PALS_5C ; $5c
+	const SGB_PALS_5D ; $5d
+	const SGB_PALS_5E ; $5e
+	const SGB_PALS_5F ; $5f
+	const SGB_PALS_60 ; $60
+	const SGB_PALS_61 ; $61
+	const SGB_PALS_62 ; $62
+	const SGB_PALS_63 ; $63
+	const SGB_PALS_64 ; $64
+	const SGB_PALS_65 ; $65
+	const SGB_PALS_66 ; $66
+	const SGB_PALS_67 ; $67
+	const SGB_PALS_68 ; $68
+	const SGB_PALS_69 ; $69
+	const SGB_PALS_6A ; $6a
+	const SGB_PALS_6B ; $6b
+	const SGB_PALS_6C ; $6c
+	const SGB_PALS_6D ; $6d
+	const SGB_PALS_6E ; $6e
+	const SGB_PALS_6F ; $6f
+	const SGB_PALS_70 ; $70
+	const SGB_PALS_71 ; $71
+	const SGB_PALS_72 ; $72
+	const SGB_PALS_73 ; $73
+	const SGB_PALS_74 ; $74
+	const SGB_PALS_75 ; $75
+	const SGB_PALS_76 ; $76
+	const SGB_PALS_77 ; $77
+	const SGB_PALS_78 ; $78
+	const SGB_PALS_79 ; $79
+	const SGB_PALS_7A ; $7a
+	const SGB_PALS_7B ; $7b
+	const SGB_PALS_7C ; $7c
+	const SGB_PALS_7D ; $7d
+	const SGB_PALS_7E ; $7e
+	const SGB_PALS_7F ; $7f
+
+; each of these represent a sequence of SGB_PALS_* constants
+; to be used in fade in or fade out
+	const_def
+	const SGB_PALSEQUENCE_00 ; $00
+	const SGB_PALSEQUENCE_01 ; $01
+	const SGB_PALSEQUENCE_02 ; $02
+	const SGB_PALSEQUENCE_03 ; $03
+	const SGB_PALSEQUENCE_04 ; $04
+	const SGB_PALSEQUENCE_05 ; $05
+	const SGB_PALSEQUENCE_06 ; $06
+	const SGB_PALSEQUENCE_07 ; $07
+	const SGB_PALSEQUENCE_08 ; $08
+	const SGB_PALSEQUENCE_09 ; $09
+	const SGB_PALSEQUENCE_0A ; $0a
+	const SGB_PALSEQUENCE_0B ; $0b
+	const SGB_PALSEQUENCE_0C ; $0c
+	const SGB_PALSEQUENCE_0D ; $0d
+	const SGB_PALSEQUENCE_0E ; $0e
+	const SGB_PALSEQUENCE_0F ; $0f
+	const SGB_PALSEQUENCE_10 ; $10
+	const SGB_PALSEQUENCE_11 ; $11
+	const SGB_PALSEQUENCE_12 ; $12
+	const SGB_PALSEQUENCE_13 ; $13
+	const SGB_PALSEQUENCE_14 ; $14
+	const SGB_PALSEQUENCE_15 ; $15
+	const SGB_PALSEQUENCE_16 ; $16
+	const SGB_PALSEQUENCE_17 ; $17
+	const SGB_PALSEQUENCE_18 ; $18
+	const SGB_PALSEQUENCE_19 ; $19
+	const SGB_PALSEQUENCE_1A ; $1a
+DEF SGB_LEVEL_PALSEQUENCES EQU const_value
+	const SGB_PALSEQUENCE_GRASS_LAND   ; $1b
+	const SGB_PALSEQUENCE_BIG_FOREST   ; $1c
+	const SGB_PALSEQUENCE_RIPPLE_FIELD ; $1d
+	const SGB_PALSEQUENCE_ICEBERG      ; $1e
+	const SGB_PALSEQUENCE_RED_CANYON   ; $1f
+	const SGB_PALSEQUENCE_CLOUDY_PARK  ; $20
+	const SGB_PALSEQUENCE_DARK_CASTLE  ; $21
+DEF NUM_SGB_PALSEQUENCES EQU const_value
 
 ; SGB ATF constants
 	const_def

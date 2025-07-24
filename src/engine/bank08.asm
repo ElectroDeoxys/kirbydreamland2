@@ -171,7 +171,7 @@ Func_20135:
 	jp Func_20107
 
 Func_201a4:
-	ld e, $04
+	ld e, 4
 	farcall Func_68280
 	call Func_437
 	ld a, [wdf0a]
@@ -405,7 +405,7 @@ LoadLevel:
 	farcall Func_1c0e2
 
 	ld hl, wdb78
-	ld de, wcd09
+	ld de, wFadePals3
 	ld a, [hli]
 	ld [de], a
 	inc e
@@ -431,7 +431,7 @@ LoadLevel:
 	ld a, $01
 	ld [wdb75], a
 .asm_2063c
-	ld e, $04
+	ld e, 4
 	farcall Func_6824e
 	ret
 
@@ -1100,7 +1100,7 @@ Func_21a2c:
 	farcall PlaySFX
 	ld e, SGB_SFX_STOP
 	farcall SGBPlaySFX
-	ld de, $4
+	lb de, SGB_PALSEQUENCE_00, 4
 	farcall Func_682a4
 
 	ldh a, [hff9a]

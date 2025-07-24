@@ -43,22 +43,17 @@ wOBP0:: db ; cd01
 wOBP1:: db ; cd02
 wBGOBPalsEnd::
 
-wcd03:: db ; cd03
-wcd04:: db ; cd04
-wcd05:: db ; cd05
+wFadePals::
+wFadePals1:: pal_struct wFadePals1 ; cd03
+wFadePals2:: pal_struct wFadePals2 ; cd06
+wFadePals3:: pal_struct wFadePals3 ; cd09
+wFadePalsEnd::
 
-wcd06:: db ; cd06
-wcd07:: db ; cd07
-wcd08:: db ; cd08
-
-wcd09:: db ; cd09
-wcd0a:: db ; cd0a
-wcd0b:: db ; cd0b
-
-wcd0c:: ; cd0c
+wSGBPalSequenceSize:: ; cd0c
 	db
 
-	ds $2d - $d
+wSGBPalSequence:: ; cd0d
+	ds $20
 
 wcd2d:: ; cd2d
 	ds $8
@@ -322,13 +317,14 @@ wScreenSectionSCX:: ; da2d
 wRNG:: ; da30
 	dw
 
-wda32:: ; da32
-	db
+; every time a fading step occurs,
+; wFadeCounter is set to this value
+wFadeStepDuration:: db ; da32
+; decrements by 1 when fading palettes
+; when reaches 0, then go to next fade step
+wFadeCounter::      db ; da33
 
-wda33:: ; da33
-	db
-
-wda34:: ; da34
+wActiveFadePal:: ; da34
 	db
 
 wda35:: ; da35

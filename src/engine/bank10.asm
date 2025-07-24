@@ -14,12 +14,14 @@ StartIntro:
 	xor a
 	ld [wdf32], a
 	ld [wScreenSectionSCX], a
-	ld a, $e4
-	ld [wcd09], a
-	ld a, $d0
-	ld [wcd0a], a
-	ld a, $e4
-	ld [wcd0b], a
+
+	; set palettes
+	ldpal a, SHADE_WHITE, SHADE_LIGHT, SHADE_DARK, SHADE_BLACK
+	ld [wFadePals3BGP], a
+	ldpal a, SHADE_WHITE, SHADE_WHITE, SHADE_LIGHT, SHADE_BLACK
+	ld [wFadePals3OBP0], a
+	ldpal a, SHADE_WHITE, SHADE_LIGHT, SHADE_DARK, SHADE_BLACK
+	ld [wFadePals3OBP1], a
 
 	; clear BG maps
 	hlbgcoord 0, 0
@@ -69,7 +71,7 @@ StartIntro:
 	ld e, SGB_ATF_1F
 	farcall Func_7a011
 
-	lb de, $02, $01
+	lb de, $02, 1
 	farcall Func_68246
 	ld b, $00
 	farcall Func_1db06
@@ -98,7 +100,7 @@ StartIntro:
 	jr nz, .loop_scroll_rick
 
 	ld hl, wLYC
-	ld a, $2f
+	ld a, 47
 	ld [hl], a
 	ldh [rLYC], a
 	ld a, $58
@@ -125,7 +127,7 @@ StartIntro:
 	jr nz, .loop_scroll_coo
 
 	ld hl, wLYC
-	ld a, $5f
+	ld a, 95
 	ld [hl], a
 	ldh [rLYC], a
 	ld a, $a8
@@ -163,7 +165,7 @@ StartIntro:
 	and a
 	jr nz, .loop_wait
 
-	lb de, $02, $04
+	lb de, SGB_PALSEQUENCE_02, 4
 	farcall Func_6827b
 
 	call Func_437

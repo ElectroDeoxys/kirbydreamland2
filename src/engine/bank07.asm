@@ -1165,7 +1165,7 @@ Func_1dada::
 	ld [hli], a
 	ld [hl], HIGH(Func_2aa)
 
-	ld a, $7f
+	ld a, 127
 	ldh [rLYC], a
 	ld [wLYC], a
 
@@ -1211,7 +1211,7 @@ Func_1db28::
 	ld [hli], a
 	ld [hl], HIGH(Func_2aa)
 
-	ld a, $7f
+	ld a, 127
 	ldh [rLYC], a
 	ld [wLYC], a
 
@@ -1988,7 +1988,7 @@ TitleScreen:
 
 	xor a
 	ld [wdf02], a
-	ld hl, wcd09
+	ld hl, wFadePals3
 	ld a, $e4
 	ld [hli], a
 	ld a, $d0
@@ -2012,7 +2012,7 @@ TitleScreen:
 	ld e, SGB_ATF_08
 	farcall Func_7a011
 
-	lb de, $00, $04
+	lb de, $00, 4
 	farcall Func_68246
 
 	ld e, SGB_SFX_APPLAUSE
@@ -2065,7 +2065,7 @@ TitleScreen:
 .end_due_to_demo_timer
 	ld e, SGB_SFX_STOP
 	farcall SGBPlaySFX
-	lb de, $00, $04
+	lb de, SGB_PALSEQUENCE_00, 4
 	farcall Func_6827b
 	jp Func_437
 ; 0x1e107

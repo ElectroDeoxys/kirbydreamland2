@@ -887,7 +887,7 @@ SGBVRAMTransfer:
 	push af
 
 	; overwrite BGP, needs to be set to $e4
-	ld a, $e4
+	ld a, BGP_SGB_TRANSFER
 	ld [wBGP], a
 	ldh [rBGP], a
 

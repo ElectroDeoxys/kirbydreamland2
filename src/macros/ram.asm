@@ -5,6 +5,12 @@ MACRO joypad_struct
 	db ; ?
 ENDM
 
+MACRO pal_struct
+\1BGP::  db
+\1OBP0:: db
+\1OBP1:: db
+ENDM
+
 MACRO obj_oam_struct
 \1ObjectID::   db
 \1BaseTileID:: db
