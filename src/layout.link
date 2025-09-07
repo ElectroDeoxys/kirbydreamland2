@@ -19,6 +19,8 @@ ROMX $01
 	"Bank 1"
 ROMX $02
 	"Bank 2"
+ROMX $03
+	"Bank 3"
 ROMX $07
 	"Bank 7"
 ROMX $08

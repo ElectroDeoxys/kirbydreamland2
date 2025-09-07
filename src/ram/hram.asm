@@ -26,7 +26,8 @@ hff84:: ; ff84
 hff85:: ; ff85
 	db
 
-	ds $1
+hff86:: ; ff86
+	db
 
 hff87:: ; ff87
 	db
@@ -68,7 +69,11 @@ hff9d:: ; ff9d
 hff9e:: db ; ff9e
 hff9f:: db ; ff9f
 
-	ds $a2 - $a0
+hffa0:: ; ffa0
+	db
+
+hffa1:: ; ffa1
+	db
 
 hffa2:: ; ffa2
 	db

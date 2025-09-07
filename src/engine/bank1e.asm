@@ -40,7 +40,7 @@ InitAudio:
 	dec b
 	jr nz, .loop_fill
 
-	ld hl, InitialWaveform
+	ld hl, $30e0 ; points to code and not wave data
 	call ExecuteInstrumentCommands.LoadWaveSample
 
 	; no music and no SFX

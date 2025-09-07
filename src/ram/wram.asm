@@ -366,7 +366,10 @@ wda49:: ; da49
 wda4a:: ; da4a
 	db
 
-SECTION "WRAM1@db36", WRAMX[$db36], BANK[$1]
+SECTION "WRAM1@db34", WRAMX[$db34], BANK[$1]
+
+wdb34:: ; db34
+	dw
 
 wdb36:: ; db36
 	dw
@@ -603,7 +606,7 @@ wHUDUpdateFlags:: ; dede
 wdedf:: ; dedf
 	db
 
-wCopyAbility:: ; dee0
+wCopyAbilityIcon:: ; dee0
 	db
 
 wdee1:: ; dee1

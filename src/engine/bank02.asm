@@ -132,6 +132,25 @@ Func_80e2:
 	ret
 ; 0x80f5
 
+SECTION "Func_9ccf", ROMX[$5ccf], BANK[$02]
+
+Func_9ccf:
+	ld a, [wdb76]
+	or a
+	ret z
+	ld a, [wda36]
+	or a
+	ret nz
+	ld hl, wBGP
+	ldpal a, SHADE_WHITE, SHADE_LIGHT, SHADE_DARK, SHADE_BLACK
+	ld [hli], a
+	ldpal a, SHADE_WHITE, SHADE_WHITE, SHADE_LIGHT, SHADE_BLACK
+	ld [hli], a
+	ldpal a, SHADE_WHITE, SHADE_LIGHT, SHADE_DARK, SHADE_BLACK
+	ld [hli], a
+	ret
+; 0x9ce6
+
 SECTION "Func_b47d", ROMX[$747d], BANK[$02]
 
 Func_b47d::
@@ -143,29 +162,29 @@ Func_b47d::
 	ld a, [hl]
 	or a
 	jr z, .done
-	ld [sa000Unk5b], a ; -1
+	ld [sa000Unk5b], a ; NO_COPY_ABILITY
 	inc a
-	ld [wCopyAbility], a ; NONE
+	ld [wCopyAbilityIcon], a ; NONE
 	ld hl, wHUDUpdateFlags
 	set UPDATE_COPY_ABILITY_F, [hl]
 .done
 	ret
 
 .data
-	db -1
-	db -1
-	db  0
-	db  0
-	db  0
-	db  0
-	db  0
-	db  0
-	db  0
-	db -1
-	db -1
-	db -1
-	db  0
-	db  0
+	db NO_COPY_ABILITY
+	db NO_COPY_ABILITY
+	db 0
+	db 0
+	db 0
+	db 0
+	db 0
+	db 0
+	db 0
+	db NO_COPY_ABILITY
+	db NO_COPY_ABILITY
+	db NO_COPY_ABILITY
+	db 0
+	db 0
 
 Func_b4a7:
 	push bc
@@ -267,9 +286,11 @@ Func_b4a7:
 	ret
 
 Data_b534:
+	table_width 2
 	dw Func_b926 ; RICK
 	dw Func_b93c ; KINE
 	dw Func_b952 ; COO
+	assert_table_length NUM_ANIMAL_FRIENDS
 
 Func_b53a:
 	ld h, d

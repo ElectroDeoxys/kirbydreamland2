@@ -19,7 +19,7 @@ DEF FILE_LIVES         RB     ; $11
 DEF FILE_HP            RB     ; $12
 DEF FILE_UNK13         RB     ; $13
 DEF FILE_UNK14         RB     ; $14
-DEF FILE_UNK15         RB     ; $15
+DEF FILE_COPY_ABILITY         RB     ; $15
 DEF FILE_ANIMAL_FRIEND RB     ; $16
 DEF FILE_SCORE         RB $3  ; $17
 DEF FILE_CHECKSUM1     RB     ; $1a

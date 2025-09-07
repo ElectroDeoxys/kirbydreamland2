@@ -279,7 +279,7 @@ MACRO file_struct
 \1HP::           db
 \1Unk13::        db
 \1Unk14::        db
-\1Unk15::        db
+\1CopyAbility::  db
 \1AnimalFriend:: db
 \1Score::        ds $3
 \1Checksum1::    db

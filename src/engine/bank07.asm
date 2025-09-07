@@ -275,10 +275,12 @@ Func_1c128:
 	db MUSIC_NONE
 
 .AnimalFriendMusicIDs:
+	table_width 1
 	db MUSIC_10   ; NONE
 	db MUSIC_RICK ; RICK
 	db MUSIC_KINE ; KINE
 	db MUSIC_COO  ; COO
+	assert_table_length NUM_ANIMAL_FRIENDS + 1
 
 Func_1c1dc::
 	ld hl, wdb51
@@ -894,7 +896,7 @@ Func_1c508:
 	ld a, [hl]
 	ld [de], a
 	inc h
-	ld e, OBJSTRUCT_UNK4A
+	ld e, OBJSTRUCT_BASE_SCORE
 	ld a, [hl]
 	ld [de], a
 	inc h
@@ -1005,7 +1007,167 @@ Func_1c59c:
 	ld a, b
 	ld [wdcfd + 1], a
 	ret
-; 0x1c5c2
+
+Script_1c5c2:
+	set_field OBJSTRUCT_UNK4C, $00
+	set_draw_func Func_df6
+	set_var_to_field OBJSTRUCT_UNK51
+	var_jumptable 22
+	dw Script_1c5f9
+	dw $471a; Script_1c71a
+	dw $4742; Script_1c742
+	dw $475c; Script_1c75c
+	dw $4786; Script_1c786
+	dw $47b9; Script_1c7b9
+	dw $47ed; Script_1c7ed
+	dw $486f; Script_1c86f
+	dw $479a; Script_1c79a
+	dw $46b4; Script_1c6b4
+	dw $49be; Script_1c9be
+	dw $4a28; Script_1ca28
+	dw $4a45; Script_1ca45
+	dw $4ada; Script_1cada
+	dw $4b11; Script_1cb11
+	dw $4b5c; Script_1cb5c
+	dw $47ca; Script_1c7ca
+	dw $4b92; Script_1cb92
+	dw $4b96; Script_1cb96
+	dw $4ba0; Script_1cba0
+	dw $4bcd; Script_1cbcd
+	dw $4bd9; Script_1cbd9
+	script_stop
+
+Script_1c5f9:
+	unk03_cmd ApplyObjectVelocities
+	set_oam $7246, $0b ; OAM_2f246
+	set_frame 0
+	exec_asm Func_1c611
+	wait 3
+	exec_asm Func_1c662
+	wait 3
+	stop_movement
+	wait 8
+	script_stop
+
+Func_1c611:
+	call Random
+	ld e, OBJSTRUCT_UNK45
+	ld [de], a
+	and $e0
+	swap a
+	rra
+
+	ld e, OBJSTRUCT_UNK3A
+	ld [de], a
+	ld hl, .Offsets
+	add l
+	ld l, a
+	incc h
+	ld a, [hl]
+	ld l, a
+	rla
+	sbc a
+	ld h, a
+	ld e, OBJSTRUCT_Y_POS + 1
+	ld a, [de]
+	add l
+	ld [de], a
+	inc e
+	ld a, [de]
+	adc h
+	ld [de], a
+
+	ld e, OBJSTRUCT_UNK3A
+	ld a, [de]
+	ld hl, .Offsets + 2
+	add l
+	ld l, a
+	incc h
+	ld a, [hl]
+	ld l, a
+	rla
+	sbc a
+	ld h, a
+	ld e, OBJSTRUCT_X_POS + 1
+	ld a, [de]
+	add l
+	ld [de], a
+	inc e
+	ld a, [de]
+	adc h
+	ld [de], a
+
+	call Func_1c662
+
+	ld e, OBJSTRUCT_UNK3A
+	ld a, [de]
+	add $0a
+	ld [de], a
+	ret
+
+.Offsets:
+	db -6
+	db -5
+	db  0
+	db  5
+	db  6
+	db  5
+	db  0
+	db -5
+	db -6
+	db -5
+
+Func_1c662:
+	ld e, OBJSTRUCT_UNK3A
+	ld a, [de]
+	ld hl, .Velocities
+	add a
+	add l
+	ld l, a
+	incc h
+	ld e, OBJSTRUCT_Y_VEL
+	ld a, [hli]
+	ld [de], a
+	inc e
+	ld a, [hl]
+	ld [de], a
+	ld e, OBJSTRUCT_UNK3A
+	ld a, [de]
+	ld hl, .Velocities + 4
+	add a
+	add l
+	ld l, a
+	incc h
+	ld e, OBJSTRUCT_X_VEL
+	ld a, [hli]
+	ld [de], a
+	inc e
+	ld a, [hl]
+	ld [de], a
+	ret
+
+.Velocities:
+	dw -3.0
+	dw -2.0
+	dw  0.0
+	dw  2.0
+	dw  3.0
+	dw  2.0
+	dw  0.0
+	dw -2.0
+	dw -3.0
+	dw -2.0
+	dw -2.0
+	dw -1.5
+	dw  0.0
+	dw  1.5
+	dw  2.0
+	dw  1.5
+	dw  0.0
+	dw -1.5
+	dw -2.0
+	dw -1.5
+; 0x1c689
 
 SECTION "Data_1d629", ROMX[$5629], BANK[$7]
 
@@ -1130,7 +1292,7 @@ Func_1da7c:
 	ld [hl], a
 
 	; init copy ability
-	ld hl, wCopyAbility
+	ld hl, wCopyAbilityIcon
 	ld [hl], a
 
 	ld hl, wdee1
@@ -1854,7 +2016,7 @@ UpdateHUDCopyAbilityIcon:
 	ld a, 4 tiles
 	ld [bc], a
 	inc c
-	ld de, wCopyAbility
+	ld de, wCopyAbilityIcon
 	ld a, [de]
 	swap a
 	ld l, a
@@ -1867,7 +2029,7 @@ UpdateHUDCopyAbilityIcon:
 	rl h
 	sla l
 	rl h
-	; hl = wCopyAbility * (4 tiles)
+	; hl = wCopyAbilityIcon * (4 tiles)
 
 	; unnecessary bankswitch
 	; will lead to bug if bank isn't $7
@@ -2070,7 +2232,602 @@ TitleScreen:
 	jp Func_437
 ; 0x1e107
 
-SECTION "Data_1f402", ROMX[$7402], BANK[$7]
+SECTION "Script_1ed73", ROMX[$6d73], BANK[$7]
+
+Func_1ed73:
+	ld a, [wdb76]
+	or a
+	ret z
+	ld a, [wda36]
+	or a
+	ret nz
+	ld hl, wdb78
+	ld a, [hli]
+	ld [wBGP], a
+	ld a, [hli]
+	ld [wOBP0], a
+	ld a, [hl]
+	ld [wOBP1], a
+	ret
+; 0x1ed8d
+
+SECTION "Script_1eec0", ROMX[$6ec0], BANK[$7]
+
+Script_1eec0:
+	set_var_to_field OBJSTRUCT_UNK50
+	var_jumptable 1
+	dw .script_1eec7
+	script_stop
+.script_1eec7
+	set_oam $7246, $0b ; OAM_2f246
+	set_frame 1
+	set_field OBJSTRUCT_BASE_SCORE + 0, LOW($1)
+	set_field OBJSTRUCT_BASE_SCORE + 1, HIGH($1)
+	far_jump Script_cd9b
+
+Script_1eed7:
+	set_field OBJSTRUCT_OAM_FLAGS, OAM_PAL0
+	set_var_to_field OBJSTRUCT_UNK71
+	var_jumptable 4
+	dw Script_1eee6
+	dw Script_1f08f
+	dw Script_1f1af
+	dw Script_1f2c0
+
+Script_1eee6:
+	set_field OBJSTRUCT_UNK51, $02
+	set_var_to_field OBJSTRUCT_UNK5B
+	var_jumptable 7
+	dw .script_1eefb
+	dw .script_1efad
+	dw .script_1efcb
+	dw .script_1efe3
+	dw .script_1effd
+	dw .script_1f01e
+	dw .script_1f04c
+
+.script_1eefb
+	set_frame 32
+
+	repeat 4
+	set_field OBJSTRUCT_OAM_FLAGS, OAM_PAL0
+	wait 2
+	set_field OBJSTRUCT_OAM_FLAGS, OAM_PAL1
+	wait 2
+	repeat_end
+
+	play_sfx SFX_3E
+	set_field OBJSTRUCT_OAM_FLAGS, OAM_PAL0
+	set_frame_wait 32, 1
+	set_oam $5214, $0a ; OAM_29214
+	set_frame_wait 1, 1
+	set_oam $4f40, $0a ; OAM_28f40
+	set_field OBJSTRUCT_OAM_FLAGS, OAM_PAL1
+	set_frame_wait 32, 1
+	set_oam $5214, $0a ; OAM_29214
+	set_field OBJSTRUCT_OAM_FLAGS, OAM_PAL0
+	set_frame_wait 0, 1
+	set_oam $4f40, $0a ; OAM_28f40
+	set_frame_wait 32, 1
+	set_oam $5214, $0a ; OAM_29214
+	set_frame_wait 3, 1
+	set_oam $4f40, $0a ; OAM_28f40
+	set_field OBJSTRUCT_OAM_FLAGS, OAM_PAL1
+	set_frame_wait 32, 1
+	set_oam $5214, $0a ; OAM_29214
+	set_field OBJSTRUCT_OAM_FLAGS, OAM_PAL0
+	set_frame_wait 2, 1
+	set_frame_wait 1, 1
+	set_frame_wait 0, 1
+	set_frame_wait 3, 1
+	set_frame_wait 2, 1
+	set_frame_wait 1, 1
+	set_oam $4f40, $0a ; OAM_28f40
+	set_field OBJSTRUCT_OAM_FLAGS, OAM_PAL1
+	set_frame_wait 32, 1
+	set_oam $5214, $0a ; OAM_29214
+	set_field OBJSTRUCT_OAM_FLAGS, OAM_PAL0
+	set_frame_wait 0, 1
+	set_oam $4f40, $0a ; OAM_28f40
+	set_frame_wait 32, 1
+	set_oam $5214, $0a ; OAM_29214
+	set_frame_wait 3, 1
+	unk22_cmd Script_1f070
+	set_oam $4f40, $0a ; OAM_28f40
+	set_field OBJSTRUCT_OAM_FLAGS, OAM_PAL1
+	set_frame_wait 32, 2
+	set_oam $5214, $0a ; OAM_29214
+	set_field OBJSTRUCT_OAM_FLAGS, OAM_PAL0
+	set_frame_wait 2, 1
+	set_oam $4f40, $0a ; OAM_28f40
+	set_frame_wait 32, 4
+	set_frame_wait 4, 16
+	set_frame_wait 30, 1
+	exec_func_f77 $02
+	set_frame_wait 30, 23
+	script_farret
+
+.script_1efad
+	set_oam $5278, $0a ; OAM_29278
+	set_frame_wait 14, 2
+	set_frame_wait 15, 2
+	set_frame_wait 16, 2
+	set_frame_wait 17, 2
+	set_frame_wait 18, 6
+	set_frame_wait 19, 2
+	exec_func_f77 $02
+	set_frame_wait 20, 10
+	script_farret
+
+.script_1efcb
+	repeat 4
+	set_oam $4f40, $0a ; OAM_28f40
+	set_frame_wait 0, 4
+	set_oam $5548, $0a ; OAM_29548
+	set_frame_wait 0, 4
+	repeat_end
+
+	exec_func_f77 $02
+	wait 20
+	script_farret
+
+.script_1efe3
+	set_oam $55b6, $0a ; OAM_295b6
+	set_frame_wait 0, 10
+	set_frame_wait 1, 2
+	create_object_rel_2 $09, 6, 0
+	set_frame_wait 2, 10
+	exec_func_f77 $02
+	wait 20
+	script_farret
+
+.script_1effd
+	set_oam $5603, $0a ; OAM_29603
+	set_frame_wait 0, 6
+	set_frame_wait 1, 4
+	set_frame_wait 2, 4
+	set_frame_wait 3, 2
+	set_frame_wait 2, 2
+	exec_func_f77 $02
+	set_frame_wait 3, 16
+	set_frame_wait 2, 4
+	set_frame_wait 1, 4
+	script_farret
+
+.script_1f01e
+	set_oam $5657, $0a ; OAM_29657
+	set_frame_wait 0, 10
+
+	repeat 3
+	exec_func_f77 $0a
+	set_frame_wait 1, 2
+	exec_func_f77 $0a
+	set_frame_wait 2, 2
+	exec_func_f77 $0a
+	set_frame_wait 3, 2
+	exec_func_f77 $0a
+	set_frame_wait 4, 2
+	repeat_end
+
+	exec_func_f77 $02
+	set_frame_wait 0, 20
+	script_farret
+
+.script_1f04c
+	set_oam $56a4, $0a ; OAM_296a4
+	set_frame_wait 0, 5
+
+	repeat 3
+	set_frame_wait 1, 2
+	set_frame_wait 2, 2
+	set_frame_wait 3, 2
+	set_frame_wait 4, 2
+	set_frame_wait 5, 2
+	set_frame_wait 6, 2
+	repeat_end
+
+	exec_func_f77 $02
+	set_frame_wait 0, 10
+	script_farret
+
+Script_1f070:
+	create_object_rel_1 $03, -6, 0
+	wait 4
+	create_object_rel_1 $03, -6, -4
+	wait 4
+	create_object_rel_1 $03, -6, 4
+	wait 4
+	create_object_rel_1 $03, -6, 0
+	script_end
+
+Script_1f08f:
+	set_var_to_field OBJSTRUCT_UNK5B
+	var_jumptable 7
+	dw .script_1f0a1
+	dw .script_1f0d9
+	dw .script_1f0fd
+	dw .script_1f115
+	dw .script_1f132
+	dw .script_1f14c
+	dw Script_1f17e
+.script_1f0a1
+	set_oam $5968, $0a ; OAM_29968
+	set_frame_wait 0, 6
+	set_frame_wait 1, 4
+	set_frame 2
+	set_field OBJSTRUCT_UNK39, $01
+	create_object_rel_2 $07, 16, 4
+	wait 6
+	set_field OBJSTRUCT_UNK39, $02
+	create_object_rel_2 $07, 16, 4
+	wait 6
+	set_field OBJSTRUCT_UNK39, $00
+	create_object_rel_2 $07, 16, 4
+	exec_func_f77 $02
+	wait 6
+	set_frame_wait 1, 4
+	set_frame_wait 0, 6
+	script_farret
+
+.script_1f0d9
+	set_oam $59e5, $0a ; OAM_299e5
+	set_frame_wait 0, 6
+	set_frame_wait 1, 6
+	exec_func_f77 $02
+
+	repeat 2
+	set_frame_wait 2, 4
+	set_frame_wait 3, 4
+	set_frame_wait 4, 4
+	set_frame_wait 5, 4
+	repeat_end
+
+	set_frame_wait 1, 6
+	set_frame_wait 0, 6
+	script_farret
+
+.script_1f0fd
+	repeat 4
+	set_oam $572c, $0a ; OAM_2972c
+	set_frame_wait 2, 4
+	set_oam $5acb, $0a ; OAM_29acb
+	set_frame_wait 0, 4
+	repeat_end
+
+	exec_func_f77 $02
+	wait 20
+	script_farret
+
+.script_1f115
+	set_oam $5c4c, $0a ; OAM_29c4c
+	set_frame_wait 0, 8
+	set_frame 1
+	create_object_rel_2 $13, 0, 0
+	exec_func_f77 $02
+	set_frame_wait 2, 32
+	set_frame_wait 1, 4
+	set_frame_wait 0, 8
+	script_farret
+
+.script_1f132
+	set_oam $5d36, $0a ; OAM_29d36
+	set_frame_wait 0, 6
+	set_frame_wait 1, 3
+	set_frame_wait 0, 3
+	set_frame_wait 1, 8
+	exec_func_f77 $02
+	wait 20
+	set_frame_wait 0, 5
+	script_farret
+
+.script_1f14c
+	set_oam $5d74, $0a ; OAM_29d74
+	set_field OBJSTRUCT_UNK39, $00
+
+	repeat 8
+	create_object_rel_2 $0d, 10, 5
+	set_frame_wait 0, 2
+	create_object_rel_2 $0d, 10, 5
+	set_frame_wait 1, 2
+	exec_asm Func_1f178
+	repeat_end
+
+	set_oam $572c, $0a ; OAM_2972c
+	set_frame 2
+	exec_func_f77 $02
+	wait 20
+	script_farret
+
+Func_1f178:
+	ld e, OBJSTRUCT_UNK39
+	ld a, [de]
+	inc a
+	ld [de], a
+	ret
+
+Script_1f17e:
+	set_field OBJSTRUCT_UNK39, $02
+	set_oam $5db8, $0a ; OAM_29db8
+	set_frame_wait 0, 6
+	set_frame 1
+
+	repeat 5
+	exec_func_f77 $0b
+	exec_asm Func_1f1a3
+	wait 2
+	repeat_end
+
+	set_oam $572c, $0a ; OAM_2972c
+	set_frame 2
+	exec_func_f77 $02
+	wait 20
+	script_farret
+
+Func_1f1a3:
+	ld e, OBJSTRUCT_UNK39
+	ld a, [de]
+	inc a
+	cp $0b
+	jr c, .asm_1f1ad
+	ld a, $02
+.asm_1f1ad
+	ld [de], a
+	ret
+
+Script_1f1af:
+	set_var_to_field OBJSTRUCT_UNK5B
+	var_jumptable 7
+	dw .script_1f1c1
+	dw .script_1f1dd
+	dw .script_1f1fd
+	dw .script_1f215
+	dw .script_1f232
+	dw .script_1f24a
+	dw Script_1f28b
+
+.script_1f1c1
+	set_oam $611a, $0a ; OAM_2a11a
+	set_frame_wait 0, 4
+	set_frame_wait 1, 4
+	create_object_rel_2 $08, 16, 0
+	set_frame 2
+	exec_func_f77 $02
+	wait 20
+	set_frame_wait 0, 4
+	script_farret
+.script_1f1dd
+	set_oam $61bb, $0a ; OAM_2a1bb
+	set_frame_wait 0, 6
+	set_frame_wait 1, 4
+	set_frame_wait 2, 4
+	set_frame_wait 3, 8
+	exec_func_f77 $02
+	wait 20
+	set_frame_wait 2, 4
+	set_frame_wait 1, 4
+	set_frame_wait 0, 4
+	script_farret
+.script_1f1fd
+
+	repeat 4
+	set_oam $5e99, $0a ; OAM_29e99
+	set_frame_wait 2, 4
+	set_oam $623b, $0a ; OAM_2a23b
+	set_frame_wait 1, 4
+	repeat_end
+
+	exec_func_f77 $02
+	wait 20
+	script_farret
+.script_1f215
+	set_oam $62c2, $0a ; OAM_2a2c2
+	set_frame_wait 0, 4
+	set_frame_wait 1, 4
+	play_sfx SFX_55
+	create_object_rel_2 $0b, 16, 0
+	exec_func_f77 $02
+	set_frame_wait 2, 20
+	set_frame_wait 0, 4
+	script_farret
+.script_1f232
+	set_oam $634d, $0a ; OAM_2a34d
+	set_frame_wait 0, 4
+	set_frame_wait 1, 2
+	set_frame_wait 0, 2
+	exec_func_f77 $02
+	set_frame_wait 1, 20
+	set_frame_wait 0, 4
+	script_farret
+.script_1f24a
+	set_oam $5e99, $0a ; OAM_29e99
+	set_frame_wait 2, 6
+	set_oam $63b9, $0a ; OAM_2a3b9
+	set_frame_wait 0, 4
+	exec_func_f77 $02
+	unk03_cmd Func_1f279
+
+	repeat 5
+	set_frame_wait 2, 2
+	set_frame_wait 3, 2
+	repeat_end
+
+	set_field OBJSTRUCT_UNK1F, $80
+	exec_asm Func_1f282
+	create_object_rel_2 $0e, 16, 0
+	set_frame_wait 1, 4
+	script_farret
+
+Func_1f279:
+	farcall Func_9ccf
+	ret
+
+Func_1f282:
+	farcall Func_1ed73
+	ret
+
+Script_1f28b:
+	set_oam $5e99, $0a ; OAM_29e99
+	set_frame 2
+	set_field OBJSTRUCT_UNK3A, $02
+	exec_func_f77 $02
+
+	repeat 5
+	set_field OBJSTRUCT_OAM_FLAGS, OAM_PAL1
+	exec_func_f77 $0c
+	exec_asm Func_1f2b4
+	wait 2
+	set_field OBJSTRUCT_OAM_FLAGS, OAM_PAL0
+	exec_func_f77 $0c
+	exec_asm Func_1f2b4
+	wait 2
+	repeat_end
+
+	script_farret
+
+Func_1f2b4:
+	ld e, OBJSTRUCT_UNK3A
+	ld a, [de]
+	inc a
+	cp $0b
+	jr c, .asm_1f2be
+	ld a, $02
+.asm_1f2be
+	ld [de], a
+	ret
+
+Script_1f2c0:
+	set_var_to_field OBJSTRUCT_UNK5B
+	var_jumptable 7
+	dw .script_1f2d2
+	dw .script_1f2f6
+	dw .script_1f329
+	dw .script_1f33f
+	dw .script_1f366
+	dw .script_1f385
+	dw Script_1f3bd
+.script_1f2d2
+	set_oam $6780, $0a ; OAM_2a780
+	set_frame_wait 2, 6
+	exec_func_f77 $02
+
+	repeat 5
+	set_frame_wait 1, 2
+	set_frame_wait 0, 2
+	repeat_end
+
+	set_frame_wait 2, 2
+	set_frame_wait 0, 2
+	set_frame_wait 2, 2
+	set_frame_wait 1, 2
+	set_frame_wait 2, 6
+	script_farret
+.script_1f2f6
+	set_oam $67d1, $0a ; OAM_2a7d1
+	set_frame_wait 8, 4
+	set_frame_wait 9, 2
+	set_frame_wait 8, 2
+	exec_func_f77 $02
+	set_frame_wait 9, 8
+	set_frame_wait 0, 2
+	set_frame_wait 1, 1
+	set_frame_wait 2, 1
+	set_frame_wait 3, 2
+	set_frame_wait 4, 1
+	set_frame_wait 5, 2
+	set_frame_wait 6, 2
+	set_frame_wait 7, 1
+	set_frame_wait 9, 6
+	set_frame_wait 8, 4
+	script_farret
+.script_1f329
+	set_oam $692f, $0a ; OAM_2a92f
+	set_frame_wait 4, 6
+	set_frame_wait 5, 4
+	set_frame_wait 6, 4
+	set_frame 0
+	exec_func_f77 $02
+	wait 20
+	script_farret
+.script_1f33f
+	set_oam $6a0c, $0a ; OAM_2aa0c
+	set_frame_wait 0, 4
+	set_frame_wait 1, 4
+	exec_func_f77 $02
+	create_object_rel_2 $0c, 16, -3
+	create_object_rel_2 $14, 16, -10
+	create_object_rel_2 $15, 16, 4
+	set_frame_wait 2, 20
+	set_frame_wait 1, 4
+	script_farret
+.script_1f366
+	set_oam $6529, $0a ; OAM_2a529
+	set_frame_wait 0, 6
+	set_oam $6ab5, $0a ; OAM_2aab5
+	set_frame_wait 7, 6
+	set_frame_wait 6, 2
+	set_frame_wait 7, 2
+	exec_func_f77 $02
+	set_frame_wait 0, 20
+	set_frame_wait 7, 6
+	script_farret
+.script_1f385
+	set_oam $6bed, $0a ; OAM_2abed
+	exec_func_f77 $02
+	unk22_cmd Script_1f3aa
+
+	repeat 2
+	set_frame_wait 0, 2
+	set_frame_wait 1, 2
+	set_frame_wait 4, 2
+	set_frame_wait 5, 2
+	set_frame_wait 2, 2
+	set_frame_wait 3, 2
+	repeat_end
+
+	set_field OBJSTRUCT_UNK1C, $80
+	script_farret
+
+Script_1f3aa:
+.loop
+	create_object_rel_2 $0f, 3, 16
+	wait 4
+	create_object_rel_2 $10, 3, 16
+	wait 4
+	jump .loop
+
+Script_1f3bd:
+	set_oam $6ce7, $0a ; OAM_2ace7
+	exec_func_f77 $02
+	set_frame_wait 0, 4
+	unk22_cmd Script_1f3e8
+	set_frame_wait 1, 13
+	set_frame_wait 2, 13
+	set_frame_wait 3, 13
+	set_frame_wait 4, 13
+	set_frame_wait 5, 13
+	set_frame_wait 6, 13
+	set_field OBJSTRUCT_UNK1C, $80
+	exec_asm Func_1f3f5
+	set_frame_wait 0, 4
+	script_farret
+
+Script_1f3e8:
+.loop
+	play_sfx SFX_1E
+	create_object_rel_2 $12, 0, 0
+	wait 6
+	jump .loop
+
+Func_1f3f5:
+	ld e, OBJSTRUCT_FRAME
+	ld a, [de]
+	cp $04
+	ret c
+	ld e, OBJSTRUCT_UNK45
+	ld a, [de]
+	xor $80
+	ld [de], a
+	ret
 
 Data_1f402:
 	db  1,  2
@@ -2126,14 +2883,189 @@ Func_1f40a::
 	ret
 ; 0x1f452
 
+SECTION "Func_1f458", ROMX[$7458], BANK[$7]
+
+Func_1f458::
+	ld a, [sa000Unk71]
+	ld hl, .data
+	add l
+	ld l, a
+	incc h
+	ld a, [hl]
+	ld [wdf11], a
+	ret
+
+.data
+	table_width 1
+	db $00 ; NONE
+	db $09 ; RICK
+	db $12 ; KINE
+	db $1b ; COO
+	assert_table_length NUM_ANIMAL_FRIENDS + 1
+
+Func_1f46c::
+	call Func_1f472
+	jp Func_1f48b
+
+Func_1f472::
+	ld a, [sa000Unk71]
+	ld hl, .data
+	add l
+	ld l, a
+	incc h
+	ld a, [hl]
+	ld hl, sa000Unk5b
+	add [hl]
+	inc a
+	ld [wdf11], a
+	ret
+
+.data
+	table_width 1
+	db $01 ; NONE
+	db $0a ; RICK
+	db $13 ; KINE
+	db $1c ; COO
+	assert_table_length NUM_ANIMAL_FRIENDS + 1
+
+Func_1f48b:
+	ld a, [wdf11]
+	push bc
+	ld h, $00
+	ld l, a
+	ld b, h
+	ld c, l
+	add hl, hl
+	add hl, bc
+	add hl, hl
+	add hl, bc ; *7
+	ld bc, Data_1f4bb
+	add hl, bc
+	ld e, OBJSTRUCT_UNK65
+	ld a, [hli]
+	ld [de], a
+	inc e
+	ld a, [hli]
+	ld [de], a
+	ld e, OBJSTRUCT_UNK67
+	ld a, [hli]
+	ld [de], a
+	inc e
+	ld a, [hli]
+	ld [de], a
+	inc e
+	ld a, [hli]
+	ld [de], a ; OBJSTRUCT_UNK69
+	ld e, OBJSTRUCT_UNK6A
+	ld a, [hli]
+	ld [de], a
+	inc e
+	ld a, [hl]
+	ld [de], a
+	ld a, TRUE
+	ld e, OBJSTRUCT_UNK64
+	ld [de], a
+	pop bc
+	ret
+; 0x1f4bb
+
+SECTION "Data_1f4bb", ROMX[$74bb], BANK[$7]
+
+MACRO data_1f4bb
+	dw  \1       ; destination
+	dab \2       ; source
+	dw  \3 tiles ; number of tiles
+ENDM
+
+Data_1f4bb::
+	data_1f4bb vTiles0 tile $10, Gfx_24000, $28 ; $00
+	data_1f4bb vTiles0 tile $38, Gfx_24280, $22 ; $01
+	data_1f4bb vTiles0 tile $38, Gfx_244a0, $1e ; $02
+	data_1f4bb vTiles0 tile $38, Gfx_24680, $28 ; $03
+	data_1f4bb vTiles0 tile $38, Gfx_24900, $16 ; $04
+	data_1f4bb vTiles0 tile $38, Gfx_24a60, $1a ; $05
+	data_1f4bb vTiles0 tile $38, Gfx_24c00, $26 ; $06
+	data_1f4bb vTiles0 tile $38, Gfx_24e60, $16 ; $07
+	data_1f4bb vTiles0 tile $38, Gfx_24fc0, $1a ; $08
+	data_1f4bb vTiles0 tile $10, Gfx_25160, $2c ; $09
+	data_1f4bb vTiles0 tile $3c, Gfx_25420, $24 ; $0a
+	data_1f4bb vTiles0 tile $3c, Gfx_25660, $20 ; $0b
+	data_1f4bb vTiles0 tile $3c, Gfx_25860, $24 ; $0c
+	data_1f4bb vTiles0 tile $3c, Gfx_25aa0, $20 ; $0d
+	data_1f4bb vTiles0 tile $3c, Gfx_25ce0, $24 ; $0e
+	data_1f4bb vTiles0 tile $3c, Gfx_25f20, $1c ; $0f
+	data_1f4bb vTiles0 tile $3c, Gfx_26160, $1a ; $10
+	data_1f4bb vTiles0 tile $3c, Gfx_26300, $1e ; $11
+	data_1f4bb vTiles0 tile $10, Gfx_264e0, $2c ; $12
+	data_1f4bb vTiles0 tile $3c, Gfx_267a0, $24 ; $13
+	data_1f4bb vTiles0 tile $3c, Gfx_269e0, $22 ; $14
+	data_1f4bb vTiles0 tile $3c, Gfx_26c00, $22 ; $15
+	data_1f4bb vTiles0 tile $3c, Gfx_26e40, $24 ; $16
+	data_1f4bb vTiles0 tile $3c, Gfx_27080, $24 ; $17
+	data_1f4bb vTiles0 tile $3c, Gfx_272c0, $18 ; $18
+	data_1f4bb vTiles0 tile $3c, Gfx_27440, $24 ; $19
+	data_1f4bb vTiles0 tile $3c, Gfx_27680, $1e ; $1a
+	data_1f4bb vTiles0 tile $10, Gfx_27860, $30 ; $1b
+	data_1f4bb vTiles0 tile $40, Gfx_28000, $20 ; $1c
+	data_1f4bb vTiles0 tile $40, Gfx_28200, $1e ; $1d
+	data_1f4bb vTiles0 tile $40, Gfx_28400, $20 ; $1e
+	data_1f4bb vTiles0 tile $40, Gfx_28600, $1e ; $1f
+	data_1f4bb vTiles0 tile $40, Gfx_28800, $1c ; $20
+	data_1f4bb vTiles0 tile $40, Gfx_289c0, $18 ; $21
+	data_1f4bb vTiles0 tile $40, Gfx_28bc0, $18 ; $22
+	data_1f4bb vTiles0 tile $40, Gfx_28d40, $20 ; $23
+	data_1f4bb vTiles0 tile $10, Gfx_2c000, $3a ; $24
+	data_1f4bb vTiles1 tile $06, Gfx_2c3a0, $50 ; $25
+	data_1f4bb vTiles1 tile $06, Gfx_2c8a0, $58 ; $26
+	data_1f4bb vTiles1 tile $06, Gfx_2ce20, $54 ; $27
+	data_1f4bb vTiles1 tile $24, Gfx_2c3a0, $50 ; $28
+	data_1f4bb vTiles1 tile $24, Gfx_2c8a0, $58 ; $29
+	data_1f4bb vTiles1 tile $24, Gfx_2ce20, $54 ; $2a
+	data_1f4bb vTiles0 tile $10, Gfx_2c3a0, $50 ; $2b
+	data_1f4bb vTiles0 tile $10, Gfx_2c8a0, $58 ; $2c
+	data_1f4bb vTiles0 tile $10, Gfx_2ce20, $54 ; $2d
+	data_1f4bb vTiles0 tile $00, Gfx_42571, $60 ; $2e
+	data_1f4bb vTiles1 tile $06, Gfx_42b71, $6a ; $2f
+	data_1f4bb vTiles0 tile $00, Gfx_6b9fd, $0c ; $30
+	data_1f4bb vTiles0 tile $00, Gfx_6bacd, $10 ; $31
+	data_1f4bb vTiles0 tile $00, Gfx_6bbcd, $0c ; $32
+	data_1f4bb vTiles0 tile $38, Gfx_43211, $0c ; $33
+	data_1f4bb vTiles0 tile $3c, Gfx_27680, $1e ; $34
+	data_1f4bb vTiles0 tile $10, Gfx_27860, $30 ; $35
+	data_1f4bb vTiles0 tile $40, Gfx_28000, $20 ; $36
+	data_1f4bb vTiles0 tile $40, Gfx_28200, $1e ; $37
+	data_1f4bb vTiles0 tile $40, Gfx_28400, $20 ; $38
+	data_1f4bb vTiles0 tile $40, Gfx_28600, $1e ; $39
+	data_1f4bb vTiles0 tile $40, Gfx_28800, $1c ; $3a
+	data_1f4bb vTiles0 tile $40, Gfx_289c0, $18 ; $3b
+	data_1f4bb vTiles0 tile $40, Gfx_28bc0, $18 ; $3c
+	data_1f4bb vTiles0 tile $40, Gfx_28d40, $20 ; $3d
+	data_1f4bb vTiles0 tile $10, Gfx_2c000, $3a ; $3e
+	data_1f4bb vTiles1 tile $06, Gfx_2c3a0, $50 ; $3f
+	data_1f4bb vTiles1 tile $06, Gfx_2c8a0, $58 ; $40
+	data_1f4bb vTiles1 tile $06, Gfx_2ce20, $54 ; $41
+	data_1f4bb vTiles1 tile $24, Gfx_2c3a0, $50 ; $42
+	data_1f4bb vTiles1 tile $24, Gfx_2c8a0, $58 ; $43
+	data_1f4bb vTiles1 tile $24, Gfx_2ce20, $54 ; $44
+	data_1f4bb vTiles0 tile $10, Gfx_2c3a0, $50 ; $45
+	data_1f4bb vTiles0 tile $10, Gfx_2c8a0, $58 ; $46
+	data_1f4bb vTiles0 tile $10, Gfx_2ce20, $54 ; $47
+	data_1f4bb vTiles0 tile $00, Gfx_42571, $60 ; $48
+	data_1f4bb vTiles1 tile $06, Gfx_42b71, $6a ; $49
+	data_1f4bb vTiles0 tile $00, Gfx_6b9fd, $0c ; $4a
+	data_1f4bb vTiles0 tile $00, Gfx_6bacd, $10 ; $4b
+	data_1f4bb vTiles0 tile $00, Gfx_6bbcd, $0c ; $4c
+	data_1f4bb vTiles0 tile $38, Gfx_43211, $0c ; $4d
+; 0x1f6dd
+
 SECTION "Data_1f700", ROMX[$7700], BANK[$7], ALIGN[8]
 
 Data_1f700::
 	table_width 3
 	dab Script_4001 ; UNK_OBJ_00
-	dwb $45c2, $07 ; UNK_OBJ_01
+	dab Script_1c5c2 ; UNK_OBJ_01
 	dwb $4c3a, $07 ; UNK_OBJ_02
-	dwb $6ec0, $07 ; UNK_OBJ_03
+	dab Script_1eec0 ; UNK_OBJ_03
 	dwb $5409, $03 ; UNK_OBJ_04
 	dwb $5437, $03 ; UNK_OBJ_05
 	dwb $55e3, $03 ; UNK_OBJ_06
@@ -2381,130 +3313,6 @@ Data_1f700::
 	dab Script_218e7 ; KIRBY_TITLE_SCREEN
 	assert_table_length NUM_OBJECT_TYPES
 ; 0x1e9eb
-
-SECTION "Func_1f458", ROMX[$7458], BANK[$7]
-
-Func_1f458::
-	ld a, [sa000Unk71]
-	ld hl, .data
-	add l
-	ld l, a
-	incc h
-	ld a, [hl]
-	ld [wdf11], a
-	ret
-
-.data
-	db $00, $09, $12, $1b
-; 0x1f46c
-
-SECTION "Data_1f472", ROMX[$7472], BANK[$7]
-
-Func_1f472::
-	ld a, [sa000Unk71]
-	ld hl, .data
-	add l
-	ld l, a
-	incc h
-	ld a, [hl]
-	ld hl, sa000Unk5b
-	add [hl]
-	inc a
-	ld [wdf11], a
-	ret
-
-.data
-	db $01, $0a, $13, $1c
-; 0x1f48b
-
-SECTION "Data_1f4bb", ROMX[$74bb], BANK[$7]
-
-MACRO data_1f4bb
-	dw  \1       ; destination
-	dab \2       ; source
-	dw  \3 tiles ; number of tiles
-ENDM
-
-Data_1f4bb::
-	data_1f4bb vTiles0 tile $10, Gfx_24000, $28 ; $00
-	data_1f4bb vTiles0 tile $38, Gfx_24280, $22 ; $01
-	data_1f4bb vTiles0 tile $38, Gfx_244a0, $1e ; $02
-	data_1f4bb vTiles0 tile $38, Gfx_24680, $28 ; $03
-	data_1f4bb vTiles0 tile $38, Gfx_24900, $16 ; $04
-	data_1f4bb vTiles0 tile $38, Gfx_24a60, $1a ; $05
-	data_1f4bb vTiles0 tile $38, Gfx_24c00, $26 ; $06
-	data_1f4bb vTiles0 tile $38, Gfx_24e60, $16 ; $07
-	data_1f4bb vTiles0 tile $38, Gfx_24fc0, $1a ; $08
-	data_1f4bb vTiles0 tile $10, Gfx_25160, $2c ; $09
-	data_1f4bb vTiles0 tile $3c, Gfx_25420, $24 ; $0a
-	data_1f4bb vTiles0 tile $3c, Gfx_25660, $20 ; $0b
-	data_1f4bb vTiles0 tile $3c, Gfx_25860, $24 ; $0c
-	data_1f4bb vTiles0 tile $3c, Gfx_25aa0, $20 ; $0d
-	data_1f4bb vTiles0 tile $3c, Gfx_25ce0, $24 ; $0e
-	data_1f4bb vTiles0 tile $3c, Gfx_25f20, $1c ; $0f
-	data_1f4bb vTiles0 tile $3c, Gfx_26160, $1a ; $10
-	data_1f4bb vTiles0 tile $3c, Gfx_26300, $1e ; $11
-	data_1f4bb vTiles0 tile $10, Gfx_264e0, $2c ; $12
-	data_1f4bb vTiles0 tile $3c, Gfx_267a0, $24 ; $13
-	data_1f4bb vTiles0 tile $3c, Gfx_269e0, $22 ; $14
-	data_1f4bb vTiles0 tile $3c, Gfx_26c00, $22 ; $15
-	data_1f4bb vTiles0 tile $3c, Gfx_26e40, $24 ; $16
-	data_1f4bb vTiles0 tile $3c, Gfx_27080, $24 ; $17
-	data_1f4bb vTiles0 tile $3c, Gfx_272c0, $18 ; $18
-	data_1f4bb vTiles0 tile $3c, Gfx_27440, $24 ; $19
-	data_1f4bb vTiles0 tile $3c, Gfx_27680, $1e ; $1a
-	data_1f4bb vTiles0 tile $10, Gfx_27860, $30 ; $1b
-	data_1f4bb vTiles0 tile $40, Gfx_28000, $20 ; $1c
-	data_1f4bb vTiles0 tile $40, Gfx_28200, $1e ; $1d
-	data_1f4bb vTiles0 tile $40, Gfx_28400, $20 ; $1e
-	data_1f4bb vTiles0 tile $40, Gfx_28600, $1e ; $1f
-	data_1f4bb vTiles0 tile $40, Gfx_28800, $1c ; $20
-	data_1f4bb vTiles0 tile $40, Gfx_289c0, $18 ; $21
-	data_1f4bb vTiles0 tile $40, Gfx_28bc0, $18 ; $22
-	data_1f4bb vTiles0 tile $40, Gfx_28d40, $20 ; $23
-	data_1f4bb vTiles0 tile $10, Gfx_2c000, $3a ; $24
-	data_1f4bb vTiles1 tile $06, Gfx_2c3a0, $50 ; $25
-	data_1f4bb vTiles1 tile $06, Gfx_2c8a0, $58 ; $26
-	data_1f4bb vTiles1 tile $06, Gfx_2ce20, $54 ; $27
-	data_1f4bb vTiles1 tile $24, Gfx_2c3a0, $50 ; $28
-	data_1f4bb vTiles1 tile $24, Gfx_2c8a0, $58 ; $29
-	data_1f4bb vTiles1 tile $24, Gfx_2ce20, $54 ; $2a
-	data_1f4bb vTiles0 tile $10, Gfx_2c3a0, $50 ; $2b
-	data_1f4bb vTiles0 tile $10, Gfx_2c8a0, $58 ; $2c
-	data_1f4bb vTiles0 tile $10, Gfx_2ce20, $54 ; $2d
-	data_1f4bb vTiles0 tile $00, Gfx_42571, $60 ; $2e
-	data_1f4bb vTiles1 tile $06, Gfx_42b71, $6a ; $2f
-	data_1f4bb vTiles0 tile $00, Gfx_6b9fd, $0c ; $30
-	data_1f4bb vTiles0 tile $00, Gfx_6bacd, $10 ; $31
-	data_1f4bb vTiles0 tile $00, Gfx_6bbcd, $0c ; $32
-	data_1f4bb vTiles0 tile $38, Gfx_43211, $0c ; $33
-	data_1f4bb vTiles0 tile $3c, Gfx_27680, $1e ; $34
-	data_1f4bb vTiles0 tile $10, Gfx_27860, $30 ; $35
-	data_1f4bb vTiles0 tile $40, Gfx_28000, $20 ; $36
-	data_1f4bb vTiles0 tile $40, Gfx_28200, $1e ; $37
-	data_1f4bb vTiles0 tile $40, Gfx_28400, $20 ; $38
-	data_1f4bb vTiles0 tile $40, Gfx_28600, $1e ; $39
-	data_1f4bb vTiles0 tile $40, Gfx_28800, $1c ; $3a
-	data_1f4bb vTiles0 tile $40, Gfx_289c0, $18 ; $3b
-	data_1f4bb vTiles0 tile $40, Gfx_28bc0, $18 ; $3c
-	data_1f4bb vTiles0 tile $40, Gfx_28d40, $20 ; $3d
-	data_1f4bb vTiles0 tile $10, Gfx_2c000, $3a ; $3e
-	data_1f4bb vTiles1 tile $06, Gfx_2c3a0, $50 ; $3f
-	data_1f4bb vTiles1 tile $06, Gfx_2c8a0, $58 ; $40
-	data_1f4bb vTiles1 tile $06, Gfx_2ce20, $54 ; $41
-	data_1f4bb vTiles1 tile $24, Gfx_2c3a0, $50 ; $42
-	data_1f4bb vTiles1 tile $24, Gfx_2c8a0, $58 ; $43
-	data_1f4bb vTiles1 tile $24, Gfx_2ce20, $54 ; $44
-	data_1f4bb vTiles0 tile $10, Gfx_2c3a0, $50 ; $45
-	data_1f4bb vTiles0 tile $10, Gfx_2c8a0, $58 ; $46
-	data_1f4bb vTiles0 tile $10, Gfx_2ce20, $54 ; $47
-	data_1f4bb vTiles0 tile $00, Gfx_42571, $60 ; $48
-	data_1f4bb vTiles1 tile $06, Gfx_42b71, $6a ; $49
-	data_1f4bb vTiles0 tile $00, Gfx_6b9fd, $0c ; $4a
-	data_1f4bb vTiles0 tile $00, Gfx_6bacd, $10 ; $4b
-	data_1f4bb vTiles0 tile $00, Gfx_6bbcd, $0c ; $4c
-	data_1f4bb vTiles0 tile $38, Gfx_43211, $0c ; $4d
-; 0x1f6dd
 
 SECTION "Data_1fa00", ROMX[$7a00], BANK[$7]
 

@@ -33,12 +33,12 @@ JUMP_IF_VAR_LT_CMD = 0x14
 WAIT_VAR_CMD = 0x15
 SCRIPT_STOP_CMD = 0x16
 SET_DRAW_FUNC_CMD = 0x17
-UNK18_CMD = 0x18
+STOP_MOVEMENT_CMD = 0x18
 SET_FRAME_WAIT_CMD = 0x19
 SET_FIELD_TO_VAR_CMD = 0x1a
 FAR_JUMP_CMD = 0x1b
-UNK1C_CMD = 0x1c
-UNK1D_CMD = 0x1d
+FARCALL_CMD = 0x1c
+FARRET_CMD = 0x1d
 UNK1E_CMD = 0x1e
 UNK1F_CMD = 0x1f
 SET_X_CMD = 0x20
@@ -60,10 +60,17 @@ class Parser:
     def parse_byte(self, data):
         return (1, f"${data[0]:02x}")
 
-    def parse_int8(self, data):
+    def parse_word(self, data):
+        return (2, f"${data[1]:02x}{data[0]:02x}")
+
+    def parse_uint8(self, data):
         return (1, f"{data[0]}")
 
-    def parse_int16(self, data):
+    def parse_int8(self, data):
+        x = data[0]
+        return (1, f"{x if x < 0x80 else x - 0x100}")
+
+    def parse_uint16(self, data):
         val = data[0] + data[1] * 0x100
         return (2, f"{val}")
 
@@ -91,8 +98,10 @@ class Parser:
         sfx = data[0]
         return (1, f"SFX_{sfx:02X}")
 
-    def parse_home_func(self, data):
+    def parse_asm_func(self, data):
         addr = data[0] + data[1] * 0x100
+        if addr >= 0x4000:
+            addr += (self.cur_bank - 1) * 0x4000
         func = ""
         if addr in syms:
             func = syms[addr]
@@ -103,8 +112,13 @@ class Parser:
     def parse_unk03(self, data):
         bank = data[2] & 0x1f
         addr = data[0] + data[1] * 0x100
-        offs = (bank - 1) * 0x4000 + addr
-        return (3, f"Func_{offs:0x}")
+        if addr >= 0x4000:
+            addr += (bank - 1) * 0x4000
+        if addr in syms:
+            func = syms[addr]
+        else:
+            func = f"Func_{addr:0x}"
+        return (3, f"{func}")
 
     def parse_local_addr(self, data):
         addr = data[0] + data[1] * 0x100
@@ -122,9 +136,11 @@ class Parser:
         offs = addr if addr < 0x4000 else (self.cur_bank - 1) * 0x4000 + addr
         return (2, f"Script_{offs:0x}")
 
-    def parse_address(self, data):
+    def parse_farcall_addr(self, data):
         addr = data[0] + data[1] * 0x100
-        return (2, f"${addr:0x}")
+        bank = data[2]
+        offs = addr if addr < 0x4000 else (bank - 1) * 0x4000 + addr
+        return (3, f"Script_{offs:0x}")
 
     def parse_var_jumptable(self, data):
         n_entries = data[0]
@@ -138,19 +154,19 @@ class Parser:
     def parse(self, offset):
         cmds = [
             ("script_end", []), # SCRIPT_END_CMD
-            ("set_frame", [self.parse_int8]), # SET_FRAME_CMD
+            ("set_frame", [self.parse_uint8]), # SET_FRAME_CMD
             ("unk02_cmd", None), # UNK02_CMD
             ("unk03_cmd", [self.parse_unk03]), # UNK03_CMD
             ("set_oam", [self.parse_oam]), # SET_OAM_CMD
-            ("wait", [self.parse_int8]), # WAIT_CMD
+            ("wait", [self.parse_uint8]), # WAIT_CMD
             ("jump", [self.parse_local_addr]), # JUMP_CMD
             ("set_x_vel", [self.parse_vel]), # SET_X_VEL_CMD
             ("set_y_vel", [self.parse_vel]), # SET_Y_VEL_CMD
-            ("repeat", [self.parse_int8]), # REPEAT_CMD
+            ("repeat", [self.parse_uint8]), # REPEAT_CMD
             ("repeat_end", []), # REPEAT_END_CMD
             ("script_call", [self.parse_call_addr]), # CALL_CMD
             ("script_ret", []), # RET_CMD
-            ("exec_asm", [self.parse_address]), # EXEC_ASM_CMD
+            ("exec_asm", [self.parse_asm_func]), # EXEC_ASM_CMD
             ("var_jumptable", [self.parse_var_jumptable]), # VAR_JUMPTABLE_CMD
             ("set_field", [self.parse_field, self.parse_byte]), # SET_FIELD_CMD
             ("set_var_to_field", [self.parse_field]), # SET_VAR_TO_FIELD_CMD
@@ -160,22 +176,22 @@ class Parser:
             ("jump_if_var_lt", [self.parse_byte, self.parse_local_addr]), # JUMP_IF_VAR_LT_CMD
             ("wait_var", []), # WAIT_VAR_CMD
             ("script_stop", []), # SCRIPT_STOP_CMD
-            ("set_draw_func", [self.parse_home_func]), # SET_DRAW_FUNC_CMD
-            ("unk18_cmd", None), # UNK18_CMD
-            ("set_frame_wait", [self.parse_int8, self.parse_int8]), # SET_FRAME_WAIT_CMD
+            ("set_draw_func", [self.parse_asm_func]), # SET_DRAW_FUNC_CMD
+            ("stop_movement", []), # STOP_MOVEMENT_CMD
+            ("set_frame_wait", [self.parse_uint8, self.parse_uint8]), # SET_FRAME_WAIT_CMD
             ("set_field_to_var", [self.parse_field]), # SET_FIELD_TO_VAR_CMD
             ("far_jump", [self.parse_far_addr]), # FAR_JUMP_CMD
-            ("unk1c_cmd", None), # UNK1C_CMD
-            ("unk1d_cmd", None), # UNK1D_CMD
+            ("script_farcall", [self.parse_farcall_addr]), # FARCALL_CMD
+            ("script_farret", []), # FARRET_CMD
             ("unk1e_cmd", None), # UNK1E_CMD
             ("unk1f_cmd", None), # UNK1F_CMD
-            ("set_x", [self.parse_int16]), # SET_X_CMD
-            ("set_y", [self.parse_int16]), # SET_Y_CMD
-            ("unk22_cmd", None), # UNK22_CMD
+            ("set_x", [self.parse_uint16]), # SET_X_CMD
+            ("set_y", [self.parse_uint16]), # SET_Y_CMD
+            ("unk22_cmd", [self.parse_word, self.parse_uint8]), # UNK22_CMD
             ("unk23_cmd", None), # UNK23_CMD
             ("play_sfx", [self.parse_sfx]), # PLAY_SFX_CMD
             ("unk25_cmd", None), # UNK25_CMD
-            ("unk26_cmd", None), # UNK26_CMD
+            ("set_x_vel_dir", [self.parse_vel]), # SET_X_VEL_DIR_CMD
             ("unk27_cmd", None), # UNK27_CMD
             ("unk28_cmd", None), # UNK28_CMD
             ("unk29_cmd", None), # UNK29_CMD
@@ -185,7 +201,11 @@ class Parser:
         compound_cmds = {
             "Func_f50": ("create_object", [self.parse_byte, self.parse_byte, self.parse_byte]),
             "Func_f77": ("exec_func_f77", [self.parse_byte]),
-            "Func_7b2b": ("set_frame_with_orientation", [self.parse_int8, self.parse_int8]),
+            "Func_f92": ("create_object_rel_1", [self.parse_byte, self.parse_int8, self.parse_int8]),
+            "Func_faf": ("create_object_rel_2", [self.parse_byte, self.parse_int8, self.parse_int8]),
+            "Func_1032": ("set_x_acc_dir", [self.parse_acc]),
+            "Func_3c4f": ("set_copy_ability_icon", [self.parse_uint8]),
+            "Func_7b2b": ("set_frame_with_orientation", [self.parse_uint8, self.parse_uint8]),
         }
         self.cur_bank = int(offset / 0x4000)
         pos = offset
@@ -238,7 +258,7 @@ class Parser:
 
             strings.append((this_pos, s))
 
-            if cmd in [SCRIPT_END_CMD, JUMP_CMD, SCRIPT_STOP_CMD, VAR_JUMPTABLE_CMD, FAR_JUMP_CMD, RET_CMD]:
+            if cmd in [SCRIPT_END_CMD, JUMP_CMD, SCRIPT_STOP_CMD, VAR_JUMPTABLE_CMD, FAR_JUMP_CMD, RET_CMD, FARRET_CMD]:
                 if (pos % 0x4000) + 0x4000 not in self.jump_addresses:
                     break
 

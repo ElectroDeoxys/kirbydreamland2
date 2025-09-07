@@ -2290,20 +2290,22 @@ Func_23067:
 
 SECTION "Func_23171", ROMX[$7171], BANK[$8]
 
+; input:
+; - b = ?
 Func_23171:
 	ld a, b
 	cp $f0
 	ld a, [sa000Unk71]
 	jr nz, .asm_231a7
-	cp $03
-	jr z, .asm_2318a
+	cp COO
+	jr z, .coo
 .asm_2317d
 	ld e, 0.496
 	ld bc, -2.75
 	call ApplyUpwardsAcceleration_WithDampening
 	call SetMinimumVelocity_Up
 	jr .asm_231a1
-.asm_2318a
+.coo
 	ld a, [sa000Unk50]
 	cp $11
 	jr z, .asm_2317d
@@ -2628,4 +2630,257 @@ DecelerateIfOverMaxVelocity_Right:
 	sbc b
 	ret c ; exit if x vel < bc
 	jp DecelerateObjectX
-; 0x23358
+
+Func_23358::
+	ld a, [wdb75]
+	or a
+	jr nz, .asm_23368
+	ld a, [wdb77]
+	or a
+	jr z, .asm_23379
+	cp $03
+	jr nc, .asm_23379
+.asm_23368
+	ld a, [sa000Unk7b]
+	or a
+	jr z, .asm_23379
+	ld b, a
+	ld h, d
+	ld l, OBJSTRUCT_X_VEL
+	ld a, [hli]
+	or [hl]
+	jr z, .asm_23379
+	ld a, b
+	add [hl]
+	ld [hl], a
+.asm_23379
+	ld e, OBJSTRUCT_UNK54
+	ld a, [de]
+	or a
+	jr z, .asm_23393
+	bit 7, a
+	jr nz, .asm_23385
+	dec a
+	ld [de], a ; OBJSTRUCT_UNK54
+.asm_23385
+	and $04
+	ld e, OBJSTRUCT_OAM_FLAGS
+	ld a, [de]
+	jr nz, .asm_23390
+	res B_OAM_PAL1, a
+	jr .asm_23392
+.asm_23390
+	set B_OAM_PAL1, a
+.asm_23392
+	ld [de], a ; OBJSTRUCT_OAM_FLAGS
+.asm_23393
+	call Func_23497
+	call Func_2341f
+	ld a, [sa000Unk64]
+	or a
+	jr nz, .asm_233ea
+	ld e, OBJSTRUCT_UNK0B
+	ld a, [de]
+	sub $90
+	cp $30
+	jr nc, .asm_233b0
+.asm_233a8
+	ld e, $01
+	ld bc, $5383
+	jp Func_846
+.asm_233b0
+	cp $68
+	jr nc, .asm_233bf
+	ld e, OBJSTRUCT_Y_VEL
+	xor a
+	ld [de], a
+	inc e
+	ld [de], a
+	ld e, OBJSTRUCT_X_VEL
+	ld [de], a
+	inc e
+	ld [de], a
+.asm_233bf
+	ld e, OBJSTRUCT_UNK09
+	ld a, [de]
+	cp $9a
+	jr nc, .asm_233a8
+	cp $06
+	jr c, .asm_233a8
+	ld a, [sa000Unk71]
+	or a
+	ld e, OBJSTRUCT_UNK4C
+	jr z, .no_animal_friend
+	ld e, OBJSTRUCT_UNK72
+.no_animal_friend
+	ld a, [de]
+	or a
+	jr nz, .asm_233ea
+	ld a, [sa000Unk51]
+	cp $0c
+	jr z, .asm_233ea
+	call Func_1067
+	ld e, $01
+	ld bc, $5396
+	jp Func_846
+.asm_233ea
+	call Func_2344f
+	ldh a, [hJoypad1Pressed]
+	and PAD_START
+	jr z, .asm_23417
+	ld a, [sa000Unk82]
+	or a
+	jr nz, .asm_23417
+	ld a, [wcd4d]
+	or a
+	jr nz, .asm_23417
+	ld a, [wda36]
+	or a
+	jr nz, .asm_23417
+	ld a, [wdb61]
+	cp $08
+	jr z, .asm_23417
+	ld a, [sa000Unk7e]
+	or a
+	jr nz, .asm_23417
+	ld a, $04
+	ld [sa000Unk82], a
+.asm_23417
+	ld a, [wdf12]
+	or a
+	call nz, Func_234a7
+	ret
+
+Func_2341f:
+	ld hl, $cd54
+	ld a, [sa000Unk50]
+	cp $06
+	jr z, .asm_23434
+	ld e, $04
+	cp $10
+	jr nz, .asm_2343b
+	ld bc, -17
+	jr .asm_2343e
+.asm_23434
+	ld bc, 6
+	ld e, $01
+	jr .asm_2343e
+.asm_2343b
+	ld bc, 0
+.asm_2343e
+	ld a, e
+	ldh [hffa1], a
+	ld e, OBJSTRUCT_Y_POS + 1
+	ld a, [de]
+	add c
+	ld [hli], a
+	inc e
+	ld a, [de]
+	adc b
+	ld [hl], a
+	ld a, $04
+	ldh [hffa0], a
+	ret
+
+Func_2344f:
+	push de
+	ld h, d
+	ld bc, 0
+	ld a, [sa000Unk50]
+	cp $10
+	ld de, 0
+	jr nz, .asm_23461
+	ld de, -12
+.asm_23461
+	call ApplyOffsetToObjectPosition
+	call Func_1646
+	pop de
+	and $7f
+	cp $08
+	ret nz
+	ld a, [sa000Unk5d]
+	cp $01
+	ret z
+	cp $04
+	ret z
+	ld a, [sa000Unk54]
+	or a
+	ret nz
+	call Func_2809
+	ret c
+	ld b, $02
+	call Func_3a8b
+	ld e, OBJSTRUCT_UNK44
+	ld a, $02
+	ld [de], a
+	ld e, OBJSTRUCT_UNK45
+	ld a, [de]
+	ld [sa000Unk53], a
+	ld e, $01
+	ld bc, $4ec9
+	jp Func_846
+
+Func_23497:
+	ld a, [sa000Unk70]
+	or a
+	ret z
+	ld a, [wda0e]
+	and $3f
+	ret nz
+	ld e, $06
+	jp Func_f7a
+
+Func_234a7:
+	ld e, $08
+	ld hl, wcd56
+.asm_234ac
+	ld a, [hli]
+	or a
+	jr z, .asm_234b6
+	dec l
+	dec a
+	ld [hli], a
+	call z, Func_234bc
+.asm_234b6
+	inc l
+	inc l
+	dec e
+	jr nz, .asm_234ac
+	ret
+
+Func_234bc:
+	push hl
+	push de
+	ld a, [hli]
+	ld h, [hl]
+	ld l, a
+	ld a, [hl]
+	inc a
+	ld [hl], a
+	ldh [hff80], a
+	ld e, l
+	swap l
+	ld c, l
+	ld a, [wdb3d]
+	ld b, a
+	ld a, h
+	ld d, $ff
+	sub $b3
+.asm_234d3
+	inc d
+	sub b
+	jr nc, .asm_234d3
+	add b
+	ld b, a
+	call Func_3c02
+	ldh a, [hff80]
+	ldh [hff84], a
+	call Func_15b0
+	ld hl, wdf12
+	dec [hl]
+	ld e, SFX_45
+	farcall PlaySFX
+	pop de
+	pop hl
+	ret
+; 0x234f4

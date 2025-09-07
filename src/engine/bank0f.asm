@@ -10,7 +10,7 @@ Script_3c4e6:
 	exec_asm Func_3c8ef
 	exec_asm Func_3c912
 	jump_if_var .script_3c509
-	create_object $9c, $a0, $b3
+	create_object UNK_OBJ_9C, $a0, $b3
 .script_3c509
 	set_field OBJSTRUCT_UNK40, $00
 .loop
@@ -527,7 +527,7 @@ LevelSelectionCoordinates::
 SECTION "Data_3e8a4", ROMX[$68a4], BANK[$0f]
 
 Data_3e8a4:
-	dbw 1, wLevel      ; FILE_CURRENT_LEVEL
+	dbw 1, wLevel     ; FILE_CURRENT_LEVEL
 	dbw 8, wdb62      ; FILE_UNK03
 	dbw 1, wdb6a      ; FILE_UNK0B
 	dbw 1, wdd63      ; FILE_UNK0C
@@ -539,7 +539,7 @@ Data_3e8a4:
 	dbw 1, sa000Unk4c ; FILE_HP
 	dbw 1, sa000Unk72 ; FILE_UNK13
 	dbw 1, sa000Unk51 ; FILE_UNK14
-	dbw 1, sa000Unk5b ; FILE_UNK15
+	dbw 1, sa000Unk5b ; FILE_COPY_ABILITY
 	dbw 1, sa000Unk71 ; FILE_ANIMAL_FRIEND
 	dbw 3, wScore     ; FILE_SCORE
 	db $00 ; end
@@ -1362,7 +1362,7 @@ ReadSaveData:
 	ld [sa000Unk4c], a
 	ld a, $06
 	ld [sa000Unk72], a
-	ld a, $ff
+	ld a, NO_COPY_ABILITY
 	ld [sa000Unk5b], a
 	ret
 

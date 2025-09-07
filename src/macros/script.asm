@@ -94,6 +94,30 @@ MACRO exec_func_f77
 	db \1 ; ?
 ENDM
 
+MACRO create_object_rel_1
+	exec_asm Func_f92
+	db \1 ; ?
+	db \2 ; relative x
+	db \3 ; relative y
+ENDM
+
+MACRO create_object_rel_2
+	exec_asm Func_faf
+	db \1 ; ?
+	db \2 ; relative x
+	db \3 ; relative y
+ENDM
+
+MACRO set_x_acc_dir
+	exec_asm Func_1032
+	db \1 ; acceleration
+ENDM
+
+MACRO set_copy_ability_icon
+	exec_asm Func_3c4f
+	db \1 ; copy ability icon
+ENDM
+
 MACRO set_frame_with_orientation
 	exec_asm Func_7b2b
 	db \1, \2 ; frames
@@ -155,7 +179,10 @@ MACRO set_draw_func
 	dw \1 ; draw function
 ENDM
 
-	const UNK18_CMD ; $18
+	const STOP_MOVEMENT_CMD ; $18
+MACRO stop_movement
+	db STOP_MOVEMENT_CMD
+ENDM
 
 	const SET_FRAME_WAIT_CMD ; $19
 MACRO set_frame_wait
@@ -176,8 +203,17 @@ MACRO far_jump
 	dab \1 ; address
 ENDM
 
-	const UNK1C_CMD ; $1c
-	const UNK1D_CMD ; $1d
+	const FARCALL_CMD ; $1c
+MACRO script_farcall
+	db FARCALL_CMD
+	dab \1 ; address
+ENDM
+
+	const FARRET_CMD ; $1d
+MACRO script_farret
+	db FARRET_CMD
+ENDM
+
 	const UNK1E_CMD ; $1e
 	const UNK1F_CMD ; $1f
 
@@ -194,6 +230,16 @@ MACRO set_y
 ENDM
 
 	const UNK22_CMD ; $22
+MACRO unk22_cmd
+	db UNK22_CMD
+IF _NARG == 2
+	dw \1
+	db \2
+ELSE
+	dab \1
+ENDC
+ENDM
+
 	const UNK23_CMD ; $23
 
 	const PLAY_SFX_CMD ; $24
@@ -203,7 +249,13 @@ MACRO play_sfx
 ENDM
 
 	const UNK25_CMD ; $25
-	const UNK26_CMD ; $26
+
+	const SET_X_VEL_DIR_CMD ; $26
+MACRO set_x_vel_dir
+	db SET_X_VEL_DIR_CMD
+	dw \1 ; velocity
+ENDM
+
 	const UNK27_CMD ; $27
 	const UNK28_CMD ; $28
 	const UNK29_CMD ; $29
