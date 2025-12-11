@@ -32,6 +32,8 @@ ROMX $0a
 ROMX $0b
 	"Bank B Gfx"
 	"Bank B"
+ROMX $0e
+	"Bank E"
 ROMX $0f
 	"Bank F"
 ROMX $10
@@ -52,6 +54,12 @@ SRAM $0
 	"Save Data SRAM"
 WRAM0
 	"WRAM0"
+	align 8
+	"Virtual OAM 1"
+	align 8
+	"Virtual OAM 2"
+	align 8
+	"WRAM0@c200"
 WRAMX $1
 	"WRAM1"
 	org $dfc0

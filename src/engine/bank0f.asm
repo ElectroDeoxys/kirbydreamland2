@@ -527,21 +527,21 @@ LevelSelectionCoordinates::
 SECTION "Data_3e8a4", ROMX[$68a4], BANK[$0f]
 
 Data_3e8a4:
-	dbw 1, wLevel     ; FILE_CURRENT_LEVEL
-	dbw 8, wdb62      ; FILE_UNK03
-	dbw 1, wdb6a      ; FILE_UNK0B
-	dbw 1, wdd63      ; FILE_UNK0C
-	dbw 1, wdd62      ; FILE_UNK0D
-	dbw 1, wdb6c      ; FILE_UNK0E
-	dbw 1, wdb6b      ; FILE_UNK0F
-	dbw 1, wdb7b      ; FILE_UNK10
-	dbw 1, sa000Unk84 ; FILE_LIVES
-	dbw 1, sa000Unk4c ; FILE_HP
-	dbw 1, sa000Unk72 ; FILE_UNK13
-	dbw 1, sa000Unk51 ; FILE_UNK14
-	dbw 1, sa000Unk5b ; FILE_COPY_ABILITY
-	dbw 1, sa000Unk71 ; FILE_ANIMAL_FRIEND
-	dbw 3, wScore     ; FILE_SCORE
+	dbw 1, wLevel     ; FILESTRUCT_CURRENT_LEVEL
+	dbw 8, wdb62      ; FILESTRUCT_UNK03
+	dbw 1, wdb6a      ; FILESTRUCT_UNK0B
+	dbw 1, wdd63      ; FILESTRUCT_UNK0C
+	dbw 1, wdd62      ; FILESTRUCT_UNK0D
+	dbw 1, wdb6c      ; FILESTRUCT_UNK0E
+	dbw 1, wdb6b      ; FILESTRUCT_UNK0F
+	dbw 1, wdb7b      ; FILESTRUCT_UNK10
+	dbw 1, sa000Unk84 ; FILESTRUCT_LIVES
+	dbw 1, sa000Unk4c ; FILESTRUCT_HP
+	dbw 1, sa000Unk72 ; FILESTRUCT_UNK13
+	dbw 1, sa000Unk51 ; FILESTRUCT_UNK14
+	dbw 1, sa000Unk5b ; FILESTRUCT_COPY_ABILITY
+	dbw 1, sa000Unk71 ; FILESTRUCT_ANIMAL_FRIEND
+	dbw 3, wScore     ; FILESTRUCT_SCORE
 	db $00 ; end
 ; 0x3e8d2
 
@@ -565,12 +565,12 @@ FileSelectMenu:
 .loop_selection
 	call .Func_3e8fe
 	call Random
-	ld a, [wdf0a]
-	cp $06
+	ld a, [wGameMode]
+	cp GAMEMODE_DEMO
 	jr z, .loop_selection
 	lb de, SGB_PALSEQUENCE_01, 4
-	farcall Func_6827b
-	call Func_437
+	farcall FadeOut_ToBlack
+	call TurnLCDOff
 	ret
 
 .Func_3e8fe:
@@ -592,7 +592,7 @@ Script_3e920:
 	set_oam $7370, $0f ; OAM_3f370
 	set_draw_func Func_df6
 	set_y 0
-	set_field OBJSTRUCT_UNK39, FILE_SELECT_1
+	set_field OBJSTRUCT_UNK39, FILEMENU_1
 Script_3e933:
 	set_x 14
 	exec_asm UpdateFileSelectMenuCursorPosition
@@ -674,7 +674,7 @@ Func_3e9c5:
 Func_3e9d2:
 	ld e, OBJSTRUCT_UNK39
 	ld a, [de]
-	ld [wdf0a], a
+	ld [wGameMode], a
 	ret
 
 Func_3e9d9:
@@ -701,9 +701,9 @@ Func_3e9d9:
 	ret
 
 .FilePtrs:
-	dw sFile1 ; FILE_SELECT_1
-	dw sFile2 ; FILE_SELECT_2
-	dw sFile3 ; FILE_SELECT_3
+	dw sFile1 ; FILEMENU_1
+	dw sFile2 ; FILEMENU_2
+	dw sFile3 ; FILEMENU_3
 
 Func_3e9f9:
 	ld e, OBJSTRUCT_UNK3B
@@ -747,10 +747,10 @@ UpdateFileSelectMenuCursorPosition:
 	ret
 
 .YPositions:
-	db  52 ; FILE_SELECT_1
-	db  76 ; FILE_SELECT_2
-	db 100 ; FILE_SELECT_3
-	db 124 ; FILE_SELECT_ERASE
+	db  52 ; FILEMENU_1
+	db  76 ; FILEMENU_2
+	db 100 ; FILEMENU_3
+	db 124 ; FILEMENU_ERASE
 
 Func_3ea2e:
 	ldh a, [hJoypad1Pressed]
@@ -777,7 +777,7 @@ Func_3ea2e:
 	ret
 .d_down
 	ld a, [de]
-	cp FILE_SELECT_ERASE
+	cp FILEMENU_ERASE
 	ret z
 	inc a
 	jr .update_position
@@ -793,11 +793,11 @@ Func_3ea2e:
 	jp Func_846
 .asm_3ea6b
 	ld a, $ff
-	ld [wdf0a], a
+	ld [wGameMode], a
 	ret
 .a_btn_or_start
 	ld a, [de]
-	cp $03
+	cp FILEMENU_ERASE
 	ld e, OBJSTRUCT_UNK3A
 	jr z, .asm_3ea91
 	ld a, [de]
@@ -812,6 +812,7 @@ Func_3ea2e:
 	ld e, BANK(Script_3e95f)
 	ld bc, Script_3e95f
 	jp Func_846
+
 .asm_3ea91
 	ld a, [de]
 	or a
@@ -861,7 +862,7 @@ Func_3eaa1:
 	jr nz, .asm_3eae2
 	ld e, OBJSTRUCT_UNK39
 	ld a, [de]
-	ld [wdf0a], a
+	ld [wGameMode], a
 	ld e, SFX_2D
 	call Func_10aa
 	ret
@@ -908,7 +909,7 @@ Func_3eaef:
 .a_btn_or_start
 	ld a, [de]
 	add $03
-	ld [wdf0a], a
+	ld [wGameMode], a
 	ld e, SFX_2D
 	call Func_10aa
 	ret
@@ -989,9 +990,9 @@ Func_3eb49:
 	ret
 
 Data_3eb83:
-	dw .data_3eb89 ; FILE_SELECT_1
-	dw .data_3eb9e ; FILE_SELECT_2
-	dw .data_3ebb3 ; FILE_SELECT_3
+	dw .data_3eb89 ; FILEMENU_1
+	dw .data_3eb9e ; FILEMENU_2
+	dw .data_3ebb3 ; FILEMENU_3
 
 .data_3eb89
 	dw $98a0
@@ -1051,9 +1052,9 @@ Data_3eb83:
 	db $ff ; end
 
 Data_3ebc8:
-	dw .data_3ebce ; FILE_SELECT_1
-	dw .data_3ebde ; FILE_SELECT_2
-	dw .data_3ebee ; FILE_SELECT_3
+	dw .data_3ebce ; FILEMENU_1
+	dw .data_3ebde ; FILEMENU_2
+	dw .data_3ebee ; FILEMENU_3
 
 .data_3ebce
 	dw $98a0
@@ -1101,24 +1102,24 @@ Data_3ebc8:
 	db $ff ; end
 
 Data_3ebfe:
-	dw .data_3ec04 ; FILE_SELECT_1
-	dw .data_3ec0a ; FILE_SELECT_2
-	dw .data_3ec10 ; FILE_SELECT_3
+	dw .data_3ec04 ; FILEMENU_1
+	dw .data_3ec0a ; FILEMENU_2
+	dw .data_3ec10 ; FILEMENU_3
 
 .data_3ec04
 	dw $98c0
 	db 20
 	dw $7452
-	
+
 	db $ff ; end
-	
+
 .data_3ec0a
 	dw $9920
 	db 20
 	dw $7452
 
 	db $ff ; end
-	
+
 .data_3ec10
 	dw $9980
 	db 20
@@ -1187,7 +1188,7 @@ EraseSelectedFile:
 	ret
 
 ; input:
-; - a = which file to erase (FILE_* constant)
+; - a = which file to erase (FILESTRUCT_* constant)
 .Erase:
 	ld a, e
 	ld hl, sFile1
@@ -1197,7 +1198,7 @@ EraseSelectedFile:
 	jr z, .got_file
 	ld hl, sFile3
 .got_file
-	ld e, FILE_STRUCT_SIZE
+	ld e, FILESTRUCT_STRUCT_SIZE
 	xor a
 .loop_clear
 	ld [hli], a
@@ -1275,10 +1276,10 @@ PrintFileInfo:
 ; if not, then clears data for that file
 CheckFilesChecksums:
 	ld c, NUM_FILES
-	ld de, FILE_STRUCT_SIZE
+	ld de, FILESTRUCT_STRUCT_SIZE
 	ld hl, sFile1CurrentLevel
 .loop_files
-	ld b, FILE_CHECKSUM1 - FILE_UNK03
+	ld b, FILESTRUCT_CHECKSUM1 - FILESTRUCT_UNK03
 	push hl
 	ld a, [hli]
 .loop_xor
@@ -1286,10 +1287,10 @@ CheckFilesChecksums:
 	inc hl
 	dec b
 	jr nz, .loop_xor
-	cp [hl] ; FILE_CHECKSUM1
+	cp [hl] ; FILESTRUCT_CHECKSUM1
 	jr nz, .checksum_fail
 	pop hl
-	ld b, FILE_CHECKSUM2 - FILE_UNK03
+	ld b, FILESTRUCT_CHECKSUM2 - FILESTRUCT_UNK03
 	push hl
 	ld a, [hli]
 .loop_sum
@@ -1308,7 +1309,7 @@ CheckFilesChecksums:
 .checksum_fail
 	pop hl
 	push hl
-	ld b, FILE_STRUCT_SIZE - FILE_CURRENT_LEVEL
+	ld b, FILESTRUCT_STRUCT_SIZE - FILESTRUCT_CURRENT_LEVEL
 	xor a
 .loop_clear
 	ld [hli], a
@@ -1319,9 +1320,9 @@ CheckFilesChecksums:
 	jr .next_file
 
 ReadSaveData:
-	ld a, [wdf0a]
-	cp $03
-	ret nc
+	ld a, [wGameMode]
+	cp SPECIAL_GAME_MODE
+	ret nc ; is special game mode
 	ld de, sFile1CurrentLevel
 	cp FILE_2
 	jr c, .got_file
@@ -1333,13 +1334,13 @@ ReadSaveData:
 .loop
 	ld a, [hli]
 	or a
-	jr z, .asm_3ed50
+	jr z, .done_read
 	ldh [hff84], a
 	ld a, [hli]
 	ld c, a
 	ld a, [hli]
 	ld b, a
-.asm_3ed43
+.loop_copy
 	ld a, [de]
 	inc de
 	ld [bc], a
@@ -1347,29 +1348,33 @@ ReadSaveData:
 	ldh a, [hff84]
 	dec a
 	ldh [hff84], a
-	jr nz, .asm_3ed43
+	jr nz, .loop_copy
 	jr .loop
 
-.asm_3ed50
-	ld hl, $ffe6
+.done_read
+	ld hl, FILESTRUCT_COMPLETION - FILESTRUCT_CHECKSUM1
 	add hl, de
 	ld a, [hli]
 	or [hl]
-	ret nz
+	ret nz ; not a new game
+
+	; new game, initialize some variables
 	ld a, $02
 	ld [sa000Unk84], a
 	ld a, $0c
 	ld [sa000Unk4c], a
 	ld a, $06
 	ld [sa000Unk72], a
+
+	; start with no copy ability
 	ld a, NO_COPY_ABILITY
 	ld [sa000Unk5b], a
 	ret
 
 WriteSaveData:
-	ld a, [wdf0a]
-	cp $03
-	ret nc
+	ld a, [wGameMode]
+	cp SPECIAL_GAME_MODE
+	ret nc ; is special game mode
 	ld de, sFile1CurrentLevel
 	cp FILE_2
 	jr c, .got_file
@@ -1429,7 +1434,7 @@ CalculateFilesCompletion:
 	xor a
 	ldh [hff80 + 0], a
 	ldh [hff80 + 1], a
-	ld de, FILE_UNK03
+	ld de, FILESTRUCT_UNK03
 	add hl, de
 
 	ld b, $0a
@@ -1450,7 +1455,7 @@ CalculateFilesCompletion:
 	ld [hli], a
 	ldh a, [hff80 + 1]
 	ld [hld], a
-	ld de, FILE_STRUCT_SIZE
+	ld de, FILESTRUCT_STRUCT_SIZE
 	add hl, de
 	ldh a, [hff82]
 	dec a
@@ -1487,7 +1492,7 @@ CalculateFilesCompletion:
 	ret
 
 InitFileSelectMenu:
-	farcall Func_20000
+	farcall InitObjects
 
 	ld e, SGB_ATF_10
 	farcall Func_7a011
@@ -1523,23 +1528,23 @@ InitFileSelectMenu:
 	farcall PlayMusic
 
 	ld hl, wFadePals3
-	ld a, $e4
-	ld [hli], a ; wFadePals3
-	ld a, $d0
-	ld [hli], a ; wcd0a
-	ld a, $e4
-	ld [hl], a ; wcd0b
+	ldpal a, SHADE_WHITE, SHADE_LIGHT, SHADE_DARK, SHADE_BLACK
+	ld [hli], a ; wFadePals3BGP
+	ldpal a, SHADE_WHITE, SHADE_WHITE, SHADE_LIGHT, SHADE_BLACK
+	ld [hli], a ; wFadePals3OBP0
+	ldpal a, SHADE_WHITE, SHADE_LIGHT, SHADE_DARK, SHADE_BLACK
+	ld [hl], a ; wFadePals3OBP1
 
 	ld a, LCDC_BG_ON | LCDC_OBJ_ON | LCDC_OBJ_16 | LCDC_WIN_9C00
 	ldh [rLCDC], a
 
-	call Func_46d
+	call TurnLCDOn
 
 	ld a, $06
-	ld [wdf0a], a
+	ld [wGameMode], a
 	call ReadJoypad
 
-	lb de, $01, 4
-	farcall Func_68246
+	lb de, SGB_PALSEQUENCE_01, 4
+	farcall FadeIn
 	ret
 ; 0x3ee8c

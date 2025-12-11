@@ -12,3 +12,7 @@ MACRO ldpal
 ASSERT \2 < 4 && \3 < 4 && \4 < 4 && \5 < 4
 	ld \1, (\2 << COL_0) | (\3 << COL_1) | (\4 << COL_2) | (\5 << COL_3)
 ENDM
+
+; wFadeToColor constants
+DEF FADE_TO_BLACK EQU 0
+DEF FADE_TO_WHITE EQU 1

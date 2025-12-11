@@ -3137,15 +3137,15 @@ Func_74b0:
 	ldh a, [hJoypad1Down]
 	and PAD_DOWN
 	jr z, .asm_74fa
-	ld e, $01
-	ld bc, $777f
+	ld e, BANK(Script_777f)
+	ld bc, Script_777f
 	jp Func_37f4
 .asm_74fa
 	ldh a, [hffb4]
 	and $02
 	jr z, .asm_7508
-	ld e, $01
-	ld bc, $770c
+	ld e, BANK(Script_770c)
+	ld bc, Script_770c
 	jp Func_37f4
 .asm_7508
 	call Func_36e6
@@ -3238,15 +3238,15 @@ Func_756d:
 	ldh a, [hJoypad1Down]
 	and PAD_DOWN
 	jr z, .asm_75ca
-	ld e, $01
-	ld bc, $777f
+	ld e, BANK(Script_777f)
+	ld bc, Script_777f
 	jp Func_37f4
 .asm_75ca
 	ldh a, [hffb4]
 	and $02
 	jr z, .asm_75d8
-	ld e, $01
-	ld bc, $770c
+	ld e, BANK(Script_770c)
+	ld bc, Script_770c
 	jp Func_37f4
 .asm_75d8
 	call Func_374e
@@ -3336,8 +3336,8 @@ Func_7630:
 	ldh a, [hffb4]
 	and $02
 	jr z, .asm_7698
-	ld e, $01
-	ld bc, $770c
+	ld e, BANK(Script_770c)
+	ld bc, Script_770c
 	jp Func_37f4
 .asm_7698
 	call Func_36e6
@@ -3374,8 +3374,8 @@ Func_76b5:
 	ldh a, [hffb4]
 	and $02
 	jr z, .asm_76ef
-	ld e, $01
-	ld bc, $770c
+	ld e, BANK(Script_770c)
+	ld bc, Script_770c
 	jp Func_37f4
 .asm_76ef
 	call Func_3765
@@ -3571,15 +3571,15 @@ Func_7832:
 	ldh a, [hJoypad1Down]
 	and PAD_DOWN
 	jr z, .asm_787b
-	ld e, $01
-	ld bc, $777f
+	ld e, BANK(Script_777f)
+	ld bc, Script_777f
 	jp Func_37f4
 .asm_787b
 	ldh a, [hffb4]
 	and $02
 	jr z, .asm_7889
-	ld e, $01
-	ld bc, $770c
+	ld e, BANK(Script_770c)
+	ld bc, Script_770c
 	jp Func_37f4
 .asm_7889
 	call Func_36e6
@@ -3650,15 +3650,15 @@ Func_78d6:
 	ldh a, [hJoypad1Down]
 	and PAD_DOWN
 	jr z, .asm_7921
-	ld e, $01
-	ld bc, $777f
+	ld e, BANK(Script_777f)
+	ld bc, Script_777f
 	jp Func_37f4
 .asm_7921
 	ldh a, [hffb4]
 	and $02
 	jr z, .asm_792f
-	ld e, $01
-	ld bc, $770c
+	ld e, BANK(Script_770c)
+	ld bc, Script_770c
 	jp Func_37f4
 .asm_792f
 	call Func_37bd
@@ -3724,8 +3724,8 @@ Func_7989:
 	ldh a, [hffb4]
 	and $02
 	jr z, .asm_79be
-	ld e, $01
-	ld bc, $770c
+	ld e, BANK(Script_770c)
+	ld bc, Script_770c
 	jp Func_37f4
 .asm_79be
 	call Func_37cb

@@ -1,16 +1,18 @@
 SECTION "WRAM0", WRAM0
 
+SECTION "Virtual OAM 1", WRAM0
+
 wVirtualOAM1:: ; c000
 	ds $4 * OAM_COUNT
 wVirtualOAM1End::
 
-SECTION "WRAM0@c100", WRAM0[$c100]
+SECTION "Virtual OAM 2", WRAM0
 
 wVirtualOAM2:: ; c100
 	ds $4 * OAM_COUNT
 wVirtualOAM2End::
 
-SECTION "WRAM0@c200", WRAM0[$c200]
+SECTION "WRAM0@c200", WRAM0
 
 wc200:: ; c200
 	ds $100
@@ -222,7 +224,7 @@ wda06:: db ; da06
 wda07:: db ; da07
 
 ; points to the next empty spot in a virtual OAM
-; (either wVirtualOAM1 or wVirtualOAM2)
+; (either wVirtualOAM1 or wVirtualOAM2), big endian
 wVirtualOAMPtr:: ; da08
 	dw
 
@@ -238,10 +240,11 @@ wVBlankExecuted:: ; da0c
 wTimerExecuted:: ; da0d
 	db
 
-wda0e:: ; da0e
+; counts up everytime a frame is rendered
+wFrameCounter:: ; da0e
 	db
 
-wda0f:: ; da0f
+wVirtualOAMSelect:: ; da0f
 	db
 
 ; has a jump instruction to some variable function
@@ -267,10 +270,11 @@ wVBlankCachedSP2:: ; da18
 wda1a:: ; da1a
 	dw
 
-wda1c:: ; da1c
+wBGMapQueueIndex:: ; da1c
 	db
 
-	ds $1
+wda1d:: ; da1d
+	db
 
 wda1e:: ; da1e
 	db
@@ -327,7 +331,9 @@ wFadeCounter::      db ; da33
 wActiveFadePal:: ; da34
 	db
 
-wda35:: ; da35
+; which color to fade to
+; either FADE_TO_BLACK or FADE_TO_WHITE
+wFadeToColor:: ; da35
 	db
 
 wda36:: ; da36
@@ -377,7 +383,9 @@ wdb36:: ; db36
 wdb38:: ; db38
 	db
 
-wdb39:: ; db39
+; each nth bit represents nth level visited
+; if bit is not set, that level's intro is played
+wVisitedLevels:: ; db39
 	db
 
 wdb3a:: ; db3a
@@ -502,8 +510,7 @@ wdb75:: db ; db75
 wdb76:: db ; db76
 wdb77:: db ; db77
 
-wdb78:: ; db78
-	ds $3
+wLevelPals:: pal_struct wLevelPals ; db78
 
 wdb7b:: ; db7b
 	db
@@ -538,7 +545,8 @@ SECTION "WRAM1@dd2d", WRAMX[$dd2d], BANK[$1]
 wdd2d:: ; dd2d
 	db
 
-wdd2e:: ; dd2e
+; level constant for level intro playing
+wIntroLevel:: ; dd2e
 	db
 
 	ds $59 - $2f
@@ -661,7 +669,7 @@ wdf03:: ; df03
 
 	ds $a - $4
 
-wdf0a:: ; df0a
+wGameMode:: ; df0a
 	db
 
 wdf0b:: ; df0b
@@ -704,6 +712,11 @@ wdf32:: ; df32
 
 wdf33:: ; df33
 	db
+
+	ds $3a - $34
+
+wSoundTestMusic:: db ; df3a
+wSoundTestSFX::   db ; df3b
 
 SECTION "Stack", WRAMX
 

@@ -560,7 +560,7 @@ class Disassembler(object):
 			return self.rsym.get(label)
 
 		return None
-	
+
 	def post_processing(self, output):
 		def substitute_bgcoords(m):
 			reg = m[1]

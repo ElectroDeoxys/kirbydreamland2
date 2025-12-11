@@ -28,6 +28,11 @@ SECTION "Bank B", ROMX
 INCLUDE "engine/bank0b.asm"
 
 
+SECTION "Bank E", ROMX
+
+INCLUDE "engine/bank0e.asm"
+
+
 SECTION "Bank F", ROMX
 
 INCLUDE "engine/bank0f.asm"

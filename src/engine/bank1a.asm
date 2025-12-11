@@ -81,7 +81,7 @@ Init::
 	ld [hld], a
 	ld [hl], LOW(ProcessBGMapQueue)
 	xor a
-	ld [wda1c], a
+	ld [wBGMapQueueIndex], a
 
 	; initialise Audio engine and WRAM tables
 	farcall_unsafe InitAudio
@@ -100,6 +100,7 @@ Init::
 	ldh [rWY], a
 	ldh [rWX], a
 	ld [wObjDisabled], a
+	
 	ld a, HIGH(wVirtualOAM1)
 	ld [wVirtualOAMPtr + 0], a
 	ld a, $c2
@@ -258,7 +259,7 @@ SGBPalSequences:
 
 ; input:
 ; - d = SGB_PALSEQUENCE_* constant
-SGBFadeIn:
+SGBFadeOut:
 	ld a, [wSGBEnabled]
 	or a
 	ret z ; no SGB
@@ -290,7 +291,7 @@ SGBFadeIn:
 
 ; input:
 ; - d = SGB_PALSEQUENCE_* constant
-SGBFadeOut:
+SGBFadeIn:
 	ld a, [wSGBEnabled]
 	or a
 	ret z ; no SGB
@@ -343,11 +344,11 @@ DoSGBPalSequence:
 ; input:
 ; - d = SGB_PALSEQUENCE_* constant
 ; - e = fade step duration
-Func_68246::
+FadeIn::
 	ld a, $ff
 	ld [wda37], a
 
-	call SGBFadeOut
+	call SGBFadeIn
 	; being here means no SGB
 ;	fallthrough
 
@@ -356,14 +357,16 @@ Func_68246::
 Func_6824e::
 	ld a, e
 	ldh [hff84], a
+
+	; if wBGP == 0, fade to black
+	; otherwise fade to white
 	ld a, [wBGP]
 	or a
-	ld a, FALSE
-	jr z, .asm_6825b
-	ld a, TRUE
-.asm_6825b
-	ld [wda35], a
-	; wda35 = (wBGP != 0)
+	ld a, FADE_TO_BLACK
+	jr z, .got_fade_color
+	ld a, FADE_TO_WHITE
+.got_fade_color
+	ld [wFadeToColor], a
 
 	ld hl, wFadePals2OBP1
 	ld de, wFadePals3OBP1
@@ -371,7 +374,7 @@ Func_6824e::
 .loop
 	ld a, [de]
 	dec e
-	call DarkenColorsInPalette
+	call FadeColorsInPalette
 	ld [hld], a
 	dec c
 	jr nz, .loop
@@ -383,9 +386,11 @@ Func_6824e::
 Func_68276::
 	call Func_6829a
 	jr Func_68283
-Func_6827b::
+
+FadeOut_ToBlack::
 	call Func_682a4
 	jr Func_68283
+
 Func_68280::
 	call Func_682ac
 Func_68283:
@@ -403,11 +408,11 @@ Func_68283:
 Func_68292:
 	ld a, $01
 	ld [wda37], a
-	call SGBFadeIn
+	call SGBFadeOut
 ;	fallthrough
 Func_6829a:
-	ld a, TRUE
-	ld [wda35], a
+	ld a, FADE_TO_WHITE
+	ld [wFadeToColor], a
 	ld a, e
 	ldh [hff84], a
 	jr Func_682b4
@@ -418,11 +423,11 @@ Func_6829a:
 Func_682a4:
 	ld a, $00
 	ld [wda37], a
-	call SGBFadeIn
+	call SGBFadeOut
 ;	fallthrough
 Func_682ac:
-	ld a, FALSE
-	ld [wda35], a
+	ld a, FADE_TO_BLACK
+	ld [wFadeToColor], a
 	ld a, e
 	ldh [hff84], a
 Func_682b4:
@@ -433,7 +438,7 @@ Func_682b4:
 .loop_set_fade_to_black
 	ld a, [de]
 	inc e
-	call DarkenColorsInPalette
+	call FadeColorsInPalette
 	ld [hli], a
 	dec c
 	jr nz, .loop_set_fade_to_black
@@ -454,62 +459,64 @@ Func_682ca:
 
 ; decrements all colors on palette given in a
 ; to achieve a fading into black effect
-DarkenColorsInPalette:
+FadeColorsInPalette:
 	ld b, a
-	ld a, [wda35]
-	cp FALSE
+	ld a, [wFadeToColor]
+	cp FADE_TO_BLACK
 	ld a, b
-	jr nz, .asm_68305
+	jr nz, .fade_to_white
+
+; fade to black
 	ld b, a ; unnecessary
 	and %11 << COL_3
 	ld a, b
-	jr z, .col_2
+	jr z, .darken_col_2
 	sub 1 << COL_3
 	ld b, a
-.col_2
+.darken_col_2
 	and %11 << COL_2
 	ld a, b
-	jr z, .col_1
+	jr z, .darken_col_1
 	sub 1 << COL_2
 	ld b, a
-.col_1
+.darken_col_1
 	and %11 << COL_1
 	ld a, b
-	jr z, .col_0
+	jr z, .darken_col_0
 	sub 1 << COL_1
 	ld b, a
-.col_0
+.darken_col_0
 	and %11 << COL_0
 	ld a, b
 	ret z
 	dec a
 	ret
 
-.asm_68305
+.fade_to_white
 	ld b, a
-	and $c0
-	cp $c0
+	and %11 << COL_3
+	cp %11 << COL_3
 	ld a, b
-	jr z, .asm_68310
-	add $40
+	jr z, .lighten_col_2
+	add 1 << COL_3
 	ld b, a
-.asm_68310
-	and $30
-	cp $30
+.lighten_col_2
+	and %11 << COL_2
+	cp %11 << COL_2
 	ld a, b
-	jr z, .asm_6831a
-	add $10
+	jr z, .lighten_col_1
+	add 1 << COL_2
 	ld b, a
-.asm_6831a
-	and $0c
-	cp $0c
+.lighten_col_1
+	and %11 << COL_1
+	cp %11 << COL_1
 	ld a, b
-	jr z, .asm_68324
-	add $04
+	jr z, .lighten_col_0
+	add 1 << COL_1
 	ld b, a
-.asm_68324
-	and $03
-	cp $03
+.lighten_col_0
+	and %11 << COL_0
+	cp %11 << COL_0
 	ld a, b
 	ret z
 	inc a

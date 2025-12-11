@@ -1,4 +1,4 @@
-Func_20000::
+InitObjects::
 	ld a, HIGH(sObjects)
 	ld [wda48], a
 	xor a
@@ -51,50 +51,52 @@ _GameLoop::
 
 	; play starting intro
 	farcall StartIntro
+;	fallthrough
 
-.title_screen
-	farcall TitleScreen
+TitleScreen:
+	farcall _TitleScreen
 
 	ld a, [wNextDemo]
 	or a
-	jp nz, $43f3 ; Func_203f3
+	jp nz, PlayDemo
 
 	farcall FileSelectMenu
 
-	ld a, [wdf0a]
+	ld a, [wGameMode]
 	cp $ff
-	jr z, .title_screen
-	cp $03
-	jr c, .asm_200ab
-	cp $04
-	jp c, $43e8 ; Func_203e8
-	jp z, $432c ; Func_2032c
-	jp $438c ; Func_2038c
+	jr z, TitleScreen
+	cp SPECIAL_GAME_MODE
+	jr c, .load_file
+	; is a special game mode
+	cp GAMEMODE_BOSS_ENDURANCE
+	jp c, SoundTest ; GAMEMODE_SOUND_TEST
+	jp z, Func_2032c ; GAMEMODE_BOSS_ENDURANCE
+	jp BonusGame ; GAMEMODE_BONUS_GAME
 
-.asm_200ab
+.load_file
 	call Func_2049b
-	ld hl, wdb39
-	ld [hl], $00
+
+	ld hl, wVisitedLevels
+	ld [hl], $00 ; set none as visited
 
 	ld e, SGB_SFX_WIND_LOW
 	farcall SGBPlaySFX
 
-	farcall Func_32ff
+	farcall LevelSelection
 
 	ld e, SGB_SFX_STOP
 	farcall SGBPlaySFX
 
-	call Func_206ef
-	cp $ff
-	jr z, .asm_200e8
-	cp $07
-	jr nc, .asm_200e8
+	call UpdateVisitedLevels
+	cp -1 ; already visited
+	jr z, .skip_level_intro
+	cp NUM_LEVELS
+	jr nc, .skip_level_intro
 	ld e, a
-	farcall Func_2a2b
-
+	farcall PlayLevelIntro
 	ld a, $01
 	ld [wdb38], a
-.asm_200e8
+.skip_level_intro
 	farcall Func_10e6
 	farcall Func_1166
 
@@ -107,6 +109,10 @@ _GameLoop::
 	ld a, [hli]
 	ld h, [hl]
 	ld l, a
+;	falltrough
+
+; input:
+; - hl = ?
 Func_20107:
 	call LoadLevel
 	farcall LevelLoop
@@ -173,14 +179,15 @@ Func_20135:
 Func_201a4:
 	ld e, 4
 	farcall Func_68280
-	call Func_437
-	ld a, [wdf0a]
-	cp $04
-	jp z, _GameLoop.title_screen
+	call TurnLCDOff
+	ld a, [wGameMode]
+	cp GAMEMODE_BOSS_ENDURANCE
+	jp z, TitleScreen
 	call Func_206cb
 	ld a, [sa000Unk84]
 	or a
-	jr z, .asm_201fb
+	jr z, .no_more_lives
+	; decrement lives
 	dec a
 	daa
 	ld [sa000Unk84], a
@@ -200,7 +207,7 @@ Func_201a4:
 	ld h, a
 	jp Func_20107
 
-.asm_201fb
+.no_more_lives
 	ld a, $02
 	ld [sa000Unk84], a
 	farcall Func_1da7c
@@ -208,7 +215,7 @@ Func_201a4:
 	farcall Func_2a29
 	ld a, [wda2c]
 	cp $01
-	jp z, _GameLoop.title_screen
+	jp z, TitleScreen
 	farcall Func_10e6
 	farcall Func_1166
 	farcall Func_20851
@@ -228,6 +235,165 @@ PtrTable_20278:
 	dw Data_20e12 ; DARK_CASTLE
 	assert_table_length NUM_LEVELS
 ; 0x20286
+
+SECTION "Func_2032c", ROMX[$432c], BANK[$8]
+
+Func_2032c:
+	call Func_2049b
+
+	xor a
+	ld [wdb6a], a
+	ld [wdb6b], a
+	ld [sa000Unk84], a
+	ld [sa000Unk71], a
+	ld [sa000Unk51], a
+	ld hl, wScore
+	ld [hli], a
+	ld [hli], a
+	ld [hl], a
+	dec a ; $ff
+	ld [sa000Unk5b], a
+	ld [wLevel], a
+	ld a, $7f
+	ld [wdd63], a
+	farcall Func_10e6
+	farcall Func_1166
+	jr .asm_20370
+
+	ld e, $04
+	farcall Func_68280
+	call TurnLCDOff
+.asm_20370
+	ld hl, wHUDUpdateFlags
+	set UPDATE_LEVEL_F, [hl]
+	ld a, [wLevel]
+	inc a
+	ld [wLevel], a
+	inc a
+	ld bc, $5
+	ld hl, $50e8
+	jr .asm_20386
+.asm_20385
+	add hl, bc
+.asm_20386
+	dec a
+	jr nz, .asm_20385
+	jp Func_20107
+
+BonusGame:
+	call Func_2049b
+
+	xor a
+	ld [sa000Unk84], a
+	ld [sa000Unk71], a
+	ld [sa000Unk51], a
+	ld hl, wScore
+	ld [hli], a
+	ld [hli], a
+	ld [hl], a
+	dec a ; $ff
+	ld [sa000Unk5b], a
+	ld [wLevel], a
+	ld a, $7f
+	ld [wdb6a], a
+	farcall Func_10e6
+	farcall Func_1166
+	jr .useless_jump
+.useless_jump
+	ld hl, wHUDUpdateFlags
+	set UPDATE_LEVEL_F, [hl]
+	ld a, [wLevel]
+	inc a
+	cp DARK_CASTLE
+	jr z, .asm_203dd
+	ld [wLevel], a
+	inc a
+	ld bc, $5
+	ld hl, $50e8
+	jr .asm_203d7
+.asm_203d6
+	add hl, bc
+.asm_203d7
+	dec a
+	jr nz, .asm_203d6
+	jp Func_20107
+.asm_203dd
+	farcall Func_3ac52
+	jp TitleScreen
+
+SoundTest:
+	farcall _SoundTest
+	jp TitleScreen
+
+PlayDemo:
+	ld a, GAMEMODE_DEMO
+	ld [wGameMode], a
+	ld e, MUSIC_NONE
+	farcall PlayMusic
+	call Func_2049b
+
+	ld a, [wNextDemo]
+	dec a
+	ld c, a
+	add a
+	add c
+	ld c, a ; *3
+	ld b, $00
+	ld hl, .Data
+	add hl, bc
+	ld a, [hli]
+	ld [sa000Unk71], a ; which Animal Friend
+	ld a, [hli]
+	ld [sa000Unk51], a ; ?
+	ld a, [hl]
+	ld [sa000Unk5b], a ; which Copy Ability
+
+	; zero score and init some other variables
+	xor a
+	ld [wdb6a], a
+	ld hl, wScore
+	ld [hli], a
+	ld [hli], a
+	ld [hl], a
+	ld [wdd63], a
+	ld a, $02
+	ld [sa000Unk84], a
+	ld a, $0c
+	ld [wdee3], a
+	ld a, $06
+	ld [wdee5], a
+
+	farcall Func_10e6
+	farcall Func_1166
+
+	ld hl, wHUDUpdateFlags
+	set UPDATE_LEVEL_F, [hl]
+	set UPDATE_KIRBY_HP_F, [hl]
+	ld a, [wNextDemo]
+	ld hl, .Ptrs - $2
+	add a ; *2
+	add l
+	ld l, a
+	incc h
+	ld a, [hli]
+	ld h, [hl]
+	ld l, a
+	jp Func_20107
+
+.Ptrs:
+	table_width 2
+	dw Data_2110b ; DEMO_1
+	dw Data_21111 ; DEMO_2
+	dw Data_21117 ; DEMO_3
+	assert_table_length NUM_DEMOS - 1
+
+.Data:
+	table_width 3
+	db NONE, $00, NO_COPY_ABILITY ; DEMO_1
+	db RICK, $05, FIRE            ; DEMO_2
+	db COO,  $07, NEEDLE          ; DEMO_3
+	assert_table_length NUM_DEMOS - 1
+; 0x20473
 
 SECTION "Func_2049b", ROMX[$449b], BANK[$8]
 
@@ -270,14 +436,17 @@ LoadLevel:
 	ld [hli], a
 	ld [hli], a
 	ld [hl], a
-	ld hl, wdb78
-	ld a, $e4
-	ld [hli], a
-	ld a, $d0
-	ld [hli], a
-	ld a, $e4
-	ld [hli], a
-	farcall Func_20000
+
+	; init level palettes
+	ld hl, wLevelPals
+	ldpal a, SHADE_WHITE, SHADE_LIGHT, SHADE_DARK, SHADE_BLACK
+	ld [hli], a ; wLevelPalsBGP
+	ldpal a, SHADE_WHITE, SHADE_WHITE, SHADE_LIGHT, SHADE_BLACK
+	ld [hli], a ; wLevelPalsOBP0
+	ldpal a, SHADE_WHITE, SHADE_LIGHT, SHADE_DARK, SHADE_BLACK
+	ld [hli], a ; wLevelPalsOBP1
+
+	farcall InitObjects
 	pop hl
 
 	ld a, l
@@ -404,22 +573,22 @@ LoadLevel:
 	farcall Func_1c128
 	farcall Func_1c0e2
 
-	ld hl, wdb78
+	ld hl, wLevelPals
 	ld de, wFadePals3
-	ld a, [hli]
-	ld [de], a
+	ld a, [hli] ; wLevelPalsBGP
+	ld [de], a ; wFadePals3BGP
 	inc e
-	ld a, [hli]
-	ld [de], a
+	ld a, [hli] ; wLevelPalsOBP0
+	ld [de], a ; wFadePals3BP0
 	inc e
-	ld a, [hl]
-	ld [de], a
+	ld a, [hl] ; wLevelPalsOBP1
+	ld [de], a ; wFadePals3BP1
 	call Func_3131
 
 	ld a, LCDC_BG_ON | LCDC_OBJ_ON | LCDC_OBJ_16 | LCDC_WIN_ON | LCDC_WIN_9C00
 	ldh [rLCDC], a
 
-	call Func_46d
+	call TurnLCDOn
 	ld hl, wdedf
 	res 0, [hl]
 	ld a, [wLevel]
@@ -490,12 +659,12 @@ LoadLevel:
 .asm_206b8
 	ld a, $01
 	ld [wdb76], a
-	ld a, $fa
-	ld hl, wdb78
-	ld [hli], a
-	ld a, $f8
-	ld [hli], a
-	ld [hl], a
+	ldpal a, SHADE_DARK, SHADE_DARK, SHADE_BLACK, SHADE_BLACK
+	ld hl, wLevelPals
+	ld [hli], a ; wLevelPalsBGP
+	ldpal a, SHADE_WHITE, SHADE_DARK, SHADE_BLACK, SHADE_BLACK
+	ld [hli], a ; wLevelPalsOBP0
+	ld [hl], a ; wLevelPalsOBP1
 	pop hl
 	jp .loop_cmds
 
@@ -515,30 +684,33 @@ Func_206cb:
 	ret
 
 ; output:
-; - a = ?
-Func_206ef:
+; - a = level constant if first time visiting this level
+;       otherwise -1
+UpdateVisitedLevels:
 	ld hl, wLevel
 	ld a, [hl]
-	ld b, $01
+	ld b, $1
 	and a
-.asm_206f6
-	jr z, .asm_206fd
+.loop_sla_b
+	jr z, .got_bitmask
 	sla b
 	dec a
-	jr .asm_206f6
+	jr .loop_sla_b
 
-.asm_206fd
-	ld hl, wdb39
+.got_bitmask
+	; b = bitmask for current level
+	ld hl, wVisitedLevels
 	ld a, [hl]
 	and b
-	jr nz, .asm_2070b
+	jr nz, .already_visited
+; not visited
 	ld a, [hl]
 	or b
-	ld [hl], a
+	ld [hl], a ; set bit for this level
 	ld a, [wLevel]
 	ret
-.asm_2070b
-	ld a, $ff
+.already_visited
+	ld a, -1
 	ret
 ; 0x2070e
 
@@ -730,7 +902,22 @@ Data_20e12:
 	ld_start_level $02, $b1, 16, -48
 ; 0x20e18
 
-SECTION "Script_2111d", ROMX[$511d], BANK[$8]
+SECTION "Data_2110b", ROMX[$510b], BANK[$8]
+
+Data_2110b:
+	ld_set_level GRASS_LAND
+	ld_unk40 $01
+	ld_start_level $00, $04, 32, 126
+
+Data_21111:
+	ld_set_level BIG_FOREST
+	ld_unk40 $02
+	ld_start_level $00, $13, 32, 126
+
+Data_21117:
+	ld_set_level ICEBERG
+	ld_unk40 $02
+	ld_start_level $00, $34, 64, 126
 
 PtrTable_2111d::
 	dwb $44b2, $11 ; $00
@@ -2824,7 +3011,7 @@ Func_23497:
 	ld a, [sa000Unk70]
 	or a
 	ret z
-	ld a, [wda0e]
+	ld a, [wFrameCounter]
 	and $3f
 	ret nz
 	ld e, $06

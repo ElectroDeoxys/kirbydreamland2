@@ -13,7 +13,7 @@ Func_1c000:
 	ld hl, wRNG
 	ld [hli], a
 	ld [hl], a
-	ld [wda0e], a
+	ld [wFrameCounter], a
 	ret
 
 ; fills some kind of look up table for Decompress
@@ -974,22 +974,23 @@ Func_1c584:
 	jr .asm_1c58e
 
 ; input:
-; . e = ?
+; - e = ?
 Func_1c59c:
 	inc e
 	ld hl, wdbd0
 	ld b, h
 	ld c, l
-.asm_1c5a2
+.loop
 	ld a, [hli]
 	or a
-	jr z, .asm_1c5b7
+	jr z, .finish
 	cp e
-	jr nz, .asm_1c5ad
+	jr nz, .overwrite
+	; skip entry
 	inc hl
 	inc hl
-	jr .asm_1c5a2
-.asm_1c5ad
+	jr .loop
+.overwrite
 	ld [bc], a
 	inc bc
 	ld a, [hli]
@@ -998,8 +999,9 @@ Func_1c59c:
 	ld a, [hli]
 	ld [bc], a
 	inc bc
-	jr .asm_1c5a2
-.asm_1c5b7
+	jr .loop
+
+.finish
 	xor a
 	ld [bc], a
 	ld a, c
@@ -1293,7 +1295,7 @@ Func_1da7c:
 
 	; init copy ability
 	ld hl, wCopyAbilityIcon
-	ld [hl], a
+	ld [hl], a ; NONE
 
 	ld hl, wdee1
 	ld [hl], a
@@ -1319,13 +1321,13 @@ Func_1dada::
 	xor a
 	ld [wObjDisabled], a
 	ld hl, wNextStatTrampoline
-	ld a, LOW(Func_2aa)
+	ld a, LOW(StatHandler_DisableWindowObjs)
 	ld [hli], a
-	ld [hl], HIGH(Func_2aa)
+	ld [hl], HIGH(StatHandler_DisableWindowObjs)
 	ld hl, wStatTrampoline + $1
-	ld a, LOW(Func_2aa)
+	ld a, LOW(StatHandler_DisableWindowObjs)
 	ld [hli], a
-	ld [hl], HIGH(Func_2aa)
+	ld [hl], HIGH(StatHandler_DisableWindowObjs)
 
 	ld a, 127
 	ldh [rLYC], a
@@ -1344,16 +1346,16 @@ Func_1dada::
 
 ; input:
 ; - b = LYC value
-Func_1db06:
+SetScreenSectionXScrollStat:
 	ld hl, wLYC
 	ld a, b
 	ld [hl], a
 	ldh [rLYC], a
 
 	ld hl, wNextStatTrampoline
-	ld a, LOW(Func_30c)
+	ld a, LOW(StatHandler_ScreenSectionXScroll)
 	ld [hli], a
-	ld [hl], HIGH(Func_30c)
+	ld [hl], HIGH(StatHandler_ScreenSectionXScroll)
 
 	; switch on LYC==LY
 	ld hl, rSTAT
@@ -1365,13 +1367,13 @@ SECTION "Func_1db28", ROMX[$5b28], BANK[$7]
 
 Func_1db28::
 	ld hl, wStatTrampoline + 1
-	ld a, LOW(Func_2aa)
+	ld a, LOW(StatHandler_DisableWindowObjs)
 	ld [hli], a
-	ld [hl], HIGH(Func_2aa)
+	ld [hl], HIGH(StatHandler_DisableWindowObjs)
 	ld hl, wNextStatTrampoline
-	ld a, LOW(Func_2aa)
+	ld a, LOW(StatHandler_DisableWindowObjs)
 	ld [hli], a
-	ld [hl], HIGH(Func_2aa)
+	ld [hl], HIGH(StatHandler_DisableWindowObjs)
 
 	ld a, 127
 	ldh [rLYC], a
@@ -2102,9 +2104,9 @@ UpdateHUDBossHP:
 	ret
 ; 0x1df57
 
-SECTION "TitleScreen", ROMX[$5fee], BANK[$7]
+SECTION "_TitleScreen", ROMX[$5fee], BANK[$7]
 
-TitleScreen:
+_TitleScreen:
 	; set time to switch to Demo
 	; after entering Title Screen
 	ld hl, wTitleScreenDemoTimer
@@ -2142,7 +2144,7 @@ TitleScreen:
 	ld bc, $22 tiles
 	call FarCopyHLToDE
 
-	farcall Func_20000
+	farcall InitObjects
 
 	ld a, KIRBY_TITLE_SCREEN
 	lb hl, HIGH(sObjects), HIGH(sObjectsEnd)
@@ -2151,12 +2153,12 @@ TitleScreen:
 	xor a
 	ld [wdf02], a
 	ld hl, wFadePals3
-	ld a, $e4
-	ld [hli], a
-	ld a, $d0
-	ld [hli], a
-	ld a, $e4
-	ld [hl], a
+	ldpal a, SHADE_WHITE, SHADE_LIGHT, SHADE_DARK, SHADE_BLACK
+	ld [hli], a ; wFadePals3BGP
+	ldpal a, SHADE_WHITE, SHADE_WHITE, SHADE_LIGHT, SHADE_BLACK
+	ld [hli], a ; wFadePals3OBP0
+	ldpal a, SHADE_WHITE, SHADE_LIGHT, SHADE_DARK, SHADE_BLACK
+	ld [hl], a ; wFadePals3OBP1
 
 	ld e, SFX_NONE
 	farcall PlaySFX
@@ -2169,13 +2171,13 @@ TitleScreen:
 	ld a, LCDC_BG_ON | LCDC_OBJ_16 | LCDC_OBJ_ON | LCDC_WIN_9C00
 	ldh [rLCDC], a
 
-	call Func_46d
+	call TurnLCDOn
 
 	ld e, SGB_ATF_08
 	farcall Func_7a011
 
-	lb de, $00, 4
-	farcall Func_68246
+	lb de, SGB_PALSEQUENCE_00, 4
+	farcall FadeIn
 
 	ld e, SGB_SFX_APPLAUSE
 	farcall SGBPlaySFX
@@ -2222,14 +2224,14 @@ TitleScreen:
 .end_due_to_input
 	xor a ; NO_DEMO
 	ld [wNextDemo], a
-	jp Func_437
+	jp TurnLCDOff
 
 .end_due_to_demo_timer
 	ld e, SGB_SFX_STOP
 	farcall SGBPlaySFX
 	lb de, SGB_PALSEQUENCE_00, 4
-	farcall Func_6827b
-	jp Func_437
+	farcall FadeOut_ToBlack
+	jp TurnLCDOff
 ; 0x1e107
 
 SECTION "Script_1ed73", ROMX[$6d73], BANK[$7]
@@ -2241,12 +2243,12 @@ Func_1ed73:
 	ld a, [wda36]
 	or a
 	ret nz
-	ld hl, wdb78
-	ld a, [hli]
+	ld hl, wLevelPals
+	ld a, [hli] ; wLevelPalsBGP
 	ld [wBGP], a
-	ld a, [hli]
+	ld a, [hli] ; wLevelPalsOBP0
 	ld [wOBP0], a
-	ld a, [hl]
+	ld a, [hl] ; wLevelPalsOBP1
 	ld [wOBP1], a
 	ret
 ; 0x1ed8d
@@ -3308,8 +3310,8 @@ Data_1f700::
 	dwb $4e5d, $19 ; UNK_OBJ_F3
 	dwb $4e8b, $19 ; UNK_OBJ_F4
 	dwb $7aed, $19 ; UNK_OBJ_F5
-	dwb $662c, $0e ; UNK_OBJ_F6
-	dwb $6d03, $0e ; UNK_OBJ_F7
+	dab Script_3a62c ; UNK_OBJ_F6
+	dab Script_3ad03 ; UNK_OBJ_F7
 	dab Script_218e7 ; KIRBY_TITLE_SCREEN
 	assert_table_length NUM_OBJECT_TYPES
 ; 0x1e9eb

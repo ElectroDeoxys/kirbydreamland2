@@ -925,7 +925,7 @@ SGBVRAMTransfer:
 	call SGBTransfer
 	call SGBWait_Long
 
-	call Func_452
+	call StartTimerAndTurnLCDOff
 
 	; retrieve BGP from stack
 	pop af

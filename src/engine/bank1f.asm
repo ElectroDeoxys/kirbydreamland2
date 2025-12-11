@@ -54,6 +54,8 @@ PlayMusic::
 	ld a, [wCurMusic]
 	cp e
 	ret z ; skip, already playing
+;	fallthrough
+ForcePlayMusic:
 	ld a, e
 	ld [wCurMusic], a
 	ld b, e

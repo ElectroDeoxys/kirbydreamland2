@@ -205,6 +205,7 @@ class Parser:
             "Func_faf": ("create_object_rel_2", [self.parse_byte, self.parse_int8, self.parse_int8]),
             "Func_1032": ("set_x_acc_dir", [self.parse_acc]),
             "Func_3c4f": ("set_copy_ability_icon", [self.parse_uint8]),
+            "Func_35e0": ("exec_func_35e0", [self.parse_uint16, self.parse_uint16]),
             "Func_7b2b": ("set_frame_with_orientation", [self.parse_uint8, self.parse_uint8]),
         }
         self.cur_bank = int(offset / 0x4000)

@@ -1,806 +1,3 @@
-_Start:
-	di
-	ld a, BANK(Init)
-	ld [rROMB0 + $100], a
-	jp Init
-
-_VBlank:
-	ldh a, [hRequestLCDOff]
-	or a
-	jr z, .continue_lcd_on
-
-; LCD was requested to be turned off
-; we can only do it safely during V-Blank
-
-.wait_vblank
-	ldh a, [rLY]
-	cp LY_VBLANK + 1
-	jr nz, .wait_vblank
-
-	; disable LCD
-	ld hl, rLCDC
-	res B_LCDC_ENABLE, [hl]
-
-	xor a
-	ldh [hRequestLCDOff], a
-	jp InterruptRet
-
-.continue_lcd_on
-	ld a, [wda0f]
-	cp $01
-	jp c, .skip_dma_and_scroll ; can be jr
-	ld a, HIGH(wVirtualOAM1)
-	jr z, .got_virtual_oam ; wda0f == 1
-	inc a ; HIGH(wVirtualOAM2)
-.got_virtual_oam
-	ldh [hTransferVirtualOAM + $1], a
-	call hTransferVirtualOAM
-
-	ld a, [wda0f]
-	dec a
-	ld hl, wScroll1
-	jr z, .asm_18d ; wda0f == 1
-	ld hl, wScroll2
-.asm_18d
-	ld a, [hli]
-	ldh [rSCY], a
-	ld a, [hl]
-	ldh [rSCX], a
-
-.skip_dma_and_scroll
-	ld hl, wBGOBPals
-	ld c, LOW(rBGP)
-	ld a, [hli]     ; wBGP
-	ld [$ff00+c], a ; rBGP
-	inc c
-	ld a, [hli]     ; wOBP0
-	ld [$ff00+c], a ; rOBP0
-	inc c
-	ld a, [hl]      ; wOBP1
-	ld [$ff00+c], a ; rOBP1
-
-	ld a, [wda27]
-	or a
-	jp z, .asm_210
-
-	ld [wVBlankCachedSP1], sp
-	ld de, $1f
-	bit 2, a
-	jr z, .asm_1dd
-	bit 0, a
-	jr z, .asm_1c8
-	ld a, [wda23]
-	ld sp, wc200
-.asm_1bb
-	pop hl
-	pop bc
-	ld [hl], c
-	inc l
-	ld [hl], b
-	add hl, de
-	pop bc
-	ld [hl], c
-	inc l
-	ld [hl], b
-	dec a
-	jr nz, .asm_1bb
-.asm_1c8
-	ld a, [wda24]
-	ld sp, wc300
-.asm_1ce
-	pop hl
-	pop bc
-	ld [hl], c
-	inc l
-	ld [hl], b
-	add hl, de
-	pop bc
-	ld [hl], c
-	inc l
-	ld [hl], b
-	dec a
-	jr nz, .asm_1ce
-	jr .asm_207
-.asm_1dd
-	bit 1, a
-	jr z, .asm_1f4
-	ld a, [wda24]
-	ld sp, wc300
-.asm_1e7
-	pop hl
-	pop bc
-	ld [hl], c
-	inc l
-	ld [hl], b
-	add hl, de
-	pop bc
-	ld [hl], c
-	inc l
-	ld [hl], b
-	dec a
-	jr nz, .asm_1e7
-.asm_1f4
-	ld a, [wda23]
-	ld sp, wc200
-.asm_1fa
-	pop hl
-	pop bc
-	ld [hl], c
-	inc l
-	ld [hl], b
-	add hl, de
-	pop bc
-	ld [hl], c
-	inc l
-	ld [hl], b
-	dec a
-	jr nz, .asm_1fa
-.asm_207
-	ld sp, wVBlankCachedSP1
-	pop hl
-	ld sp, hl
-	xor a
-	ld [wda27], a
-
-.asm_210
-	xor a
-	ldh [rLYC], a
-	ld hl, wStatTrampoline + $1
-	ld a, LOW(Func_2a4)
-	ld [hli], a
-	ld [hl], HIGH(Func_2a4)
-	ld [wVBlankCachedSP2], sp
-	ld sp, wda1a
-	pop de ; wda1a
-	pop hl ; wda1c
-	ld c, h
-	ld h, HIGH(wBGMapQueue)
-	ldh a, [hBGMapQueueSize]
-	ld b, a
-	pop af ; wda1e
-	reti ; jumps to wProcessBGMapQueueFunc
-
-ProcessBGMapQueue::
-.next_entry
-	ld a, l ; wda1c
-	cp b
-	jr z, .asm_23e
-.start_copy
-	ld e, [hl]
-	inc l
-	ld d, [hl]
-	inc l
-	ld c, [hl]
-	inc l
-.loop_copy
-	ld a, [hl]
-	ld [de], a
-	inc l
-	inc de
-	dec c
-	jr nz, .loop_copy
-	jr .next_entry
-.asm_23e
-	di
-	cp b
-	jr z, .asm_245
-	ei
-	jr .start_copy
-.asm_245
-	ld h, c
-	ld bc, ProcessBGMapQueue
-	push bc
-	push af
-	push hl
-	push de
-
-Func_24d:
-	; restore regular stack pointer
-	ld sp, wVBlankCachedSP2
-	pop hl
-	ld sp, hl
-
-	; overwrite wStatTrampoline with wNextStatTrampoline
-	ld a, [wLYC]
-	ldh [rLYC], a
-	ld hl, wStatTrampoline + $1
-	ld a, [wNextStatTrampoline + 0]
-	ld [hli], a
-	ld a, [wNextStatTrampoline + 1]
-	ld [hl], a
-
-	ld hl, rLCDC
-	ld a, [wObjDisabled]
-	or a
-	jr z, .set_obj_on
-; set obj off
-	res B_LCDC_OBJS, [hl]
-	jr .asm_271
-.set_obj_on
-	set B_LCDC_OBJS, [hl]
-
-.asm_271
-	; switch off Stat interrupt flag
-	ldh a, [rIF]
-	and $ff ^ IF_STAT
-	ldh [rIF], a
-	; switch off V-blank interrupts
-	ldh a, [rIE]
-	and $ff ^ IE_VBLANK
-	ldh [rIE], a
-	ei
-
-	; execute wVBlankTrampoline
-	call wVBlankTrampoline
-
-	xor a
-	ld [wda0f], a
-	ld a, TRUE
-	ld [wVBlankExecuted], a
-;	fallthrough
-
-UpdateAudio:
-	ldh a, [hROMBank]
-	push af
-	ld a, BANK(_UpdateAudio) ; useless bankswitch to $0
-	call UnsafeBankswitch
-	call _UpdateAudio
-	pop af
-	call UnsafeBankswitch
-	ldh a, [rIE]
-	or IE_VBLANK
-	ldh [rIE], a
-;	fallthrough
-
-; returns from an interrupt handler
-InterruptRet:
-	pop de
-	pop bc
-	pop hl
-	pop af
-	reti
-
-Func_2a4:
-	ld h, c
-	push af
-	push hl
-	push de
-	jr Func_24d
-; 0x2aa
-
-SECTION "Func_2aa", ROM0[$2aa]
-
-Func_2aa::
-	push af
-	push hl
-	push bc
-	push de
-	ld hl, rLCDC
-	bit B_LCDC_WINDOW, [hl]
-	jr z, InterruptRet
-
-	; window is on
-	ld b, 15
-.loop_wait
-	nop
-	dec b
-	jr nz, .loop_wait
-
-	; disable obj and set default BGP
-	res B_LCDC_OBJS, [hl]
-	ld a, $e4
-	ldh [rBGP], a
-	jp InterruptRet
-; 0x2c4
-
-SECTION "Func_30c", ROM0[$30c]
-
-; waits some cycles then applies wScreenSectionSCX
-Func_30c::
-	push af
-	push hl
-	push bc
-	push de
-	ld a, [wScreenSectionSCX]
-	ld hl, rSCX
-	ld b, 15
-.wait
-	nop
-	dec b
-	jr nz, .wait
-	ld [hl], a
-	jp InterruptRet
-; 0x320
-
-SECTION "_Timer", ROM0[$333]
-
-_Timer:
-	ld a, TRUE
-	ld [wTimerExecuted], a
-	ldh a, [rLCDC]
-	bit B_LCDC_ENABLE, a
-	jp z, UpdateAudio ; lcd off
-	jp InterruptRet
-
-VBlankHandler_Default::
-StatHandler_Default::
-Func_342:
-	ret
-
-DoFrame::
-	ld hl, wVBlankExecuted
-.loop_wait_vblank
-	di
-	bit 0, [hl]
-	jr nz, .vblank_executed
-	halt
-	ei
-	jr .loop_wait_vblank
-.vblank_executed
-	ei
-	ld [hl], FALSE ; wVBlankExecuted
-	ld hl, wda0e
-	inc [hl]
-	ret
-
-ReadJoypad::
-	ld a, [wJoypad1Down]
-	ldh [hff84], a
-	ld a, [wSGBEnabled]
-	or a
-	jr nz, .read_sgb_input
-; only read GB input
-	ld b, 1
-	ld hl, wJoypad1
-	jr .got_joypad_struct
-.read_sgb_input
-	ld a, [wda38]
-	or a
-	ret nz
-	ld b, 2 ; number of joypads
-	ldh a, [rJOYP]
-	ld c, a
-	jr .start_read_inputs
-.loop_read_joypads
-	ldh a, [rJOYP]
-	cp c
-	jr z, .no_change
-.start_read_inputs
-	cpl
-	and %11
-	; a = which joypad ID
-	add a
-	add a ; *4
-	ld e, a
-	ld d, $00
-	ld hl, wJoypad1
-	add hl, de
-.got_joypad_struct
-	ld e, [hl]
-
-; can only get four inputs at a time
-; take d-pad first
-	ld a, JOYP_GET_CTRL_PAD
-	ldh [rJOYP], a
-	ldh a, [rJOYP]
-	ldh a, [rJOYP]
-	swap a
-	and %11110000
-	ld d, a
-
-; take the buttons values next
-	ld a, JOYP_GET_BUTTONS
-	ldh [rJOYP], a
-REPT 6
-	ldh a, [rJOYP]
-ENDR
-	and %1111
-	or d
-	cpl
-	; button bits on lower nybble, d-pad on higher nybble
-	call .WriteInput
-
-	ld a, JOYP_GET_NONE
-	ldh [rJOYP], a
-	dec b
-	jr nz, .loop_read_joypads
-
-.no_change
-	ld a, [wDemoActive]
-	or a
-	jp z, .not_in_demo
-
-	; we are reading input from sDemoInputs
-	ld hl, wDemoInputPtr
-	ld a, [hli]
-	ld b, [hl]
-	ld c, a
-	cp LOW(sDemoInputsEnd - $2)
-	jr nz, .asm_3ca
-	ld a, b
-	cp HIGH(sDemoInputsEnd - $2)
-	jr nz, .asm_3ca
-	; bc = sDemoInputsEnd - $2
-	dec bc
-	dec bc
-.asm_3ca
-	; useless comparison
-	ld a, [wDemoActive]
-	cp $02
-	jr z, .asm_3d1
-.asm_3d1
-	ld a, [wDemoInputDuration]
-	dec a
-	jr nz, .got_demo_input
-	inc bc
-	inc bc
-	inc bc
-	ld a, [bc] ; duration
-	dec bc
-	ld hl, wDemoInputPtr
-	ld [hl], c
-	inc hl
-	ld [hl], b
-.got_demo_input
-	ld [wDemoInputDuration], a
-	ldh a, [hJoypad1Down]
-	ld e, a
-	ld a, [bc] ; key input
-	ld hl, hJoypad1
-	call .WriteInput
-	ld b, $4
-	ld hl, wJoypad2
-	ld c, LOW(hJoypad2)
-	jr .loop_copy_to_hram
-
-.not_in_demo
-	ld b, $8
-	ld hl, wJoypad1
-	ld c, LOW(hJoypad1)
-.loop_copy_to_hram
-	ld a, [hli]
-	ld [$ff00+c], a
-	inc c
-	dec b
-	jr nz, .loop_copy_to_hram
-
-	; if all buttons are down
-	ldh a, [hJoypad1Down]
-	cp PAD_A | PAD_B | PAD_SELECT | PAD_START
-	ret nz ; no reset
-	; ...and they weren't pressed at the same time
-	ldh a, [hJoypad1Pressed]
-	cp PAD_A | PAD_B | PAD_SELECT | PAD_START
-	ret z ; no reset
-	; ...and at least one of them was pressed now
-	or a
-	ret z ; no reset
-	; ...do reset
-	ld e, SGB_PALS_34
-	farcall SGBSetPalette_WithoutATF
-	jp _Start
-
-; input:
-; - a = input bits
-; - hl = joypad struct
-; - e = last input down
-.WriteInput:
-	ld d, a
-	ld [hli], a ; down
-	xor e
-	and d
-	ld [hli], a ; pressed
-	jr z, .none_pressed
-; something pressed
-	ld [hli], a ; ?
-	ld [hl], 20 ; ?
-	ret
-.none_pressed
-	inc hl
-	or [hl]
-	jr z, .asm_432
-	dec [hl]
-	dec hl
-	ld [hl], 0
-	ret
-.asm_432
-	ld [hl], 3
-	dec hl
-	ld [hl], d ; down
-	ret
-
-Func_437::
-	call Func_496
-	call Func_4ae
-	call DoFrame
-
-	ld d, MASK_EN_FREEZE
-	farcall SGB_MaskEn
-	farcall SGBWait_Short
-;	fallthrough
-
-Func_452::
-	ld a, TRUE
-	ldh [hRequestLCDOff], a
-.wait_lcd_off
-	ldh a, [hRequestLCDOff]
-	or a
-	jr nz, .wait_lcd_off
-
-	di
-	ld hl, rIF
-	res B_IF_VBLANK, [hl]
-	res B_IF_STAT, [hl]
-
-	; set Timer to be executed as soon as possible
-	ld a, -1
-	ldh [rTIMA], a
-	; start Timer
-	ld a, TAC_START | TAC_4KHZ
-	ldh [rTAC], a
-	ei
-	ret
-
-Func_46d::
-	call StopTimerAndTurnLCDOn
-	farcall SGBWait_Short
-	ld d, MASK_EN_CANCEL
-	farcall SGB_MaskEn
-	ret
-
-StopTimerAndTurnLCDOn::
-	ld hl, wTimerExecuted
-	ld [hl], FALSE
-
-	; stay in low power mode
-	; until timer is executed
-.wait_timer
-	halt
-	bit 0, [hl]
-	jr z, .wait_timer
-
-	xor a ; TAC_STOP
-	ldh [rTAC], a
-	ld hl, rLCDC
-	set B_LCDC_ENABLE, [hl]
-	ret
-
-Func_496::
-	ld a, [wda28]
-	; load wda23 if $c2
-	; load wda24 if $c3
-	ld de, wda23
-	rra
-	jr nc, .asm_4a0
-	inc de ; wda24
-.asm_4a0
-	xor a
-	ld [wVirtualOAMPtr + 1], a
-	ld [wda22], a
-	ld [de], a
-	ld hl, wda06
-	ld [hli], a
-	ld [hl], a ; wda07
-	ret
-
-Func_4ae::
-	ld a, [wVirtualOAMPtr + 0]
-	ld c, a
-	ld h, a
-	; load wda0a if wVirtualOAM1
-	; load wda0b if wVirtualOAM2
-	ld de, wda0a
-	rra
-	jr nc, .asm_4ba
-	inc de ; wda0b
-.asm_4ba
-	ld a, [de]
-	ld b, a
-	ld a, [wVirtualOAMPtr + 1]
-	ld l, a
-	ld [de], a
-	sub b
-	jr nc, .asm_4ca
-	ld b, a
-	xor a
-.asm_4c6
-	ld [hli], a
-	inc b
-	jr nz, .asm_4c6
-.asm_4ca
-	srl h
-	ld hl, wScroll1
-	jr nc, .asm_4d4
-	ld hl, wScroll2
-.asm_4d4
-	ld a, [wda00]
-	ld b, a
-	ld a, [wda06]
-	add b
-	ld [hli], a
-	ld a, [wda01]
-	ld b, a
-	ld a, [wda07]
-	add b
-	ld [hli], a
-	ld a, [wda28]
-	ld b, a
-	ld de, wda23
-	rra
-	jr nc, .asm_4f1
-	inc de ; wda24
-.asm_4f1
-	ld a, [de]
-	or a
-	jr z, .asm_50e
-	bit 0, b
-	ld hl, wda27
-	di
-	jr nz, .asm_503
-	set 0, [hl]
-	res 2, [hl]
-	jr .asm_507
-.asm_503
-	set 1, [hl]
-	set 2, [hl]
-.asm_507
-	ei
-	ld a, b
-	xor $01
-	ld [wda28], a
-.asm_50e
-	ld a, c
-	and $01
-	inc a
-	ld [wda0f], a
-	ld a, c
-	xor $01
-	ld [wVirtualOAMPtr + 0], a
-	ret
-
-; input:
-; - hl = OAM data
-; - de = object position
-LoadSprite::
-	ld a, [wVirtualOAMPtr + 1]
-	rrca
-	rrca ; *4
-	add [hl] ; num OAM
-	cp OAM_COUNT + 1
-	ret nc ; cannot fit in virtual OAM
-
-	ld a, [de]
-	dec e
-	or a
-	jr z, .asm_532
-	inc a
-	ret nz
-	ld a, [de]
-	cp 192
-	ret c ; exit if y < 192
-	jr .asm_536
-.asm_532
-	ld a, [de]
-	cp 192
-	ret nc ; exit if y >= 192
-.asm_536
-	add OAM_Y_OFS
-	ld c, a ; y
-
-	dec e
-	ld a, [de]
-	dec e
-	or a
-	jr z, .asm_547
-	inc a
-	ret nz
-	ld a, [de]
-	cp 204
-	ret c ; exit if x < 204
-	jr .asm_54b
-.asm_547
-	ld a, [de]
-	cp 204
-	ret nc ; exit if x >= 204
-.asm_54b
-	add OAM_X_OFS
-	ld b, a ; x
-
-	inc hl
-	ld a, [wVirtualOAMPtr + 0]
-	ld d, a
-	ld a, [wVirtualOAMPtr + 1]
-	ld e, a
-	ldh a, [hObjectOrientation]
-	rla
-	jr c, .loop_oam_mirrored
-.loop_oam
-	ld a, [hli]
-	add c
-	cp SCREEN_HEIGHT_PX + OAM_Y_OFS
-	jr nc, .y_out_of_range_1
-	ld [de], a ; y
-	inc e
-	ld a, [hli]
-	add b
-	cp SCREEN_WIDTH_PX + OAM_X_OFS
-	jr nc, .x_out_of_range_1
-	ld [de], a ; x
-	inc e
-	ldh a, [hOAMBaseTileID]
-	add [hl]
-	inc hl
-	ld [de], a ; tile ID
-	inc e
-	ldh a, [hOAMFlags]
-	xor [hl]
-	inc hl
-	ld [de], a ; attributes
-	inc e
-.next_oam
-	bit 0, a
-	jr z, .loop_oam
-	ld a, e
-	ld [wVirtualOAMPtr + 1], a
-	ret
-
-.y_out_of_range_1
-	inc hl
-	inc hl
-	ld a, [hli]
-	jr .next_oam
-
-.x_out_of_range_1
-	dec e
-	inc hl
-	ld a, [hli]
-	jr .next_oam
-
-.loop_oam_mirrored
-	ld a, [hli]
-	add c
-	cp SCREEN_HEIGHT_PX + OAM_Y_OFS
-	jr nc, .y_out_of_range_2
-	ld [de], a ; y
-	inc e
-	ld a, [hli]
-	cpl
-	sub 8 - 1
-	add b
-	cp SCREEN_WIDTH_PX + OAM_X_OFS
-	jr nc, .x_out_of_range_2
-	ld [de], a ; x
-	inc e
-	ldh a, [hOAMBaseTileID]
-	add [hl]
-	inc hl
-	ld [de], a ; tile ID
-	inc e
-	ldh a, [hOAMFlags]
-	xor [hl]
-	xor OAM_XFLIP
-	inc hl
-	ld [de], a ; attributes
-	inc e
-.next_oam_mirrored
-	bit 0, a
-	jr z, .loop_oam_mirrored
-	ld a, e
-	ld [wVirtualOAMPtr + 1], a
-	ret
-
-.y_out_of_range_2
-	inc hl
-	inc hl
-	ld a, [hli]
-	jr .next_oam_mirrored
-
-.x_out_of_range_2
-	dec e
-	inc hl
-	ld a, [hli]
-	jr .next_oam_mirrored
-
 ; input:
 ; - a:hl = source
 ; - de = destination
@@ -987,7 +184,7 @@ Func_675::
 	ld e, a
 	ldh a, [hBGMapQueueSize]
 	ld d, a
-	ld a, [wda1c]
+	ld a, [wBGMapQueueIndex]
 	sub d
 	dec a
 	cp e
@@ -995,10 +192,10 @@ Func_675::
 	ret
 
 Func_684::
-	ld a, [wda0f]
+	ld a, [wVirtualOAMSelect]
 	or a
 	jr nz, .decrement_counter
-	; if wda0f == 0 && !wda39, exit
+	; if wVirtualOAMSelect == 0 && !wda39, exit
 	ld a, [wda39]
 	or a
 	ret z
@@ -3165,11 +2362,11 @@ Func_1220::
 	ld e, 4
 	jr nz, .asm_1279
 	farcall Func_68276
-	jr .asm_1281
+	jr .lcd_off
 .asm_1279
 	farcall Func_68280
-.asm_1281
-	call Func_437
+.lcd_off
+	call TurnLCDOff
 	pop hl
 	ret
 
@@ -3795,6 +2992,9 @@ Func_1611::
 	inc a
 	ret
 
+; input:
+; - a = level constant
+; - e = ?
 Func_162a::
 	ldh [hff84], a
 	ld a, e
@@ -3811,13 +3011,13 @@ Func_162a::
 
 Data_163e:
 	table_width 1
-	db   -8 ; GRASS_LAND
-	db   -8 ; BIG_FOREST
-	db   -8 ; RIPPLE_FIELD
-	db  -16 ; ICEBERG
-	db  -32 ; RED_CANYON
-	db  -64 ; CLOUDY_PARK
-	db -128 ; DARK_CASTLE
+	db %11111000 ; GRASS_LAND
+	db %11111000 ; BIG_FOREST
+	db %11111000 ; RIPPLE_FIELD
+	db %11110000 ; ICEBERG
+	db %11100000 ; RED_CANYON
+	db %11000000 ; CLOUDY_PARK
+	db %10000000 ; DARK_CASTLE
 	db $ff
 	assert_table_length NUM_LEVELS + 1
 
@@ -4943,34 +4143,34 @@ Multiply:
 
 SECTION "Data_29c9", ROM0[$29c9]
 
-MACRO data_29c9
+MACRO level_intro
 	db \1 ; music ID
 	db \2 ; ATF ID
 	dbw \3, \4 ; bank:address
 	dbw \5, \6 ; bank:address
 	dbw \7, \8 ; bank:address
-	db \9 ; ?
+	db \9 ; object
 ENDM
 
 Data_29c9:
-	data_29c9 MUSIC_04, $0b, $1b, $5934, $1b, $4000, $1b, $4191, $4d
-	data_29c9 MUSIC_07, $0e, $1b, $6b50, $1b, $43d1, $1b, $4804, $54
-	data_29c9 MUSIC_1E, $11, $1b, $61e3, $1b, $423b, $1b, $432e, $4f
-	data_29c9 MUSIC_20, $13, $1b, $7667, $1b, $48d0, $1b, $4c06, $5c
-	data_29c9 MUSIC_00, $12, $1c, $4000, $1b, $4ca5, $1b, $51ea, $65
-	data_29c9 MUSIC_25, $14, $1c, $4e90, $1b, $5295, $1b, $53cb, $6d
-	data_29c9 MUSIC_0F, $15, $1c, $5b60, $1b, $5478, $1b, $58a0, $73
-	data_29c9 MUSIC_1D, $0a, $0e, $4cc3, $0e, $595a, $0e, $5b4c, $77
+	level_intro MUSIC_04, SGB_ATF_0B, $1b, $5934, $1b, $4000, $1b, $4191, UNK_OBJ_4D ; GRASS_LAND
+	level_intro MUSIC_07, SGB_ATF_0E, $1b, $6b50, $1b, $43d1, $1b, $4804, UNK_OBJ_54 ; BIG_FOREST
+	level_intro MUSIC_1E, SGB_ATF_11, $1b, $61e3, $1b, $423b, $1b, $432e, UNK_OBJ_4F ; RIPPLE_FIELD
+	level_intro MUSIC_20, SGB_ATF_13, $1b, $7667, $1b, $48d0, $1b, $4c06, UNK_OBJ_5C ; ICEBERG
+	level_intro MUSIC_00, SGB_ATF_12, $1c, $4000, $1b, $4ca5, $1b, $51ea, UNK_OBJ_65 ; RED_CANYON
+	level_intro MUSIC_25, SGB_ATF_14, $1c, $4e90, $1b, $5295, $1b, $53cb, UNK_OBJ_6D ; CLOUDY_PARK
+	level_intro MUSIC_0F, SGB_ATF_15, $1c, $5b60, $1b, $5478, $1b, $58a0, UNK_OBJ_73 ; DARK_CASTLE
+	level_intro MUSIC_1D, SGB_ATF_0A, $0e, $4cc3, $0e, $595a, $0e, $5b4c, UNK_OBJ_77
 
 Func_2a29::
 	ld e, $07
 ;	fallthrough
 
 ; input:
-; - e = ?
-Func_2a2b::
+; - e = level constant
+PlayLevelIntro::
 	ld a, e
-	ld [wdd2e], a
+	ld [wIntroLevel], a
 	add a
 	add a
 	ld b, a
@@ -5044,8 +4244,9 @@ Func_2a2b::
 	ld a, LCDC_BG_ON | LCDC_OBJ_ON | LCDC_OBJ_16 | LCDC_WIN_9C00
 	ldh [rLCDC], a
 
-	call Func_46d
-	homecall Func_20000
+	call TurnLCDOn
+	homecall InitObjects
+
 	pop bc
 	ld a, [bc]
 	ld h, HIGH(sObjects)
@@ -5055,16 +4256,17 @@ Func_2a2b::
 	ld d, c ; $00
 	ld e, d ; $00
 	call CreateObject
+
 	pop de
 	farcall Func_7a011
 
-	ld a, [wdd2e]
+	ld a, [wIntroLevel]
 	add SGB_PALSEQUENCE_03
 	ld d, a
 	ld e, 4
-	farcall Func_68246
+	farcall FadeIn
 
-.asm_2ac4
+.loop
 	call Func_496
 	call UpdateObjects
 	call Func_4ae
@@ -5074,14 +4276,14 @@ Func_2a2b::
 	jr nz, .asm_2adc
 	ld a, [wda46]
 	and a
-	jr nz, .asm_2ac4
+	jr nz, .loop
 .asm_2adc
-	ld a, [wdd2e]
+	ld a, [wIntroLevel]
 	add SGB_PALSEQUENCE_03
 	ld d, a
 	ld e, 4
-	farcall Func_6827b
-	call Func_437
+	farcall FadeOut_ToBlack
+	call TurnLCDOff
 	farcall Func_1dada
 	ret
 
@@ -6509,7 +5711,7 @@ Func_3212::
 	ld de, vTiles1 tile $60
 	call Decompress
 .asm_3276
-	homecall Func_20000
+	homecall InitObjects
 
 	ld a, $92
 	ld [wdb5e], a
@@ -6531,7 +5733,7 @@ Func_3212::
 	ld a, LCDC_BG_ON | LCDC_OBJ_ON | LCDC_OBJ_16 | LCDC_WIN_ON | LCDC_WIN_9C00
 	ldh [rLCDC], a
 
-	call Func_46d
+	call TurnLCDOn
 	ld e, 4
 	farcall Func_6824e
 .asm_32b8
@@ -6556,22 +5758,24 @@ Func_3212::
 .asm_32f1
 	ld e, 4
 	farcall Func_68280
-	call Func_437
+	call TurnLCDOff
 	ret
 
-Func_32ff::
+LevelSelection::
 	ld a, $ff
 	ldh [rLYC], a
 	ld [wLYC], a
 
 	ld a, FALSE
 	ld [wdf03], a
+
 	ldpal a, SHADE_WHITE, SHADE_LIGHT, SHADE_DARK, SHADE_BLACK
 	ld [wFadePals3BGP], a
 	ldpal a, SHADE_WHITE, SHADE_WHITE, SHADE_DARK, SHADE_BLACK
 	ld [wFadePals3OBP0], a
 	ldpal a, SHADE_WHITE, SHADE_LIGHT, SHADE_DARK, SHADE_BLACK
 	ld [wFadePals3OBP1], a
+
 	call Func_33cb
 
 	ld e, MUSIC_LEVEL_SELECT
@@ -6586,7 +5790,7 @@ Func_32ff::
 	ld de, vTiles0
 	call Decompress
 
-	homecall Func_20000
+	homecall InitObjects
 
 	ld a, BANK(LevelSelectionCoordinates)
 	call Bankswitch
@@ -6608,6 +5812,7 @@ Func_32ff::
 	ld a, UNK_OBJ_9A
 	lb hl, HIGH(sObjectGroup1), HIGH(sObjectGroup1End)
 	call CreateObject
+
 	call Func_34cc
 	call Func_33d5
 	call Func_3467
@@ -6615,17 +5820,17 @@ Func_32ff::
 
 	homecall Func_1c1dc
 
-	call Func_46d
+	call TurnLCDOn
 
 	ld a, [wLevel]
 	ld e, a
 	farcall Func_7a011
 
 	ld a, [wLevel]
-	add $1b
+	add SGB_LEVEL_PALSEQUENCES
 	ld d, a
 	ld e, 4
-	farcall Func_68246
+	farcall FadeIn
 
 .asm_3396
 	call Func_496
@@ -6647,8 +5852,8 @@ Func_32ff::
 	add SGB_LEVEL_PALSEQUENCES
 	ld d, a
 	ld e, 4
-	farcall Func_6827b
-	call Func_437
+	farcall FadeOut_ToBlack
+	call TurnLCDOff
 	ret
 
 Func_33cb:
@@ -6862,7 +6067,7 @@ Func_34fd::
 	or [hl]
 	ldh a, [hBGMapQueueSize]
 	ld c, a
-	ld a, [wda1c]
+	ld a, [wBGMapQueueIndex]
 	jr nz, .asm_351c
 	cp c
 	jr nz, .done
@@ -6973,7 +6178,40 @@ IncrementObjectYPosition::
 	ret
 ; 0x35bb
 
-SECTION "Func_3602", ROM0[$3602]
+SECTION "Func_35e0", ROM0[$35e0]
+
+Func_35e0::
+	ld e, OBJSTRUCT_X_POS
+	xor a
+	ld [de], a
+	inc e
+	ld hl, wdb51
+	ld a, [bc]
+	add [hl]
+	ld [de], a
+	inc hl
+	inc e
+	inc bc
+	ld a, [bc]
+	adc [hl]
+	ld [de], a
+	inc hl
+	inc e ; OBJSTRUCT_Y_POS
+	xor a
+	ld [de], a
+	inc e
+	inc bc
+	ld a, [bc]
+	add [hl]
+	ld [de], a
+	inc hl
+	inc e
+	inc bc
+	ld a, [bc]
+	adc [hl]
+	ld [de], a
+	inc bc
+	ret
 
 Func_3602::
 	ldh a, [hJoypad1Down]

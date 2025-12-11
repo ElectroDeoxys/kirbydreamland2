@@ -66,15 +66,16 @@ StartIntro:
 	ld a, LCDC_BG_ON | LCDC_OBJ_16 | LCDC_WIN_9C00
 	ldh [rLCDC], a
 
-	call Func_46d
+	call TurnLCDOn
 
 	ld e, SGB_ATF_1F
 	farcall Func_7a011
 
-	lb de, $02, 1
-	farcall Func_68246
-	ld b, $00
-	farcall Func_1db06
+	lb de, SGB_PALSEQUENCE_02, 1
+	farcall FadeIn
+
+	ld b, 0
+	farcall SetScreenSectionXScrollStat
 
 	ld a, $a8
 	ld [wScreenSectionSCX], a
@@ -166,9 +167,9 @@ StartIntro:
 	jr nz, .loop_wait
 
 	lb de, SGB_PALSEQUENCE_02, 4
-	farcall Func_6827b
+	farcall FadeOut_ToBlack
 
-	call Func_437
+	call TurnLCDOff
 
 	farcall Func_1dada
 	ret

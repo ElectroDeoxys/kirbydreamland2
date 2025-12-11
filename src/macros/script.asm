@@ -113,6 +113,12 @@ MACRO set_x_acc_dir
 	db \1 ; acceleration
 ENDM
 
+MACRO exec_func_35e0
+	exec_asm Func_35e0
+	dw \1 ; relative x
+	dw \2 ; relative y
+ENDM
+
 MACRO set_copy_ability_icon
 	exec_asm Func_3c4f
 	db \1 ; copy ability icon
