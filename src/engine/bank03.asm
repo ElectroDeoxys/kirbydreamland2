@@ -4,7 +4,7 @@ Script_cd9b:
 	set_field OBJSTRUCT_UNK4C, $00
 	set_draw_func Func_e05
 	exec_asm Func_cdaf
-	unk03_cmd Func_cdd6
+	set_update_func1 ASM, Func_cdd6
 	script_end
 ; 0xcda9
 

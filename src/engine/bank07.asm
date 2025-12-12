@@ -878,10 +878,11 @@ Func_1c508:
 	call CreateObject
 	ld d, h
 	pop hl
+
 	ld a, d
 	or a
 	jr z, .asm_1c580
-	inc h
+	inc h ; Data_1fb00
 	ld e, OBJSTRUCT_UNK5C
 	ld a, [hl]
 	swap a
@@ -891,10 +892,12 @@ Func_1c508:
 	ld a, [hl]
 	and $0f
 	ld [de], a
+
 	inc h
 	ld e, OBJSTRUCT_UNK4C
 	ld a, [hl]
 	ld [de], a
+
 	inc h
 	ld e, OBJSTRUCT_BASE_SCORE
 	ld a, [hl]
@@ -1014,51 +1017,56 @@ Script_1c5c2:
 	set_field OBJSTRUCT_UNK4C, $00
 	set_draw_func Func_df6
 	set_var_to_field OBJSTRUCT_UNK51
-	var_jumptable 22
-	dw Script_1c5f9
-	dw $471a; Script_1c71a
-	dw $4742; Script_1c742
-	dw $475c; Script_1c75c
-	dw $4786; Script_1c786
-	dw $47b9; Script_1c7b9
-	dw $47ed; Script_1c7ed
-	dw $486f; Script_1c86f
-	dw $479a; Script_1c79a
-	dw $46b4; Script_1c6b4
-	dw $49be; Script_1c9be
-	dw $4a28; Script_1ca28
-	dw $4a45; Script_1ca45
-	dw $4ada; Script_1cada
-	dw $4b11; Script_1cb11
-	dw $4b5c; Script_1cb5c
-	dw $47ca; Script_1c7ca
-	dw $4b92; Script_1cb92
-	dw $4b96; Script_1cb96
-	dw $4ba0; Script_1cba0
-	dw $4bcd; Script_1cbcd
-	dw $4bd9; Script_1cbd9
+	var_jumptable NUM_PARTICLES
+
+	table_width 2
+	dw Script_1c5f9 ; PARTICLE_00
+	dw Script_1c71a ; PARTICLE_01
+	dw Script_1c742 ; PARTICLE_02
+	dw Script_1c75c ; PARTICLE_03
+	dw Script_1c786 ; PARTICLE_04
+	dw Script_1c7b9 ; PARTICLE_05
+	dw Script_1c7ed ; PARTICLE_06
+	dw Script_1c86f ; PARTICLE_07
+	dw Script_1c79a ; PARTICLE_08
+	dw $46b4; Script_1c6b4 ; PARTICLE_09
+	dw $49be; Script_1c9be ; PARTICLE_0A
+	dw $4a28; Script_1ca28 ; PARTICLE_0B
+	dw $4a45; Script_1ca45 ; PARTICLE_0C
+	dw $4ada; Script_1cada ; PARTICLE_0D
+	dw $4b11; Script_1cb11 ; PARTICLE_0E
+	dw $4b5c; Script_1cb5c ; PARTICLE_0F
+	dw Script_1c7ca ; PARTICLE_10
+	dw $4b92; Script_1cb92 ; PARTICLE_11
+	dw $4b96; Script_1cb96 ; PARTICLE_12
+	dw $4ba0; Script_1cba0 ; PARTICLE_13
+	dw $4bcd; Script_1cbcd ; PARTICLE_14
+	dw $4bd9; Script_1cbd9 ; PARTICLE_15
+	assert_table_length NUM_PARTICLES
+
 	script_stop
 
 Script_1c5f9:
-	unk03_cmd ApplyObjectVelocities
+	set_update_func1 ASM, ApplyObjectVelocities
 	set_oam $7246, $0b ; OAM_2f246
 	set_frame 0
-	exec_asm Func_1c611
+	exec_asm .AddRandomOffsetAndSetRandomVelocity
 	wait 3
-	exec_asm Func_1c662
+	exec_asm .SetRandomVelocity
 	wait 3
 	stop_movement
 	wait 8
 	script_stop
 
-Func_1c611:
+.AddRandomOffsetAndSetRandomVelocity:
 	call Random
 	ld e, OBJSTRUCT_UNK45
 	ld [de], a
+
 	and $e0
 	swap a
 	rra
-
+	; a = random number between 0 and 7
 	ld e, OBJSTRUCT_UNK3A
 	ld [de], a
 	ld hl, .Offsets
@@ -1099,7 +1107,7 @@ Func_1c611:
 	adc h
 	ld [de], a
 
-	call Func_1c662
+	call .SetRandomVelocity
 
 	ld e, OBJSTRUCT_UNK3A
 	ld a, [de]
@@ -1119,7 +1127,7 @@ Func_1c611:
 	db -6
 	db -5
 
-Func_1c662:
+.SetRandomVelocity:
 	ld e, OBJSTRUCT_UNK3A
 	ld a, [de]
 	ld hl, .Velocities
@@ -1133,6 +1141,7 @@ Func_1c662:
 	inc e
 	ld a, [hl]
 	ld [de], a
+
 	ld e, OBJSTRUCT_UNK3A
 	ld a, [de]
 	ld hl, .Velocities + 4
@@ -1169,7 +1178,363 @@ Func_1c662:
 	dw -1.5
 	dw -2.0
 	dw -1.5
-; 0x1c689
+; 0x1c6b1
+
+SECTION "Func_1c6ec", ROMX[$46ec], BANK[$7]
+
+Func_1c6ec:
+	add a ; *2
+	add l
+	ld l, a
+	incc h
+	ld e, OBJSTRUCT_Y_VEL
+	ld a, [hli]
+	ld [de], a
+	inc e
+	ld a, [hli]
+	ld [de], a
+	inc hl
+	inc hl
+	ld e, OBJSTRUCT_X_VEL
+	ld a, [hli]
+	ld [de], a
+	inc e
+	ld a, [hli]
+	ld [de], a
+	ret
+; 0x1c703
+
+SECTION "Data_1c71a", ROMX[$471a], BANK[$7]
+
+Script_1c71a:
+	set_update_func1 ASM, ApplyObjectVelocities
+	set_oam $7689, $0b ; OAM_2f689
+	set_frame_wait 0, 2
+	set_frame_wait 1, 2
+	set_frame_wait 2, 2
+	set_field OBJSTRUCT_OAM_FLAGS, OAM_PAL1
+	wait 2
+	set_field OBJSTRUCT_OAM_FLAGS, OAM_PAL0
+	set_frame_wait 3, 2
+	set_frame_wait 4, 2
+	set_frame_wait 5, 2
+	set_field OBJSTRUCT_OAM_FLAGS, OAM_PAL1
+	wait 2
+	script_stop
+
+Script_1c742:
+	set_update_func1 ASM, ApplyObjectVelocities
+	set_oam $7689, $0b ; OAM_2f689
+	set_frame_wait 6, 2
+	set_frame_wait 7, 2
+	set_frame_wait 8, 2
+	set_frame_wait 9, 2
+	set_field OBJSTRUCT_OAM_FLAGS, OAM_PAL1
+	wait 2
+	script_stop
+
+Script_1c75c:
+	set_update_func1 ASM, .ApplyVelocitiesWithYAcceleration
+	set_oam $6f52, $0b ; OAM_2ef52
+	set_x_vel_dir -1.0
+	set_y_vel 0.0
+	set_y_acc -0.062
+	set_field OBJSTRUCT_OAM_FLAGS, OAM_PAL1
+	set_frame_wait 4, 2
+	set_field OBJSTRUCT_OAM_FLAGS, OAM_PAL0
+	wait 2
+	set_frame_wait 5, 2
+	set_field OBJSTRUCT_OAM_FLAGS, OAM_PAL1
+	wait 2
+	script_stop
+
+.ApplyVelocitiesWithYAcceleration:
+	call ApplyObjectYAcceleration
+	jp ApplyObjectVelocities
+
+Script_1c786:
+	set_update_func1 ASM, ApplyObjectVelocities
+	set_oam $6f52, $0b ; OAM_2ef52
+	set_frame_wait 5, 4
+	set_frame_wait 4, 2
+	set_field OBJSTRUCT_OAM_FLAGS, OAM_PAL1
+	wait 2
+	script_stop
+
+Script_1c79a:
+	set_update_func1 ASM, ApplyObjectVelocities
+	set_oam $6f52, $0b ; OAM_2ef52
+	set_x_vel_dir 1.0
+	set_y_vel -0.5
+
+	repeat 4
+	set_frame_wait 4, 2
+	set_frame_wait 5, 2
+	repeat_end
+
+	stop_movement
+	set_frame_wait 4, 2
+	set_frame_wait 5, 2
+	script_stop
+
+Script_1c7b9:
+	set_oam $6f52, $0b ; OAM_2ef52
+	set_field OBJSTRUCT_OAM_FLAGS, OAM_PAL1
+	set_frame_wait 6, 4
+	set_frame_wait 5, 4
+	set_frame_wait 4, 4
+	script_stop
+
+Script_1c7ca:
+	set_field OBJSTRUCT_OAM_FLAGS, OAM_PAL1
+	set_oam $7783, $0b ; OAM_2f783
+
+	repeat 2
+	set_frame_wait 0, 2
+	set_frame_wait 1, 2
+	set_frame_wait 2, 2
+	set_frame_wait 3, 2
+	set_frame_wait 4, 2
+	set_frame_wait 5, 2
+	set_frame_wait 6, 2
+	set_frame_wait 7, 2
+	repeat_end
+
+	script_stop
+
+Script_1c7ed:
+	set_oam $5486, $08 ; OAM_21486
+	set_y_vel -1.0
+	exec_asm .Func_1c804
+	set_update_func1 ASM, .Func_1c837
+	set_frame_wait 19, 10
+	set_frame_wait 20, 16
+	set_frame 21
+	script_end
+
+.Func_1c804:
+	; offsets x position random amount
+	ld e, OBJSTRUCT_X_POS + 1
+	call Random
+	and $f
+	sub 8
+	; a = [-8, 7]
+	ld l, a
+	rla
+	sbc a
+	ld h, a
+	ld a, [de]
+	add l
+	ld [de], a
+	inc e
+	ld a, [de]
+	adc h
+	ld [de], a
+
+	; offsets y position by -4
+	ld e, OBJSTRUCT_Y_POS + 1
+	ld a, [de]
+	sub 4
+	ld [de], a
+	inc e
+	ld a, [de]
+	sbc 0
+	ld [de], a
+
+	ld e, OBJSTRUCT_UNK39
+	call Random
+	and %11
+	ld [de], a
+	ld e, OBJSTRUCT_UNK3A
+	ld a, 1
+	ld [de], a
+	ld a, [sa000Unk83]
+	ld e, OBJSTRUCT_OAM_TILE_ID
+	ld [de], a
+	ret
+
+.Func_1c837:
+	call ApplyObjectVelocities
+	call Func_1ab3
+	jr z, .asm_1c843
+	ld h, d
+	jp Func_bba
+.asm_1c843
+	ld e, OBJSTRUCT_UNK3A
+	ld a, [de]
+	dec a
+	ld [de], a
+	ret nz ; skip
+	ld a, 8
+	ld [de], a
+	ld e, OBJSTRUCT_UNK39
+	ld a, [de]
+	inc a
+	and %11
+	ld [de], a
+	ld hl, .Velocities
+	add a ; *2
+	add l
+	ld l, a
+	incc h
+	ld a, [hli]
+	ld h, [hl]
+	ld l, a
+	ld e, OBJSTRUCT_X_VEL
+	ld a, l
+	ld [de], a
+	inc e
+	ld a, h
+	ld [de], a
+	ret
+
+.Velocities:
+	dw  0.5
+	dw  0.125
+	dw -0.5
+	dw -0.125
+
+Script_1c86f:
+	set_oam $5486, $08 ; OAM_21486
+	exec_asm .Func_1c88c
+	play_sfx SFX_1F
+	set_update_func1 ASM, ApplyObjectVelocities
+	set_frame_wait 22, 2
+	set_frame_wait 23, 4
+	set_frame_wait 24, 4
+	set_frame_wait 25, 4
+	set_frame_wait 26, 4
+	script_stop
+
+.Func_1c88c:
+	ld e, OBJSTRUCT_Y_POS + 1
+	ld a, [de]
+	and $f0
+	ld [de], a
+	ld a, [sa000Unk83]
+	ld e, OBJSTRUCT_OAM_TILE_ID
+	ld [de], a
+	ret
+
+Script_1c899:
+	set_draw_func Func_df6
+	set_update_func1 ASM, ApplyObjectVelocities
+	set_oam $6f52, $0b ; OAM_2ef52
+	set_field OBJSTRUCT_UNK3A, $00
+	exec_asm .Func_1c8c9
+	wait 3
+	set_frame_wait 7, 3
+	exec_asm .Func_1c8c9
+	set_frame_wait 8, 3
+	set_frame_wait 9, 3
+	exec_asm .Func_1c8c9
+	set_frame_wait 10, 3
+	set_frame_wait 7, 3
+	set_oam $7246, $0b ; OAM_2f246
+	set_frame_wait 0, 8
+	script_stop
+
+.Func_1c8c9:
+	ld e, OBJSTRUCT_UNK3A
+	ld a, [de]
+	ld hl, .VelocityPtrs
+	add a ; *2
+	add l
+	ld l, a
+	incc h
+	ld a, [hli]
+	ld h, [hl]
+	ld l, a
+	ld e, OBJSTRUCT_UNK39
+	ld a, [de]
+	call Func_1c6ec
+	ld e, OBJSTRUCT_UNK3A
+	ld a, [de]
+	inc a
+	ld [de], a
+	ret
+
+.VelocityPtrs:
+	dw .Movement1
+	dw .Movement2
+	dw .Movement3
+
+.Movement1:
+	dw -6.0
+	dw -4.242
+	dw  0.0
+	dw  4.242
+	dw  6.0
+	dw  4.242
+	dw  0.0
+	dw -4.242
+	dw -6.0
+	dw -4.242
+
+.Movement2:
+	dw -3.0
+	dw -2.12
+	dw  0.0
+	dw  2.12
+	dw  3.0
+	dw  2.12
+	dw  0.0
+	dw -2.12
+	dw -3.0
+	dw -2.12
+
+.Movement3:
+	dw -1.5
+	dw -1.06
+	dw  0.0
+	dw  1.06
+	dw  1.5
+	dw  1.06
+	dw  0.0
+	dw -1.06
+	dw -1.5
+	dw -1.06
+; 0x1c926
+
+SECTION "Script_1cc3a", ROMX[$4c3a], BANK[$7]
+
+Script_1cc3a:
+	set_field OBJSTRUCT_UNK39, $07
+	set_field OBJSTRUCT_UNK3A, $07
+	set_draw_func Func_dff
+	set_var_to_field OBJSTRUCT_UNK5A
+	var_jumptable 30
+	dw $4d51 ; Script_1cd51
+	dw $4dbb ; Script_1cdbb
+	dw $4efa ; Script_1cefa
+	dw $4efa ; Script_1cefa
+	dw $4efa ; Script_1cefa
+	dw $4efa ; Script_1cefa
+	dw $4e56 ; Script_1ce56
+	dw $4efa ; Script_1cefa
+	dw $4fa4 ; Script_1cfa4
+	dw $5021 ; Script_1d021
+	dw $512b ; Script_1d12b
+	dw $524b ; Script_1d24b
+	dw $52c7 ; Script_1d2c7
+	dw $532c ; Script_1d32c
+	dw $53d4 ; Script_1d3d4
+	dw $5409 ; Script_1d409
+	dw $5429 ; Script_1d429
+	dw $549b ; Script_1d49b
+	dw $54c6 ; Script_1d4c6
+	dw $51fd ; Script_1d1fd
+	dw $52a9 ; Script_1d2a9
+	dw $52b8 ; Script_1d2b8
+	dw $558c ; Script_1d58c
+	dw $4db5 ; Script_1cdb5
+	dw $55d2 ; Script_1d5d2
+	dw $55db ; Script_1d5db
+	dw $55e1 ; Script_1d5e1
+	dw $55fb ; Script_1d5fb
+	dw $4daf ; Script_1cdaf
+	dw $4e4d ; Script_1ce4d
+; 0x1cc83
 
 SECTION "Data_1d629", ROMX[$5629], BANK[$7]
 
@@ -2271,22 +2636,22 @@ Script_1eed7:
 	set_field OBJSTRUCT_OAM_FLAGS, OAM_PAL0
 	set_var_to_field OBJSTRUCT_UNK71
 	var_jumptable 4
-	dw Script_1eee6
-	dw Script_1f08f
-	dw Script_1f1af
-	dw Script_1f2c0
+	dw Script_1eee6 ; NONE
+	dw Script_1f08f ; RICK
+	dw Script_1f1af ; KINE
+	dw Script_1f2c0 ; COO
 
 Script_1eee6:
 	set_field OBJSTRUCT_UNK51, $02
 	set_var_to_field OBJSTRUCT_UNK5B
 	var_jumptable 7
-	dw .script_1eefb
-	dw .script_1efad
-	dw .script_1efcb
-	dw .script_1efe3
-	dw .script_1effd
-	dw .script_1f01e
-	dw .script_1f04c
+	dw .script_1eefb ; FIRE
+	dw .script_1efad ; PARASOL
+	dw .script_1efcb ; STONE
+	dw .script_1efe3 ; CUTTER
+	dw .script_1effd ; NEEDLE
+	dw .script_1f01e ; SPARK
+	dw .script_1f04c ; ICE
 
 .script_1eefb
 	set_frame 32
@@ -2334,7 +2699,7 @@ Script_1eee6:
 	set_frame_wait 32, 1
 	set_oam $5214, $0a ; OAM_29214
 	set_frame_wait 3, 1
-	unk22_cmd Script_1f070
+	set_update_func2 SCRIPT, Script_1f070
 	set_oam $4f40, $0a ; OAM_28f40
 	set_field OBJSTRUCT_OAM_FLAGS, OAM_PAL1
 	set_frame_wait 32, 2
@@ -2345,7 +2710,7 @@ Script_1eee6:
 	set_frame_wait 32, 4
 	set_frame_wait 4, 16
 	set_frame_wait 30, 1
-	exec_func_f77 $02
+	create_particle PARTICLE_02
 	set_frame_wait 30, 23
 	script_farret
 
@@ -2357,7 +2722,7 @@ Script_1eee6:
 	set_frame_wait 17, 2
 	set_frame_wait 18, 6
 	set_frame_wait 19, 2
-	exec_func_f77 $02
+	create_particle PARTICLE_02
 	set_frame_wait 20, 10
 	script_farret
 
@@ -2369,7 +2734,7 @@ Script_1eee6:
 	set_frame_wait 0, 4
 	repeat_end
 
-	exec_func_f77 $02
+	create_particle PARTICLE_02
 	wait 20
 	script_farret
 
@@ -2379,7 +2744,7 @@ Script_1eee6:
 	set_frame_wait 1, 2
 	create_object_rel_2 $09, 6, 0
 	set_frame_wait 2, 10
-	exec_func_f77 $02
+	create_particle PARTICLE_02
 	wait 20
 	script_farret
 
@@ -2390,7 +2755,7 @@ Script_1eee6:
 	set_frame_wait 2, 4
 	set_frame_wait 3, 2
 	set_frame_wait 2, 2
-	exec_func_f77 $02
+	create_particle PARTICLE_02
 	set_frame_wait 3, 16
 	set_frame_wait 2, 4
 	set_frame_wait 1, 4
@@ -2401,17 +2766,17 @@ Script_1eee6:
 	set_frame_wait 0, 10
 
 	repeat 3
-	exec_func_f77 $0a
+	create_particle PARTICLE_0A
 	set_frame_wait 1, 2
-	exec_func_f77 $0a
+	create_particle PARTICLE_0A
 	set_frame_wait 2, 2
-	exec_func_f77 $0a
+	create_particle PARTICLE_0A
 	set_frame_wait 3, 2
-	exec_func_f77 $0a
+	create_particle PARTICLE_0A
 	set_frame_wait 4, 2
 	repeat_end
 
-	exec_func_f77 $02
+	create_particle PARTICLE_02
 	set_frame_wait 0, 20
 	script_farret
 
@@ -2428,30 +2793,30 @@ Script_1eee6:
 	set_frame_wait 6, 2
 	repeat_end
 
-	exec_func_f77 $02
+	create_particle PARTICLE_02
 	set_frame_wait 0, 10
 	script_farret
 
 Script_1f070:
-	create_object_rel_1 $03, -6, 0
+	create_object_rel_1 PARTICLE_03, -6, 0
 	wait 4
-	create_object_rel_1 $03, -6, -4
+	create_object_rel_1 PARTICLE_03, -6, -4
 	wait 4
-	create_object_rel_1 $03, -6, 4
+	create_object_rel_1 PARTICLE_03, -6, 4
 	wait 4
-	create_object_rel_1 $03, -6, 0
+	create_object_rel_1 PARTICLE_03, -6, 0
 	script_end
 
 Script_1f08f:
 	set_var_to_field OBJSTRUCT_UNK5B
 	var_jumptable 7
-	dw .script_1f0a1
-	dw .script_1f0d9
-	dw .script_1f0fd
-	dw .script_1f115
-	dw .script_1f132
-	dw .script_1f14c
-	dw Script_1f17e
+	dw .script_1f0a1 ; FIRE
+	dw .script_1f0d9 ; PARASOL
+	dw .script_1f0fd ; STONE
+	dw .script_1f115 ; CUTTER
+	dw .script_1f132 ; NEEDLE
+	dw .script_1f14c ; SPARK
+	dw Script_1f17e ; ICE
 .script_1f0a1
 	set_oam $5968, $0a ; OAM_29968
 	set_frame_wait 0, 6
@@ -2465,7 +2830,7 @@ Script_1f08f:
 	wait 6
 	set_field OBJSTRUCT_UNK39, $00
 	create_object_rel_2 $07, 16, 4
-	exec_func_f77 $02
+	create_particle PARTICLE_02
 	wait 6
 	set_frame_wait 1, 4
 	set_frame_wait 0, 6
@@ -2475,7 +2840,7 @@ Script_1f08f:
 	set_oam $59e5, $0a ; OAM_299e5
 	set_frame_wait 0, 6
 	set_frame_wait 1, 6
-	exec_func_f77 $02
+	create_particle PARTICLE_02
 
 	repeat 2
 	set_frame_wait 2, 4
@@ -2496,7 +2861,7 @@ Script_1f08f:
 	set_frame_wait 0, 4
 	repeat_end
 
-	exec_func_f77 $02
+	create_particle PARTICLE_02
 	wait 20
 	script_farret
 
@@ -2505,7 +2870,7 @@ Script_1f08f:
 	set_frame_wait 0, 8
 	set_frame 1
 	create_object_rel_2 $13, 0, 0
-	exec_func_f77 $02
+	create_particle PARTICLE_02
 	set_frame_wait 2, 32
 	set_frame_wait 1, 4
 	set_frame_wait 0, 8
@@ -2517,7 +2882,7 @@ Script_1f08f:
 	set_frame_wait 1, 3
 	set_frame_wait 0, 3
 	set_frame_wait 1, 8
-	exec_func_f77 $02
+	create_particle PARTICLE_02
 	wait 20
 	set_frame_wait 0, 5
 	script_farret
@@ -2536,7 +2901,7 @@ Script_1f08f:
 
 	set_oam $572c, $0a ; OAM_2972c
 	set_frame 2
-	exec_func_f77 $02
+	create_particle PARTICLE_02
 	wait 20
 	script_farret
 
@@ -2554,14 +2919,14 @@ Script_1f17e:
 	set_frame 1
 
 	repeat 5
-	exec_func_f77 $0b
+	create_particle PARTICLE_0B
 	exec_asm Func_1f1a3
 	wait 2
 	repeat_end
 
 	set_oam $572c, $0a ; OAM_2972c
 	set_frame 2
-	exec_func_f77 $02
+	create_particle PARTICLE_02
 	wait 20
 	script_farret
 
@@ -2579,13 +2944,13 @@ Func_1f1a3:
 Script_1f1af:
 	set_var_to_field OBJSTRUCT_UNK5B
 	var_jumptable 7
-	dw .script_1f1c1
-	dw .script_1f1dd
-	dw .script_1f1fd
-	dw .script_1f215
-	dw .script_1f232
-	dw .script_1f24a
-	dw Script_1f28b
+	dw .script_1f1c1 ; FIRE
+	dw .script_1f1dd ; PARASOL
+	dw .script_1f1fd ; STONE
+	dw .script_1f215 ; CUTTER
+	dw .script_1f232 ; NEEDLE
+	dw .script_1f24a ; SPARK
+	dw Script_1f28b ; ICE
 
 .script_1f1c1
 	set_oam $611a, $0a ; OAM_2a11a
@@ -2593,7 +2958,7 @@ Script_1f1af:
 	set_frame_wait 1, 4
 	create_object_rel_2 $08, 16, 0
 	set_frame 2
-	exec_func_f77 $02
+	create_particle PARTICLE_02
 	wait 20
 	set_frame_wait 0, 4
 	script_farret
@@ -2603,7 +2968,7 @@ Script_1f1af:
 	set_frame_wait 1, 4
 	set_frame_wait 2, 4
 	set_frame_wait 3, 8
-	exec_func_f77 $02
+	create_particle PARTICLE_02
 	wait 20
 	set_frame_wait 2, 4
 	set_frame_wait 1, 4
@@ -2618,7 +2983,7 @@ Script_1f1af:
 	set_frame_wait 1, 4
 	repeat_end
 
-	exec_func_f77 $02
+	create_particle PARTICLE_02
 	wait 20
 	script_farret
 .script_1f215
@@ -2627,7 +2992,7 @@ Script_1f1af:
 	set_frame_wait 1, 4
 	play_sfx SFX_55
 	create_object_rel_2 $0b, 16, 0
-	exec_func_f77 $02
+	create_particle PARTICLE_02
 	set_frame_wait 2, 20
 	set_frame_wait 0, 4
 	script_farret
@@ -2636,7 +3001,7 @@ Script_1f1af:
 	set_frame_wait 0, 4
 	set_frame_wait 1, 2
 	set_frame_wait 0, 2
-	exec_func_f77 $02
+	create_particle PARTICLE_02
 	set_frame_wait 1, 20
 	set_frame_wait 0, 4
 	script_farret
@@ -2645,8 +3010,8 @@ Script_1f1af:
 	set_frame_wait 2, 6
 	set_oam $63b9, $0a ; OAM_2a3b9
 	set_frame_wait 0, 4
-	exec_func_f77 $02
-	unk03_cmd Func_1f279
+	create_particle PARTICLE_02
+	set_update_func1 ASM, Func_1f279
 
 	repeat 5
 	set_frame_wait 2, 2
@@ -2671,15 +3036,15 @@ Script_1f28b:
 	set_oam $5e99, $0a ; OAM_29e99
 	set_frame 2
 	set_field OBJSTRUCT_UNK3A, $02
-	exec_func_f77 $02
+	create_particle PARTICLE_02
 
 	repeat 5
 	set_field OBJSTRUCT_OAM_FLAGS, OAM_PAL1
-	exec_func_f77 $0c
+	create_particle PARTICLE_0C
 	exec_asm Func_1f2b4
 	wait 2
 	set_field OBJSTRUCT_OAM_FLAGS, OAM_PAL0
-	exec_func_f77 $0c
+	create_particle PARTICLE_0C
 	exec_asm Func_1f2b4
 	wait 2
 	repeat_end
@@ -2700,17 +3065,17 @@ Func_1f2b4:
 Script_1f2c0:
 	set_var_to_field OBJSTRUCT_UNK5B
 	var_jumptable 7
-	dw .script_1f2d2
-	dw .script_1f2f6
-	dw .script_1f329
-	dw .script_1f33f
-	dw .script_1f366
-	dw .script_1f385
-	dw Script_1f3bd
+	dw .script_1f2d2 ; FIRE
+	dw .script_1f2f6 ; PARASOL
+	dw .script_1f329 ; STONE
+	dw .script_1f33f ; CUTTER
+	dw .script_1f366 ; NEEDLE
+	dw .script_1f385 ; SPARK
+	dw Script_1f3bd ; ICE
 .script_1f2d2
 	set_oam $6780, $0a ; OAM_2a780
 	set_frame_wait 2, 6
-	exec_func_f77 $02
+	create_particle PARTICLE_02
 
 	repeat 5
 	set_frame_wait 1, 2
@@ -2728,7 +3093,7 @@ Script_1f2c0:
 	set_frame_wait 8, 4
 	set_frame_wait 9, 2
 	set_frame_wait 8, 2
-	exec_func_f77 $02
+	create_particle PARTICLE_02
 	set_frame_wait 9, 8
 	set_frame_wait 0, 2
 	set_frame_wait 1, 1
@@ -2747,14 +3112,14 @@ Script_1f2c0:
 	set_frame_wait 5, 4
 	set_frame_wait 6, 4
 	set_frame 0
-	exec_func_f77 $02
+	create_particle PARTICLE_02
 	wait 20
 	script_farret
 .script_1f33f
 	set_oam $6a0c, $0a ; OAM_2aa0c
 	set_frame_wait 0, 4
 	set_frame_wait 1, 4
-	exec_func_f77 $02
+	create_particle PARTICLE_02
 	create_object_rel_2 $0c, 16, -3
 	create_object_rel_2 $14, 16, -10
 	create_object_rel_2 $15, 16, 4
@@ -2768,14 +3133,14 @@ Script_1f2c0:
 	set_frame_wait 7, 6
 	set_frame_wait 6, 2
 	set_frame_wait 7, 2
-	exec_func_f77 $02
+	create_particle PARTICLE_02
 	set_frame_wait 0, 20
 	set_frame_wait 7, 6
 	script_farret
 .script_1f385
 	set_oam $6bed, $0a ; OAM_2abed
-	exec_func_f77 $02
-	unk22_cmd Script_1f3aa
+	create_particle PARTICLE_02
+	set_update_func2 SCRIPT, Script_1f3aa
 
 	repeat 2
 	set_frame_wait 0, 2
@@ -2786,7 +3151,7 @@ Script_1f2c0:
 	set_frame_wait 3, 2
 	repeat_end
 
-	set_field OBJSTRUCT_UNK1C, $80
+	set_field OBJSTRUCT_UPDATE_FUNC2_BANK, $80
 	script_farret
 
 Script_1f3aa:
@@ -2799,16 +3164,16 @@ Script_1f3aa:
 
 Script_1f3bd:
 	set_oam $6ce7, $0a ; OAM_2ace7
-	exec_func_f77 $02
+	create_particle PARTICLE_02
 	set_frame_wait 0, 4
-	unk22_cmd Script_1f3e8
+	set_update_func2 SCRIPT, Script_1f3e8
 	set_frame_wait 1, 13
 	set_frame_wait 2, 13
 	set_frame_wait 3, 13
 	set_frame_wait 4, 13
 	set_frame_wait 5, 13
 	set_frame_wait 6, 13
-	set_field OBJSTRUCT_UNK1C, $80
+	set_field OBJSTRUCT_UPDATE_FUNC2_BANK, $80
 	exec_asm Func_1f3f5
 	set_frame_wait 0, 4
 	script_farret
@@ -2842,9 +3207,9 @@ Func_1f40a::
 	ld a, [sa000Unk76]
 	or a
 	jr nz, .asm_1f420
-	ld l, OBJSTRUCT_UNK19
+	ld l, OBJSTRUCT_UPDATE_FUNC1_BANK
 	set 5, [hl]
-	ld l, OBJSTRUCT_UNK1C
+	ld l, OBJSTRUCT_UPDATE_FUNC2_BANK
 	set 5, [hl]
 	ld l, OBJSTRUCT_UNK1F
 	set 5, [hl]
@@ -2874,9 +3239,9 @@ Func_1f40a::
 	cp $04
 	ret c
 	ld h, d
-	ld l, OBJSTRUCT_UNK19
+	ld l, OBJSTRUCT_UPDATE_FUNC1_BANK
 	res 5, [hl]
-	ld l, OBJSTRUCT_UNK1C
+	ld l, OBJSTRUCT_UPDATE_FUNC2_BANK
 	res 5, [hl]
 	ld l, OBJSTRUCT_UNK1F
 	res 5, [hl]
@@ -3065,8 +3430,8 @@ SECTION "Data_1f700", ROMX[$7700], BANK[$7], ALIGN[8]
 Data_1f700::
 	table_width 3
 	dab Script_4001 ; UNK_OBJ_00
-	dab Script_1c5c2 ; UNK_OBJ_01
-	dwb $4c3a, $07 ; UNK_OBJ_02
+	dab Script_1c5c2 ; PARTICLE
+	dab Script_1cc3a ; UNK_OBJ_02
 	dab Script_1eec0 ; UNK_OBJ_03
 	dwb $5409, $03 ; UNK_OBJ_04
 	dwb $5437, $03 ; UNK_OBJ_05
@@ -3099,7 +3464,7 @@ Data_1f700::
 	dwb $45bf, $1a ; UNK_OBJ_20
 	dwb $45c8, $1a ; UNK_OBJ_21
 	dwb $4605, $1a ; UNK_OBJ_22
-	dwb $4899, $07 ; UNK_OBJ_23
+	dab Script_1c899 ; UNK_OBJ_23
 	dwb $46b1, $07 ; UNK_OBJ_24
 	dwb $4926, $07 ; UNK_OBJ_25
 	dwb $7c2d, $04 ; UNK_OBJ_26
@@ -3319,19 +3684,517 @@ Data_1f700::
 SECTION "Data_1fa00", ROMX[$7a00], BANK[$7]
 
 Data_1fa00:
-	db $04, $06, $06, $06, $06, $05, $05, $05, $05, $04, $08, $08, $0c, $0e, $0e, $0f
-	db $0f, $11, $12, $12, $12, $12, $09, $09, $0a, $0a, $14, $14, $15, $15, $15, $15
-	db $17, $17, $17, $17, $17, $17, $17, $17, $17, $17, $17, $17, $18, $18, $18, $18
-	db $18, $18, $18, $18, $18, $18, $1c, $1c, $1c, $1c, $1c, $1c, $1e, $1e, $1e, $19
-	db $19, $19, $19, $1b, $1b, $26, $26, $1b, $1b, $26, $26, $17, $28, $28, $28, $28
-	db $30, $30, $26, $26, $26, $26, $26, $26, $32, $a1, $a2, $a5, $a5, $a5, $a5, $a5
-	db $a5, $a5, $a5, $a6, $26, $26, $26, $26, $28, $28, $28, $28, $34, $34, $35, $35
-	db $35, $35, $ca, $cc, $17, $d1, $d4, $36, $36, $36, $36, $37, $37, $39, $39, $d6
-	db $d8, $22, $1e, $1e, $3a, $3a, $3b, $3b, $3d, $3d, $40, $40, $40, $40, $40, $40
-	db $42, $42, $42, $42, $42, $42, $45, $45, $45, $45, $3e, $3e, $3e, $3e, $3f, $3f
-	db $2c, $29, $2e, $2e, $05, $05, $05, $05, $1c, $1c, $1c, $1c, $1c, $1c, $44, $44
-	db $44, $44, $2a, $47, $47, $47, $47, $2d, $bf, $c0, $c3, $c4, $c1, $11, $11, $11
-	db $11, $11, $11, $11, $11, $11, $11, $11, $11, $11, $11, $11, $11, $2b, $c0, $c5
-	db $c0, $09, $08, $c6, $2e, $15, $15, $15, $15, $15, $ff, $ff, $ff, $ff, $ff, $ff
-	db $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00
-	db $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $02, $00, $80, $00, $00, $00
+	db UNK_OBJ_04 ; $00
+	db UNK_OBJ_06 ; $01
+	db UNK_OBJ_06 ; $02
+	db UNK_OBJ_06 ; $03
+	db UNK_OBJ_06 ; $04
+	db UNK_OBJ_05 ; $05
+	db UNK_OBJ_05 ; $06
+	db UNK_OBJ_05 ; $07
+	db UNK_OBJ_05 ; $08
+	db UNK_OBJ_04 ; $09
+	db UNK_OBJ_08 ; $0a
+	db UNK_OBJ_08 ; $0b
+	db UNK_OBJ_0C ; $0c
+	db UNK_OBJ_0E ; $0d
+	db UNK_OBJ_0E ; $0e
+	db UNK_OBJ_0F ; $0f
+	db UNK_OBJ_0F ; $10
+	db UNK_OBJ_11 ; $11
+	db UNK_OBJ_12 ; $12
+	db UNK_OBJ_12 ; $13
+	db UNK_OBJ_12 ; $14
+	db UNK_OBJ_12 ; $15
+	db UNK_OBJ_09 ; $16
+	db UNK_OBJ_09 ; $17
+	db UNK_OBJ_0A ; $18
+	db UNK_OBJ_0A ; $19
+	db UNK_OBJ_14 ; $1a
+	db UNK_OBJ_14 ; $1b
+	db UNK_OBJ_15 ; $1c
+	db UNK_OBJ_15 ; $1d
+	db UNK_OBJ_15 ; $1e
+	db UNK_OBJ_15 ; $1f
+	db UNK_OBJ_17 ; $20
+	db UNK_OBJ_17 ; $21
+	db UNK_OBJ_17 ; $22
+	db UNK_OBJ_17 ; $23
+	db UNK_OBJ_17 ; $24
+	db UNK_OBJ_17 ; $25
+	db UNK_OBJ_17 ; $26
+	db UNK_OBJ_17 ; $27
+	db UNK_OBJ_17 ; $28
+	db UNK_OBJ_17 ; $29
+	db UNK_OBJ_17 ; $2a
+	db UNK_OBJ_17 ; $2b
+	db UNK_OBJ_18 ; $2c
+	db UNK_OBJ_18 ; $2d
+	db UNK_OBJ_18 ; $2e
+	db UNK_OBJ_18 ; $2f
+	db UNK_OBJ_18 ; $30
+	db UNK_OBJ_18 ; $31
+	db UNK_OBJ_18 ; $32
+	db UNK_OBJ_18 ; $33
+	db UNK_OBJ_18 ; $34
+	db UNK_OBJ_18 ; $35
+	db UNK_OBJ_1C ; $36
+	db UNK_OBJ_1C ; $37
+	db UNK_OBJ_1C ; $38
+	db UNK_OBJ_1C ; $39
+	db UNK_OBJ_1C ; $3a
+	db UNK_OBJ_1C ; $3b
+	db UNK_OBJ_1E ; $3c
+	db UNK_OBJ_1E ; $3d
+	db UNK_OBJ_1E ; $3e
+	db UNK_OBJ_19 ; $3f
+	db UNK_OBJ_19 ; $40
+	db UNK_OBJ_19 ; $41
+	db UNK_OBJ_19 ; $42
+	db UNK_OBJ_1B ; $43
+	db UNK_OBJ_1B ; $44
+	db UNK_OBJ_26 ; $45
+	db UNK_OBJ_26 ; $46
+	db UNK_OBJ_1B ; $47
+	db UNK_OBJ_1B ; $48
+	db UNK_OBJ_26 ; $49
+	db UNK_OBJ_26 ; $4a
+	db UNK_OBJ_17 ; $4b
+	db UNK_OBJ_28 ; $4c
+	db UNK_OBJ_28 ; $4d
+	db UNK_OBJ_28 ; $4e
+	db UNK_OBJ_28 ; $4f
+	db UNK_OBJ_30 ; $50
+	db UNK_OBJ_30 ; $51
+	db UNK_OBJ_26 ; $52
+	db UNK_OBJ_26 ; $53
+	db UNK_OBJ_26 ; $54
+	db UNK_OBJ_26 ; $55
+	db UNK_OBJ_26 ; $56
+	db UNK_OBJ_26 ; $57
+	db UNK_OBJ_32 ; $58
+	db UNK_OBJ_A1 ; $59
+	db UNK_OBJ_A2 ; $5a
+	db UNK_OBJ_A5 ; $5b
+	db UNK_OBJ_A5 ; $5c
+	db UNK_OBJ_A5 ; $5d
+	db UNK_OBJ_A5 ; $5e
+	db UNK_OBJ_A5 ; $5f
+	db UNK_OBJ_A5 ; $60
+	db UNK_OBJ_A5 ; $61
+	db UNK_OBJ_A5 ; $62
+	db UNK_OBJ_A6 ; $63
+	db UNK_OBJ_26 ; $64
+	db UNK_OBJ_26 ; $65
+	db UNK_OBJ_26 ; $66
+	db UNK_OBJ_26 ; $67
+	db UNK_OBJ_28 ; $68
+	db UNK_OBJ_28 ; $69
+	db UNK_OBJ_28 ; $6a
+	db UNK_OBJ_28 ; $6b
+	db UNK_OBJ_34 ; $6c
+	db UNK_OBJ_34 ; $6d
+	db UNK_OBJ_35 ; $6e
+	db UNK_OBJ_35 ; $6f
+	db UNK_OBJ_35 ; $70
+	db UNK_OBJ_35 ; $71
+	db UNK_OBJ_CA ; $72
+	db UNK_OBJ_CC ; $73
+	db UNK_OBJ_17 ; $74
+	db UNK_OBJ_D1 ; $75
+	db UNK_OBJ_D4 ; $76
+	db UNK_OBJ_36 ; $77
+	db UNK_OBJ_36 ; $78
+	db UNK_OBJ_36 ; $79
+	db UNK_OBJ_36 ; $7a
+	db UNK_OBJ_37 ; $7b
+	db UNK_OBJ_37 ; $7c
+	db UNK_OBJ_39 ; $7d
+	db UNK_OBJ_39 ; $7e
+	db UNK_OBJ_D6 ; $7f
+	db UNK_OBJ_D8 ; $80
+	db UNK_OBJ_22 ; $81
+	db UNK_OBJ_1E ; $82
+	db UNK_OBJ_1E ; $83
+	db UNK_OBJ_3A ; $84
+	db UNK_OBJ_3A ; $85
+	db UNK_OBJ_3B ; $86
+	db UNK_OBJ_3B ; $87
+	db UNK_OBJ_3D ; $88
+	db UNK_OBJ_3D ; $89
+	db UNK_OBJ_40 ; $8a
+	db UNK_OBJ_40 ; $8b
+	db UNK_OBJ_40 ; $8c
+	db UNK_OBJ_40 ; $8d
+	db UNK_OBJ_40 ; $8e
+	db UNK_OBJ_40 ; $8f
+	db UNK_OBJ_42 ; $90
+	db UNK_OBJ_42 ; $91
+	db UNK_OBJ_42 ; $92
+	db UNK_OBJ_42 ; $93
+	db UNK_OBJ_42 ; $94
+	db UNK_OBJ_42 ; $95
+	db UNK_OBJ_45 ; $96
+	db UNK_OBJ_45 ; $97
+	db UNK_OBJ_45 ; $98
+	db UNK_OBJ_45 ; $99
+	db UNK_OBJ_3E ; $9a
+	db UNK_OBJ_3E ; $9b
+	db UNK_OBJ_3E ; $9c
+	db UNK_OBJ_3E ; $9d
+	db UNK_OBJ_3F ; $9e
+	db UNK_OBJ_3F ; $9f
+	db UNK_OBJ_2C ; $a0
+	db UNK_OBJ_29 ; $a1
+	db UNK_OBJ_2E ; $a2
+	db UNK_OBJ_2E ; $a3
+	db UNK_OBJ_05 ; $a4
+	db UNK_OBJ_05 ; $a5
+	db UNK_OBJ_05 ; $a6
+	db UNK_OBJ_05 ; $a7
+	db UNK_OBJ_1C ; $a8
+	db UNK_OBJ_1C ; $a9
+	db UNK_OBJ_1C ; $aa
+	db UNK_OBJ_1C ; $ab
+	db UNK_OBJ_1C ; $ac
+	db UNK_OBJ_1C ; $ad
+	db UNK_OBJ_44 ; $ae
+	db UNK_OBJ_44 ; $af
+	db UNK_OBJ_44 ; $b0
+	db UNK_OBJ_44 ; $b1
+	db UNK_OBJ_2A ; $b2
+	db UNK_OBJ_47 ; $b3
+	db UNK_OBJ_47 ; $b4
+	db UNK_OBJ_47 ; $b5
+	db UNK_OBJ_47 ; $b6
+	db UNK_OBJ_2D ; $b7
+	db UNK_OBJ_BF ; $b8
+	db UNK_OBJ_C0 ; $b9
+	db UNK_OBJ_C3 ; $ba
+	db UNK_OBJ_C4 ; $bb
+	db UNK_OBJ_C1 ; $bc
+	db UNK_OBJ_11 ; $bd
+	db UNK_OBJ_11 ; $be
+	db UNK_OBJ_11 ; $bf
+	db UNK_OBJ_11 ; $c0
+	db UNK_OBJ_11 ; $c1
+	db UNK_OBJ_11 ; $c2
+	db UNK_OBJ_11 ; $c3
+	db UNK_OBJ_11 ; $c4
+	db UNK_OBJ_11 ; $c5
+	db UNK_OBJ_11 ; $c6
+	db UNK_OBJ_11 ; $c7
+	db UNK_OBJ_11 ; $c8
+	db UNK_OBJ_11 ; $c9
+	db UNK_OBJ_11 ; $ca
+	db UNK_OBJ_11 ; $cb
+	db UNK_OBJ_11 ; $cc
+	db UNK_OBJ_2B ; $cd
+	db UNK_OBJ_C0 ; $ce
+	db UNK_OBJ_C5 ; $cf
+	db UNK_OBJ_C0 ; $d0
+	db UNK_OBJ_09 ; $d1
+	db UNK_OBJ_08 ; $d2
+	db UNK_OBJ_C6 ; $d3
+	db UNK_OBJ_2E ; $d4
+	db UNK_OBJ_15 ; $d5
+	db UNK_OBJ_15 ; $d6
+	db UNK_OBJ_15 ; $d7
+	db UNK_OBJ_15 ; $d8
+	db UNK_OBJ_15 ; $d9
+	db $ff
+	db $ff
+	db $ff
+	db $ff
+	db $ff
+	db $ff
+	db $00
+	db $00
+	db $00
+	db $00
+	db $00
+	db $00
+	db $00
+	db $00
+	db $00
+	db $00
+	db $00
+	db $00
+	db $00
+	db $00
+	db $00
+	db $00
+	db $00
+	db $00
+	db $00
+	db $00
+	db $00
+	db $00
+	db $00
+	db $00
+	db $00
+	db $00
+	db $02
+	db $00
+	db $80
+	db $00
+	db $00
+	db $00
+
+Data_1fb00:
+	dn $0, $0 ; $00
+	dn $0, $0 ; $01
+	dn $1, $0 ; $02
+	dn $0, $1 ; $03
+	dn $1, $1 ; $04
+	dn $0, $0 ; $05
+	dn $1, $0 ; $06
+	dn $0, $1 ; $07
+	dn $1, $1 ; $08
+	dn $0, $0 ; $09
+	dn $0, $0 ; $0a
+	dn $0, $0 ; $0b
+	dn $0, $0 ; $0c
+	dn $0, $0 ; $0d
+	dn $1, $0 ; $0e
+	dn $0, $0 ; $0f
+	dn $0, $0 ; $10
+	dn $0, $0 ; $11
+	dn $0, $0 ; $12
+	dn $1, $0 ; $13
+	dn $0, $1 ; $14
+	dn $1, $1 ; $15
+	dn $0, $0 ; $16
+	dn $1, $0 ; $17
+	dn $0, $0 ; $18
+	dn $0, $1 ; $19
+	dn $0, $0 ; $1a
+	dn $1, $0 ; $1b
+	dn $0, $0 ; $1c
+	dn $1, $0 ; $1d
+	dn $0, $0 ; $1e
+	dn $1, $0 ; $1f
+	dn $0, $0 ; $20
+	dn $1, $0 ; $21
+	dn $0, $1 ; $22
+	dn $1, $1 ; $23
+	dn $0, $2 ; $24
+	dn $1, $2 ; $25
+	dn $0, $3 ; $26
+	dn $1, $3 ; $27
+	dn $0, $4 ; $28
+	dn $1, $4 ; $29
+	dn $0, $5 ; $2a
+	dn $1, $5 ; $2b
+	dn $0, $0 ; $2c
+	dn $1, $0 ; $2d
+	dn $0, $1 ; $2e
+	dn $1, $1 ; $2f
+	dn $0, $2 ; $30
+	dn $1, $2 ; $31
+	dn $0, $3 ; $32
+	dn $1, $3 ; $33
+	dn $0, $4 ; $34
+	dn $1, $4 ; $35
+	dn $0, $0 ; $36
+	dn $1, $0 ; $37
+	dn $0, $1 ; $38
+	dn $0, $1 ; $39
+	dn $0, $2 ; $3a
+	dn $1, $2 ; $3b
+	dn $0, $1 ; $3c
+	dn $0, $2 ; $3d
+	dn $0, $3 ; $3e
+	dn $0, $0 ; $3f
+	dn $1, $0 ; $40
+	dn $0, $1 ; $41
+	dn $1, $1 ; $42
+	dn $0, $0 ; $43
+	dn $1, $0 ; $44
+	dn $0, $0 ; $45
+	dn $1, $0 ; $46
+	dn $0, $1 ; $47
+	dn $1, $1 ; $48
+	dn $0, $1 ; $49
+	dn $1, $1 ; $4a
+	dn $0, $6 ; $4b
+	dn $0, $0 ; $4c
+	dn $1, $0 ; $4d
+	dn $2, $0 ; $4e
+	dn $3, $1 ; $4f
+	dn $0, $0 ; $50
+	dn $1, $0 ; $51
+	dn $0, $2 ; $52
+	dn $1, $2 ; $53
+	dn $0, $3 ; $54
+	dn $1, $3 ; $55
+	dn $0, $4 ; $56
+	dn $1, $4 ; $57
+	dn $0, $0 ; $58
+	dn $0, $0 ; $59
+	dn $0, $0 ; $5a
+	dn $0, $0 ; $5b
+	dn $0, $1 ; $5c
+	dn $0, $2 ; $5d
+	dn $0, $3 ; $5e
+	dn $0, $4 ; $5f
+	dn $0, $5 ; $60
+	dn $0, $6 ; $61
+	dn $0, $7 ; $62
+	dn $0, $0 ; $63
+	dn $0, $5 ; $64
+	dn $1, $5 ; $65
+	dn $0, $6 ; $66
+	dn $1, $6 ; $67
+	dn $0, $1 ; $68
+	dn $1, $1 ; $69
+	dn $2, $1 ; $6a
+	dn $3, $1 ; $6b
+	dn $0, $0 ; $6c
+	dn $1, $0 ; $6d
+	dn $0, $0 ; $6e
+	dn $1, $0 ; $6f
+	dn $0, $1 ; $70
+	dn $1, $1 ; $71
+	dn $0, $0 ; $72
+	dn $0, $0 ; $73
+	dn $f, $f ; $74
+	dn $0, $0 ; $75
+	dn $0, $0 ; $76
+	dn $0, $0 ; $77
+	dn $1, $0 ; $78
+	dn $0, $1 ; $79
+	dn $1, $1 ; $7a
+	dn $0, $0 ; $7b
+	dn $1, $0 ; $7c
+	dn $0, $0 ; $7d
+	dn $1, $0 ; $7e
+	dn $0, $0 ; $7f
+	dn $0, $0 ; $80
+	dn $0, $0 ; $81
+	dn $0, $0 ; $82
+	dn $0, $4 ; $83
+	dn $0, $0 ; $84
+	dn $0, $1 ; $85
+	dn $0, $0 ; $86
+	dn $1, $0 ; $87
+	dn $0, $0 ; $88
+	dn $1, $0 ; $89
+	dn $0, $0 ; $8a
+	dn $0, $0 ; $8b
+	dn $0, $1 ; $8c
+	dn $0, $1 ; $8d
+	dn $1, $0 ; $8e
+	dn $1, $0 ; $8f
+	dn $0, $0 ; $90
+	dn $1, $0 ; $91
+	dn $0, $1 ; $92
+	dn $1, $1 ; $93
+	dn $0, $2 ; $94
+	dn $1, $2 ; $95
+	dn $0, $0 ; $96
+	dn $1, $0 ; $97
+	dn $0, $1 ; $98
+	dn $1, $1 ; $99
+	dn $0, $0 ; $9a
+	dn $1, $0 ; $9b
+	dn $0, $1 ; $9c
+	dn $1, $1 ; $9d
+	dn $0, $0 ; $9e
+	dn $1, $0 ; $9f
+	dn $0, $0 ; $a0
+	dn $0, $0 ; $a1
+	dn $0, $0 ; $a2
+	dn $0, $0 ; $a3
+	dn $0, $2 ; $a4
+	dn $1, $2 ; $a5
+	dn $0, $3 ; $a6
+	dn $1, $3 ; $a7
+	dn $0, $3 ; $a8
+	dn $1, $3 ; $a9
+	dn $0, $4 ; $aa
+	dn $1, $4 ; $ab
+	dn $0, $5 ; $ac
+	dn $1, $5 ; $ad
+	dn $0, $0 ; $ae
+	dn $1, $0 ; $af
+	dn $0, $1 ; $b0
+	dn $1, $1 ; $b1
+	dn $0, $0 ; $b2
+	dn $0, $0 ; $b3
+	dn $1, $0 ; $b4
+	dn $0, $1 ; $b5
+	dn $1, $1 ; $b6
+	dn $0, $0 ; $b7
+	dn $0, $0 ; $b8
+	dn $0, $0 ; $b9
+	dn $0, $0 ; $ba
+	dn $0, $0 ; $bb
+	dn $0, $0 ; $bc
+	dn $0, $0 ; $bd
+	dn $0, $0 ; $be
+	dn $0, $0 ; $bf
+	dn $0, $0 ; $c0
+	dn $0, $0 ; $c1
+	dn $0, $0 ; $c2
+	dn $0, $0 ; $c3
+	dn $0, $0 ; $c4
+	dn $0, $0 ; $c5
+	dn $0, $0 ; $c6
+	dn $0, $0 ; $c7
+	dn $0, $0 ; $c8
+	dn $0, $0 ; $c9
+	dn $0, $0 ; $ca
+	dn $0, $0 ; $cb
+	dn $0, $0 ; $cc
+	dn $0, $0 ; $cd
+	dn $0, $0 ; $ce
+	dn $0, $0 ; $cf
+	dn $0, $0 ; $d0
+	dn $1, $1 ; $d1
+	dn $0, $1 ; $d2
+	dn $0, $0 ; $d3
+	dn $0, $1 ; $d4
+	dn $0, $1 ; $d5
+	dn $1, $1 ; $d6
+	dn $2, $1 ; $d7
+	dn $3, $1 ; $d8
+	dn $4, $1 ; $d9
+	dn $f, $f
+	dn $f, $f
+	dn $f, $f
+	dn $f, $f
+	dn $f, $f
+	dn $f, $f
+	dn $0, $0
+	dn $0, $0
+	dn $0, $0
+	dn $0, $0
+	dn $0, $0
+	dn $0, $0
+	dn $0, $0
+	dn $0, $0
+	dn $0, $0
+	dn $0, $0
+	dn $0, $0
+	dn $0, $0
+	dn $0, $0
+	dn $0, $0
+	dn $0, $0
+	dn $0, $0
+	dn $2, $0
+	dn $0, $0
+	dn $0, $2
+	dn $0, $0
+	dn $8, $0
+	dn $0, $0
+	dn $8, $8
+	dn $0, $0
+	dn $0, $1
+	dn $0, $0
+	dn $1, $0
+	dn $0, $4
+	dn $0, $8
+	dn $0, $0
+	dn $0, $8
+	dn $0, $0

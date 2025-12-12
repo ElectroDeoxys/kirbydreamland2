@@ -57,7 +57,7 @@ wChannelConfigLowByte:: ; ff99
 hff9a:: ; ff9a
 	db
 
-hff9b:: ; ff9b
+hUpdateFuncTimer:: ; ff9b
 	db
 
 hff9c:: ; ff9c

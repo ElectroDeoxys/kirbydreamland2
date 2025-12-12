@@ -1,3 +1,5 @@
+import script_constants as constants
+
 import reader
 import argparse
 import re
@@ -12,7 +14,7 @@ syms = reader.read_symbols()
 SCRIPT_END_CMD = 0x00
 SET_FRAME_CMD = 0x01
 UNK02_CMD = 0x02
-UNK03_CMD = 0x03
+SET_UPDATE_FUNC1_CMD = 0x03
 SET_OAM_CMD = 0x04
 WAIT_CMD = 0x05
 JUMP_CMD = 0x06
@@ -43,7 +45,7 @@ UNK1E_CMD = 0x1e
 UNK1F_CMD = 0x1f
 SET_X_CMD = 0x20
 SET_Y_CMD = 0x21
-UNK22_CMD = 0x22
+SET_UPDATE_FUNC2_CMD = 0x22
 UNK23_CMD = 0x23
 PLAY_SFX_CMD = 0x24
 UNK25_CMD = 0x25
@@ -92,7 +94,7 @@ class Parser:
 
     def parse_field(self, data):
         field = data[0]
-        return (1, f"OBJSTRUCT_UNK{field:02X}")
+        return (1, constants.obj_struct[field])
 
     def parse_sfx(self, data):
         sfx = data[0]
@@ -109,7 +111,8 @@ class Parser:
             func = f"Func_{addr:0x}"
         return (2, f"{func}")
 
-    def parse_unk03(self, data):
+    def parse_update_func(self, data):
+        is_asm = (data[2] & 0x40) != 0
         bank = data[2] & 0x1f
         addr = data[0] + data[1] * 0x100
         if addr >= 0x4000:
@@ -117,8 +120,9 @@ class Parser:
         if addr in syms:
             func = syms[addr]
         else:
-            func = f"Func_{addr:0x}"
-        return (3, f"{func}")
+            func = f"Func_{addr:0x}" if is_asm else f"Script_{addr:0x}"
+        func_type = "ASM" if is_asm else "SCRIPT"
+        return (3, f"{func_type}, {func}")
 
     def parse_local_addr(self, data):
         addr = data[0] + data[1] * 0x100
@@ -156,7 +160,7 @@ class Parser:
             ("script_end", []), # SCRIPT_END_CMD
             ("set_frame", [self.parse_uint8]), # SET_FRAME_CMD
             ("unk02_cmd", None), # UNK02_CMD
-            ("unk03_cmd", [self.parse_unk03]), # UNK03_CMD
+            ("set_update_func1", [self.parse_update_func]), # SET_UPDATE_FUNC1_CMD
             ("set_oam", [self.parse_oam]), # SET_OAM_CMD
             ("wait", [self.parse_uint8]), # WAIT_CMD
             ("jump", [self.parse_local_addr]), # JUMP_CMD
@@ -187,7 +191,7 @@ class Parser:
             ("unk1f_cmd", None), # UNK1F_CMD
             ("set_x", [self.parse_uint16]), # SET_X_CMD
             ("set_y", [self.parse_uint16]), # SET_Y_CMD
-            ("unk22_cmd", [self.parse_word, self.parse_uint8]), # UNK22_CMD
+            ("set_update_func2", [self.parse_update_func]), # SET_UPDATE_FUNC2_CMD
             ("unk23_cmd", None), # UNK23_CMD
             ("play_sfx", [self.parse_sfx]), # PLAY_SFX_CMD
             ("unk25_cmd", None), # UNK25_CMD
@@ -200,7 +204,7 @@ class Parser:
 
         compound_cmds = {
             "Func_f50": ("create_object", [self.parse_byte, self.parse_byte, self.parse_byte]),
-            "Func_f77": ("exec_func_f77", [self.parse_byte]),
+            "Func_f77": ("create_particle", [self.parse_byte]),
             "Func_f92": ("create_object_rel_1", [self.parse_byte, self.parse_int8, self.parse_int8]),
             "Func_faf": ("create_object_rel_2", [self.parse_byte, self.parse_int8, self.parse_int8]),
             "Func_1032": ("set_x_acc_dir", [self.parse_acc]),

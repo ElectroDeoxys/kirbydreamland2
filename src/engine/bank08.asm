@@ -252,7 +252,7 @@ Func_2032c:
 	ld [hli], a
 	ld [hl], a
 	dec a ; $ff
-	ld [sa000Unk5b], a
+	ld [sa000Unk5b], a ; NO_COPY_ABILITY
 	ld [wLevel], a
 	ld a, $7f
 	ld [wdd63], a
@@ -292,7 +292,7 @@ BonusGame:
 	ld [hli], a
 	ld [hl], a
 	dec a ; $ff
-	ld [sa000Unk5b], a
+	ld [sa000Unk5b], a ; NO_COPY_ABILITY
 	ld [wLevel], a
 	ld a, $7f
 	ld [wdb6a], a
@@ -679,7 +679,7 @@ Func_206cb:
 	xor a
 	ld [wdee3], a
 	ld [wdee5], a
-	ld a, $ff
+	ld a, NO_COPY_ABILITY
 	ld [sa000Unk5b], a
 	ret
 
@@ -1105,7 +1105,7 @@ SECTION "Script_218e7", ROMX[$58e7], BANK[$8]
 Script_218e7:
 	set_draw_func Func_df6
 	set_oam $69fb, $7 ; OAM_1e9fb
-	unk03_cmd Func_21a2c
+	set_update_func1 ASM, Func_21a2c
 	set_field OBJSTRUCT_UNK26, $20
 	set_x 0
 	set_y 109

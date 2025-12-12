@@ -20,7 +20,7 @@ Script_8000:
 
 Script_8025:
 	set_field OBJSTRUCT_UNK50, $00
-	unk03_cmd Func_8040
+	set_update_func1 ASM, Func_8040
 	script_call Script_3a5c
 	set_var_to_field OBJSTRUCT_UNK3C
 	jump_if_not_var .loop

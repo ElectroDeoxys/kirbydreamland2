@@ -1,3 +1,8 @@
+
+DEF ASM_F  EQU 6
+DEF ASM    EQU 1 << ASM_F
+DEF SCRIPT EQU 0
+
 	const_def
 
 	const SCRIPT_END_CMD ; $00
@@ -13,11 +18,11 @@ ENDM
 
 	const UNK02_CMD ; $02
 
-	const UNK03_CMD ; $03
-MACRO unk03_cmd
-	db UNK03_CMD
-	dw \1
-	db BANK(\1) | $40
+	const SET_UPDATE_FUNC1_CMD ; $03
+MACRO set_update_func1
+	db SET_UPDATE_FUNC1_CMD
+	dw \2
+	db BANK(\2) | \1
 ENDM
 
 	const SET_OAM_CMD ; $04
@@ -89,14 +94,14 @@ MACRO create_object
 	db \2, \3 ; object groups
 ENDM
 
-MACRO exec_func_f77
+MACRO create_particle
 	exec_asm Func_f77
-	db \1 ; ?
+	db \1 ; PARTICLE_* constant
 ENDM
 
 MACRO create_object_rel_1
 	exec_asm Func_f92
-	db \1 ; ?
+	db \1 ; PARTICLE_* constant
 	db \2 ; relative x
 	db \3 ; relative y
 ENDM
@@ -235,15 +240,11 @@ MACRO set_y
 	dw \1 ; y position
 ENDM
 
-	const UNK22_CMD ; $22
-MACRO unk22_cmd
-	db UNK22_CMD
-IF _NARG == 2
-	dw \1
-	db \2
-ELSE
-	dab \1
-ENDC
+	const SET_UPDATE_FUNC2_CMD ; $22
+MACRO set_update_func2
+	db SET_UPDATE_FUNC2_CMD
+	dw \2
+	db BANK(\2) | \1
 ENDM
 
 	const UNK23_CMD ; $23

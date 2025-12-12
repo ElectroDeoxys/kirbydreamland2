@@ -5,7 +5,7 @@ Script_3c4e6:
 	set_draw_func Func_df3
 	set_field OBJSTRUCT_UNK43, $20
 	exec_asm Func_3c54b
-	unk03_cmd Func_3c841
+	set_update_func1 ASM, Func_3c841
 	set_oam $42c6, $0f ; OAM_3c2c6
 	exec_asm Func_3c8ef
 	exec_asm Func_3c912
@@ -39,7 +39,7 @@ SECTION "Script_3c567", ROMX[$4567], BANK[$0f]
 
 Script_3c567:
 	set_draw_func Func_df3
-	unk03_cmd Func_3c818
+	set_update_func1 ASM, Func_3c818
 	set_field OBJSTRUCT_VAR, $00
 	set_oam $42c6, $0f ; OAM_3c2c6
 	set_x 56
@@ -59,7 +59,7 @@ Script_3c567:
 
 Script_3c59c:
 	set_draw_func Func_df3
-	unk03_cmd Func_3c818
+	set_update_func1 ASM, Func_3c818
 	set_field OBJSTRUCT_VAR, $00
 	set_oam $42c6, $0f ; OAM_3c2c6
 	set_x 104
@@ -79,7 +79,7 @@ Script_3c59c:
 
 Script_3c5d1:
 	set_draw_func Func_df3
-	unk03_cmd Func_3c818
+	set_update_func1 ASM, Func_3c818
 	set_field OBJSTRUCT_VAR, $00
 	set_oam $42c6, $0f ; OAM_3c2c6
 	set_x 104
@@ -99,7 +99,7 @@ Script_3c5d1:
 
 Script_3c606:
 	set_draw_func Func_df3
-	unk03_cmd Func_3c818
+	set_update_func1 ASM, Func_3c818
 	set_field OBJSTRUCT_VAR, $00
 	set_oam $42c6, $0f ; OAM_3c2c6
 	set_x 152
@@ -119,7 +119,7 @@ Script_3c606:
 
 Script_3c63b:
 	set_draw_func Func_df3
-	unk03_cmd Func_3c818
+	set_update_func1 ASM, Func_3c818
 	set_field OBJSTRUCT_VAR, $00
 	set_oam $42c6, $0f ; OAM_3c2c6
 	set_x 152
@@ -139,7 +139,7 @@ Script_3c63b:
 
 Script_3c670:
 	set_draw_func Func_df3
-	unk03_cmd Func_3c818
+	set_update_func1 ASM, Func_3c818
 	set_field OBJSTRUCT_VAR, $00
 	set_oam $42c6, $0f ; OAM_3c2c6
 	set_x 200
@@ -159,7 +159,7 @@ Script_3c670:
 
 Script_3c6a5:
 	set_draw_func Func_df3
-	unk03_cmd Func_3c818
+	set_update_func1 ASM, Func_3c818
 	set_field OBJSTRUCT_VAR, $00
 	set_oam $42c6, $0f ; OAM_3c2c6
 	set_x 200
@@ -179,7 +179,7 @@ Script_3c6a5:
 
 Script_3c6da:
 	set_draw_func Func_df3
-	unk03_cmd Func_3c818
+	set_update_func1 ASM, Func_3c818
 	set_field OBJSTRUCT_VAR, $00
 	set_oam $42c6, $0f ; OAM_3c2c6
 	set_x 248
@@ -199,7 +199,7 @@ Script_3c6da:
 
 Script_3c70f:
 	set_draw_func Func_df3
-	unk03_cmd Func_3c818
+	set_update_func1 ASM, Func_3c818
 	set_field OBJSTRUCT_VAR, $00
 	set_oam $42c6, $0f ; OAM_3c2c6
 	set_x 248
@@ -219,7 +219,7 @@ Script_3c70f:
 
 Script_3c744:
 	set_draw_func Func_df3
-	unk03_cmd Func_3c818
+	set_update_func1 ASM, Func_3c818
 	set_field OBJSTRUCT_VAR, $00
 	set_oam $42c6, $0f ; OAM_3c2c6
 	set_x 296
@@ -239,7 +239,7 @@ Script_3c744:
 
 Script_3c779:
 	set_draw_func Func_df3
-	unk03_cmd Func_3c818
+	set_update_func1 ASM, Func_3c818
 	set_field OBJSTRUCT_VAR, $00
 	set_oam $42c6, $0f ; OAM_3c2c6
 	set_x 296
@@ -259,7 +259,7 @@ Script_3c779:
 
 Script_3c7ae:
 	set_draw_func Func_df3
-	unk03_cmd Func_3c818
+	set_update_func1 ASM, Func_3c818
 	set_field OBJSTRUCT_VAR, $00
 	set_oam $42c6, $0f ; OAM_3c2c6
 	set_x 344
@@ -598,7 +598,7 @@ Script_3e933:
 	exec_asm UpdateFileSelectMenuCursorPosition
 Script_3e939:
 	set_field OBJSTRUCT_UNK3A, $00
-	unk03_cmd Func_3ea2e
+	set_update_func1 ASM, Func_3ea2e
 Script_3e940:
 .loop
 	set_frame_wait 0, 8
@@ -609,7 +609,7 @@ Script_3e940:
 
 Script_3e94f:
 	set_field OBJSTRUCT_UNK3A, $01
-	unk03_cmd Func_3ea2e
+	set_update_func1 ASM, Func_3ea2e
 .loop
 	set_frame_wait 4, 24
 	set_frame_wait 3, 24
@@ -639,7 +639,7 @@ Script_3e98c:
 	set_frame_wait -1, 3
 	exec_asm Func_3eb44
 	wait 3
-	unk03_cmd Func_3eaa1
+	set_update_func1 ASM, Func_3eaa1
 	exec_asm Func_3e9f9
 .loop
 	set_frame_wait 7, 8
@@ -650,7 +650,7 @@ Script_3e9a4:
 	set_frame_wait -1, 3
 	exec_asm Func_3eb3d
 	wait 3
-	unk03_cmd Func_3eaef
+	set_update_func1 ASM, Func_3eaef
 	set_field OBJSTRUCT_UNK3B, $00
 	exec_asm Func_3ea07
 .loop
@@ -1132,7 +1132,7 @@ Script_3ec16:
 	set_draw_func Func_df6
 	set_x 33
 	set_y 124
-	unk03_cmd Func_3ec34
+	set_update_func1 ASM, Func_3ec34
 .loop
 	set_field OBJSTRUCT_UNK39, 6
 	wait 24

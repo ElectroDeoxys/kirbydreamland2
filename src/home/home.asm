@@ -568,14 +568,14 @@ Func_849::
 ; - e:bc = ?
 Func_855:
 	call Func_c2a
-	ld l, OBJSTRUCT_UNK19
-	ld [hl], e ; OBJSTRUCT_UNK19
+	ld l, OBJSTRUCT_UPDATE_FUNC1_BANK
+	ld [hl], e ; OBJSTRUCT_UPDATE_FUNC1_BANK
 	inc l
-	ld [hl], b ; OBJSTRUCT_UNK1A
+	ld [hl], b ; OBJSTRUCT_UPDATE_FUNC1_PTR
 	inc l
 	ld [hl], c
 	xor a
-	ld l, OBJSTRUCT_UNK24
+	ld l, OBJSTRUCT_TIMER1
 	ld [hl], a
 	ld l, OBJSTRUCT_OAM_FLAGS
 	ld [hl], a
@@ -620,36 +620,39 @@ UpdateObjects::
 	ret
 
 Func_8a1:
-	ld l, OBJSTRUCT_UNK19
-	ld a, OBJSTRUCT_UNK24
-	ldh [hff9b], a
-	ld e, a
-.asm_8a8
+	ld l, OBJSTRUCT_UPDATE_FUNC1_BANK
+	ld a, OBJSTRUCT_TIMER1
+	ldh [hUpdateFuncTimer], a
+	ld e, a ; timer
+.loop_update_funcs
 	ld a, [hli]
 	ld b, a
 	and $a0
-	jr nz, .asm_8b9
+	jr nz, .next_update_func
 	bit 6, b
-	jr nz, .asm_8de
+	jr nz, .execute_asm
+	; is script
 	ld d, h
+	; is timer == 0?
 	ld a, [de]
 	or a
-	jr z, .asm_8c6
+	jr z, .timer_elapsed
+	; if != 0, then decrement it
 	dec a
 	ld [de], a
-.asm_8b9
+.next_update_func
 	inc l
 	inc l
-.asm_8bb
-	ldh a, [hff9b]
-	cp OBJSTRUCT_UNK25 + 1
+.next_update_func_got_ptr
+	ldh a, [hUpdateFuncTimer]
+	cp OBJSTRUCT_TIMER2 + 1
 	ret nc
 	inc a
-	ldh [hff9b], a
-	ld e, a
-	jr .asm_8a8
+	ldh [hUpdateFuncTimer], a
+	ld e, a ; timer
+	jr .loop_update_funcs
 
-.asm_8c6
+.timer_elapsed
 	ld a, b
 	call Bankswitch
 	ld a, [hli]
@@ -660,7 +663,7 @@ Func_8a1:
 	ld a, [bc]
 	inc bc
 	add a ; *2
-	ld h, HIGH(Data_3f00)
+	ld h, HIGH(ScriptCommands)
 	ld l, a
 	ld a, [hli]
 	ld h, [hl]
@@ -672,9 +675,9 @@ Func_8a1:
 	ld [hl], c
 	dec l
 	ld [hl], b
-	jr .asm_8b9
+	jr .next_update_func
 
-.asm_8de
+.execute_asm
 	ld a, b
 	and $1f
 	call Bankswitch
@@ -687,7 +690,7 @@ Func_8a1:
 	ld h, b
 	call JumpHL
 	pop hl
-	jr .asm_8bb
+	jr .next_update_func_got_ptr
 
 Func_8f1:
 	ld h, d
@@ -697,21 +700,21 @@ Func_8f1:
 	jp Func_8a1.asm_8d8
 
 Func_8fa:
-	ldh a, [hff9b]
-	sub OBJSTRUCT_UNK24
+	ldh a, [hUpdateFuncTimer]
+	sub OBJSTRUCT_TIMER1
 	ld l, a
 	add a
 	add l ; *3
-	add OBJSTRUCT_UNK19
-	; a = OBJSTRUCT_UNK19 if hff9b == OBJSTRUCT_UNK24
-	; a = OBJSTRUCT_UNK1C if hff9b == OBJSTRUCT_UNK25
+	add OBJSTRUCT_UPDATE_FUNC1_BANK
+	; a = OBJSTRUCT_UPDATE_FUNC1_BANK if hUpdateFuncTimer == OBJSTRUCT_TIMER1
+	; a = OBJSTRUCT_UPDATE_FUNC2_BANK if hUpdateFuncTimer == OBJSTRUCT_TIMER2
 	ld l, a
 	ld h, d
 	set 7, [hl]
 	jp Func_8a1.asm_8d8
 
 Func_90a:
-	ldh a, [hff9b]
+	ldh a, [hUpdateFuncTimer]
 	ld e, a
 	ld a, [bc]
 	inc bc
@@ -721,7 +724,7 @@ Func_90a:
 
 Func_914:
 	ld h, d
-	ldh a, [hff9b]
+	ldh a, [hUpdateFuncTimer]
 	ld l, a
 	ld e, OBJSTRUCT_VAR
 	ld a, [de]
@@ -742,7 +745,7 @@ Func_928:
 	inc bc
 	ld e, OBJSTRUCT_FRAME
 	ld [de], a
-	ldh a, [hff9b]
+	ldh a, [hUpdateFuncTimer]
 	ld e, a
 	ld a, [bc]
 	inc bc
@@ -781,11 +784,11 @@ Func_94a:
 	jp Func_8a1.asm_8ce
 
 Func_955:
-	ld e, OBJSTRUCT_UNK25
+	ld e, OBJSTRUCT_TIMER2
 	xor a
 	ld [de], a
 	ld h, d
-	ld l, OBJSTRUCT_UNK1D + 1
+	ld l, OBJSTRUCT_UPDATE_FUNC2_PTR + 1
 	ld a, [bc]
 	inc bc
 	ld [hld], a
@@ -794,7 +797,7 @@ Func_955:
 	ld [hld], a
 	ld a, [bc]
 	inc bc
-	ld [hl], a ; OBJSTRUCT_UNK1C
+	ld [hl], a ; OBJSTRUCT_UPDATE_FUNC2_BANK
 	jp Func_8a1.asm_8ce
 ; 0x968
 
@@ -806,7 +809,7 @@ Func_96c:
 	ld l, OBJSTRUCT_UNK20 + 1
 	ld a, [bc]
 	inc bc
-	ld [hld], a ; OBJSTRUCT_UNK21
+	ld [hld], a
 	ld a, [bc]
 	inc bc
 	ld [hld], a ; OBJSTRUCT_UNK20
@@ -860,15 +863,15 @@ Func_9a0:
 	inc bc
 	ld h, a
 
-	ldh a, [hff9b]
-	sub OBJSTRUCT_UNK24
+	ldh a, [hUpdateFuncTimer]
+	sub OBJSTRUCT_TIMER1
 	ld e, a
 	add a
 	add e
-	add OBJSTRUCT_UNK19
+	add OBJSTRUCT_UPDATE_FUNC1_BANK
 	ld e, a
-	; e == OBJSTRUCT_UNK19 if [hff9b] == OBJSTRUCT_UNK24
-	; e == OBJSTRUCT_UNK1C if [hff9b] == OBJSTRUCT_UNK25
+	; e == OBJSTRUCT_UPDATE_FUNC1_BANK if [hUpdateFuncTimer] == OBJSTRUCT_TIMER1
+	; e == OBJSTRUCT_UPDATE_FUNC2_BANK if [hUpdateFuncTimer] == OBJSTRUCT_TIMER2
 
 	ld a, [bc]
 	ld [de], a
@@ -1051,15 +1054,15 @@ Func_a86:
 	ld h, a
 
 	push hl
-	ldh a, [hff9b]
-	sub OBJSTRUCT_UNK24
+	ldh a, [hUpdateFuncTimer]
+	sub OBJSTRUCT_TIMER1
 	ld e, a
 	add a
 	add e
-	add OBJSTRUCT_UNK19
+	add OBJSTRUCT_UPDATE_FUNC1_BANK
 	ld e, a
-	; e = OBJSTRUCT_UNK19 if [hff9b] == OBJSTRUCT_UNK24
-	; e = OBJSTRUCT_UNK1C if [hff9b] == OBJSTRUCT_UNK25
+	; e = OBJSTRUCT_UPDATE_FUNC1_BANK if [hUpdateFuncTimer] == OBJSTRUCT_TIMER1
+	; e = OBJSTRUCT_UPDATE_FUNC2_BANK if [hUpdateFuncTimer] == OBJSTRUCT_TIMER2
 	ld a, [de]
 	ldh [hff84], a
 
@@ -1074,7 +1077,7 @@ Func_a86:
 	ld a, [hl]
 	dec a
 	ld l, a
-	ldh a, [hff84] ; OBJSTRUCT_UNK24/OBJSTRUCT_UNK25
+	ldh a, [hff84] ; OBJSTRUCT_TIMER1/OBJSTRUCT_TIMER2
 	ld [hld], a
 	ld [hl], b
 	dec l
@@ -1110,15 +1113,15 @@ Func_ac4:
 	inc l
 	ld b, [hl]
 	inc l
-	ldh a, [hff9b]
-	sub OBJSTRUCT_UNK24
+	ldh a, [hUpdateFuncTimer]
+	sub OBJSTRUCT_TIMER1
 	ld e, a
 	add a
 	add e
-	add OBJSTRUCT_UNK19
+	add OBJSTRUCT_UPDATE_FUNC1_BANK
 	ld e, a
-	; e = OBJSTRUCT_UNK19 if [hff9b] == OBJSTRUCT_UNK24
-	; e = OBJSTRUCT_UNK1C if [hff9b] == OBJSTRUCT_UNK25
+	; e = OBJSTRUCT_UPDATE_FUNC1_BANK if [hUpdateFuncTimer] == OBJSTRUCT_TIMER1
+	; e = OBJSTRUCT_UPDATE_FUNC2_BANK if [hUpdateFuncTimer] == OBJSTRUCT_TIMER2
 	ld a, [hli]
 	ld [de], a
 	call Bankswitch
@@ -1343,12 +1346,12 @@ Func_c06:
 	ret
 
 Func_c2a:
-	ld l, OBJSTRUCT_UNK1C
+	ld l, OBJSTRUCT_UPDATE_FUNC2_BANK
 	ld [hl], $80
 	ld l, OBJSTRUCT_UNK1F
 	ld [hl], $80
-	ld l, OBJSTRUCT_UNK25
-	ld [hl], $00 ; OBJSTRUCT_UNK25
+	ld l, OBJSTRUCT_TIMER2
+	ld [hl], $00 ; OBJSTRUCT_TIMER2
 	inc l
 	ld [hl], $00 ; OBJSTRUCT_UNK26
 	ret
@@ -1775,7 +1778,11 @@ Func_df6::
 	jp LoadObjectSprite
 ; 0xdfc
 
-SECTION "Func_e05", ROM0[$e05]
+SECTION "Func_dff", ROM0[$dff]
+
+Func_dff::
+	call Func_e4b
+	jp LoadObjectSprite
 
 Func_e05::
 	call Func_f01
@@ -1814,7 +1821,68 @@ Func_e2c::
 	sbc [hl]
 	ld [bc], a ; OBJSTRUCT_UNK0B + 1
 	ret
-; 0xe4b
+
+Func_e4b:
+	ld e, OBJSTRUCT_X_POS + 1
+	ld hl, wdb51
+	ld b, d
+	ld c, OBJSTRUCT_UNK09
+	ld a, [de]
+	sub [hl]
+	ld [bc], a
+	ldh [hff84], a
+	inc e
+	inc hl
+	inc c
+	ld a, [de]
+	sbc [hl]
+	ld [bc], a
+	inc a
+	cp $01
+	ldh a, [hff84]
+	jr z, .asm_e6d
+	jr nc, .asm_e94
+	cp $e0
+	jr nc, .asm_e71
+	jr .asm_e94
+.asm_e6d
+	cp $c0
+	jr nc, .asm_e94
+.asm_e71
+	inc e
+	inc e
+	inc hl
+	inc c
+	ld a, [de]
+	sub [hl]
+	ld [bc], a
+	ldh [hff84], a
+	inc e
+	inc hl
+	inc c
+	ld a, [de]
+	sbc [hl]
+	ld [bc], a
+	inc a
+	cp $01
+	ldh a, [hff84]
+	jr z, .asm_e8f
+	jr nc, .asm_e94
+	cp $e0
+	jr nc, .asm_e93
+	jr .asm_e94
+.asm_e8f
+	cp $a0
+	jr nc, .asm_e94
+.asm_e93
+	ret
+.asm_e94
+	ld e, OBJSTRUCT_FRAME
+	ld a, $ff
+	ld [de], a
+	ld h, d
+	jp Func_bba
+; 0xe9d
 
 SECTION "Func_f01", ROM0[$f01]
 
@@ -1929,7 +1997,7 @@ Func_f77::
 Func_f7a::
 	push de
 	push bc
-	ld a, $01
+	ld a, PARTICLE
 	ldh [hff84], a
 	lb bc, HIGH(sa200), HIGH(sa500)
 	call Func_f67
@@ -1945,7 +2013,7 @@ Func_f7a::
 	ret
 
 Func_f92::
-	ld a, UNK_OBJ_01
+	ld a, PARTICLE
 	ldh [hff84], a
 	ld hl, wdb34
 	ld a, $a5
@@ -2091,9 +2159,9 @@ Func_1067::
 .loop_objs
 	cp d
 	jr z, .next_obj
-	ld l, OBJSTRUCT_UNK19
+	ld l, OBJSTRUCT_UPDATE_FUNC1_BANK
 	set 5, [hl]
-	ld l, OBJSTRUCT_UNK1C
+	ld l, OBJSTRUCT_UPDATE_FUNC2_BANK
 	set 5, [hl]
 	ld l, OBJSTRUCT_UNK1F
 	set 5, [hl]
@@ -2110,9 +2178,9 @@ Func_1080::
 .loop_objs
 	cp d
 	jr z, .next_obj
-	ld l, OBJSTRUCT_UNK19
+	ld l, OBJSTRUCT_UPDATE_FUNC1_BANK
 	res 5, [hl]
-	ld l, OBJSTRUCT_UNK1C
+	ld l, OBJSTRUCT_UPDATE_FUNC2_BANK
 	res 5, [hl]
 	ld l, OBJSTRUCT_UNK1F
 	res 5, [hl]
@@ -6928,7 +6996,7 @@ Script_3a5c::
 	jump_if_not_var .script_3a6a
 	set_field OBJSTRUCT_UNK52, $00
 	play_sfx SFX_05
-	exec_func_f77 $00
+	create_particle PARTICLE_00
 .script_3a6a
 	script_ret
 
@@ -7036,7 +7104,7 @@ Func_3ae4::
 	ld a, [sa000Unk5b]
 	jr Func_3aeb
 Func_3ae9::
-	ld a, $ff
+	ld a, NO_COPY_ABILITY
 Func_3aeb:
 	ld [wdf15], a
 	ld a, [sa000Unk5d]
@@ -7167,7 +7235,7 @@ Func_3b8f:
 	and $1f
 	sub $08
 	push hl
-	ld hl, $3bf4
+	ld hl, .CopyAbilities
 	add l
 	ld l, a
 	incc h
@@ -7199,14 +7267,23 @@ Func_3b8f:
 .asm_3bf2
 	and a
 	ret
-; 0x3bf4
+
+.CopyAbilities:
+	db ICE
+	db PARASOL
+	db STONE
+	db CUTTER
+	db NEEDLE
+	db SPARK
+	db FIRE
+; 0x3bfb
 
 SECTION "Func_3c02", ROM0[$3c02]
 
 Func_3c02::
 	call Func_3c0e
 	ret z
-	ld [hl], $05 ; OBJSTRUCT_UNK51
+	ld [hl], PARTICLE_05 ; OBJSTRUCT_UNK51
 	ret
 ; 0x3c09
 
@@ -7224,7 +7301,7 @@ Func_3c0e:
 	and $f0
 	or $08
 	ld c, a
-	ld a, UNK_OBJ_01
+	ld a, PARTICLE
 	call CreateObject
 	ld a, h
 	or a
@@ -7296,14 +7373,14 @@ Func_3c63::
 	ret
 ; 0x3c92
 
-SECTION "Data_3f00", ROM0[$3f00], ALIGN[8]
+SECTION "ScriptCommands", ROM0[$3f00], ALIGN[8]
 
-Data_3f00::
+ScriptCommands::
 	table_width 2
 	dw Func_8fa ; SCRIPT_END_CMD
 	dw Func_920 ; SET_FRAME_CMD
 	dw $959 ; UNK02_CMD
-	dw Func_96c ; UNK03_CMD
+	dw Func_96c ; SET_UPDATE_FUNC1_CMD
 	dw Func_988 ; SET_OAM_CMD
 	dw Func_90a ; WAIT_CMD
 	dw Func_997 ; JUMP_CMD
@@ -7334,7 +7411,7 @@ Data_3f00::
 	dw $aef ; UNK1F_CMD
 	dw Func_b74 ; SET_X_CMD
 	dw Func_b84 ; SET_Y_CMD
-	dw Func_955 ; UNK22_CMD
+	dw Func_955 ; SET_UPDATE_FUNC2_CMD
 	dw $968 ; UNK23_CMD
 	dw Func_b01 ; PLAY_SFX_CMD
 	dw $b07 ; UNK25_CMD

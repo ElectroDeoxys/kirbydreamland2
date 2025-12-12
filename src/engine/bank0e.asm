@@ -91,11 +91,11 @@ Script_3a62c:
 	exec_asm Func_3a65a
 Script_3a63b:
 	exec_func_35e0 45, 116
-	unk03_cmd Func_3a66a
+	set_update_func1 ASM, Func_3a66a
 	script_end
 Script_3a647:
 	exec_func_35e0 45, 132
-	unk03_cmd Func_3a6cb
+	set_update_func1 ASM, Func_3a6cb
 	script_end
 
 Func_3a653:

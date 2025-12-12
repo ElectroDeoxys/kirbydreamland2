@@ -103,11 +103,11 @@ Script_40a2:
 
 Script_40b4:
 	exec_asm Func_532a
-	set_field OBJSTRUCT_UNK5B, $ff
+	set_field OBJSTRUCT_UNK5B, NO_COPY_ABILITY
 	exec_asm Func_1067
 	exec_asm Func_40da
 	set_copy_ability_icon NONE
-	unk03_cmd Func_40d6
+	set_update_func1 ASM, Func_40d6
 	exec_asm Func_357f
 .loop
 	wait 1
@@ -162,12 +162,12 @@ Script_44c6:
 
 Script_44d9:
 	set_field OBJSTRUCT_UNK51, $00
-	set_field OBJSTRUCT_UNK5B, $ff
+	set_field OBJSTRUCT_UNK5B, NO_COPY_ABILITY
 	script_ret
 
 Script_44e0:
 	set_field OBJSTRUCT_UNK50, $00
-	unk03_cmd Func_450e
+	set_update_func1 ASM, Func_450e
 	set_var_to_field OBJSTRUCT_UNK52
 	jump_if_not_var .script_4505
 	jump_if_var_lt $03, .script_44f5
@@ -175,10 +175,10 @@ Script_44e0:
 	jump .script_44fe
 .script_44f5
 	set_frame_with_orientation 8, 7
-	unk03_cmd Func_4508
+	set_update_func1 ASM, Func_4508
 .script_44fe
 	script_call Script_7b1f
-	unk03_cmd Func_450e
+	set_update_func1 ASM, Func_450e
 .script_4505
 	set_frame 0
 	script_end
@@ -241,7 +241,7 @@ Func_450e:
 
 Script_4583:
 	set_field OBJSTRUCT_UNK50, $01
-	unk03_cmd Func_45e4
+	set_update_func1 ASM, Func_45e4
 	set_var_to_field OBJSTRUCT_UNK52
 	jump_if_not_var Script_4594
 	set_frame 4
@@ -361,7 +361,7 @@ Func_45ea:
 Script_467f:
 	set_field OBJSTRUCT_UNK50, $03
 	play_sfx SFX_0D
-	unk03_cmd Func_468e
+	set_update_func1 ASM, Func_468e
 	exec_asm Func_37ff
 	jump Script_4594
 
@@ -372,14 +372,14 @@ Func_468e:
 
 Script_4697:
 	set_field OBJSTRUCT_UNK50, $04
-	unk03_cmd Func_46bd
+	set_update_func1 ASM, Func_46bd
 	set_y_vel -3.562
 	play_sfx SFX_04
 	jump Script_46ad
 
 Script_46a6:
 	set_y_vel -0.688
-	unk03_cmd Func_46e1
+	set_update_func1 ASM, Func_46e1
 Script_46ad:
 	set_frame 32
 .script_46af
@@ -454,7 +454,7 @@ Script_4742:
 	set_field OBJSTRUCT_UNK39, $1d
 Script_4745:
 	set_field OBJSTRUCT_UNK50, $05
-	unk03_cmd Func_4792
+	set_update_func1 ASM, Func_4792
 	set_var_to_field OBJSTRUCT_UNK52
 	jump_if_not_var .script_4773
 	jump_if_var_lt $03, .script_4763
@@ -466,10 +466,10 @@ Script_4745:
 	jump .script_476c
 .script_4763
 	set_frame_with_orientation 8, 7
-	unk03_cmd Func_478c
+	set_update_func1 ASM, Func_478c
 .script_476c
 	script_call Script_7b1f
-	unk03_cmd Func_4792
+	set_update_func1 ASM, Func_4792
 .script_4773
 	set_frame 31
 .script_4775
@@ -545,7 +545,7 @@ Func_4792:
 Script_480e:
 	set_field OBJSTRUCT_UNK50, $05
 	exec_asm Func_481b
-	unk03_cmd Func_4821
+	set_update_func1 ASM, Func_4821
 	set_frame 17
 	script_end
 
@@ -624,7 +624,7 @@ SECTION "Func_48bb", ROMX[$48bb], BANK[$1]
 
 Script_48bb:
 	set_y_vel -2.75
-	unk03_cmd Func_48c5
+	set_update_func1 ASM, Func_48c5
 	set_frame 17
 	script_end
 
@@ -695,8 +695,8 @@ Script_494e:
 	set_field OBJSTRUCT_UNK50, $05
 	set_field OBJSTRUCT_UNK52, $00
 	play_sfx SFX_55
-	unk03_cmd Func_4967
-	exec_func_f77 $00
+	set_update_func1 ASM, Func_4967
+	create_particle PARTICLE_00
 	set_frame 17
 	set_y_vel -2.75
 	script_end
@@ -743,7 +743,7 @@ Func_4967:
 Script_49c1:
 	exec_asm Func_35a2
 	set_field OBJSTRUCT_UNK50, $05
-	unk03_cmd Func_49d4
+	set_update_func1 ASM, Func_49d4
 	exec_asm IncrementObjectYPosition
 	set_frame_wait 31, 1
 	jump Script_44c6
@@ -767,7 +767,7 @@ Script_49fa:
 	exec_asm Func_35a2
 	set_field OBJSTRUCT_UNK50, $06
 	play_sfx SFX_0D
-	unk03_cmd Func_4a07
+	set_update_func1 ASM, Func_4a07
 	script_end
 
 Func_4a07:
@@ -802,7 +802,7 @@ Func_4a07:
 Script_4a48:
 	exec_asm Func_35a2
 	play_sfx SFX_30
-	unk03_cmd Func_4a5d
+	set_update_func1 ASM, Func_4a5d
 	set_frame_wait 13, 8
 	set_frame_wait 27, 8
 	set_frame_wait 25, 8
@@ -826,7 +826,7 @@ Func_4a5d:
 
 Script_4a87:
 	set_field OBJSTRUCT_UNK50, $0d
-	unk03_cmd Func_4a9d
+	set_update_func1 ASM, Func_4a9d
 .script_4a8e
 	set_frame_wait 25, 10
 	set_frame_wait 26, 10
@@ -868,7 +868,7 @@ Func_4a9d:
 
 Script_4aea:
 	set_field OBJSTRUCT_UNK50, $0d
-	unk03_cmd Func_4afa
+	set_update_func1 ASM, Func_4afa
 .loop
 	set_frame_wait 25, 20
 	set_frame_wait 26, 20
@@ -916,7 +916,7 @@ Func_4afa:
 Script_4b55:
 	set_field OBJSTRUCT_UNK50, $0d
 	exec_asm Func_3a51
-	unk03_cmd Func_4b68
+	set_update_func1 ASM, Func_4b68
 	set_frame 26
 	script_end
 
@@ -959,7 +959,7 @@ Func_4b68:
 Script_4bb5:
 	exec_asm Func_35a2
 	set_field OBJSTRUCT_UNK50, $0a
-	unk03_cmd Func_4bd6
+	set_update_func1 ASM, Func_4bd6
 	create_object_rel_2 $00, 8, 0
 	play_sfx SFX_1A
 	set_frame_wait 27, 12
@@ -989,13 +989,13 @@ Func_4bd6:
 Script_4c05:
 	script_call Script_44d9
 	exec_asm Func_3a48
-	create_object_rel_1 $07, 0, 0
+	create_object_rel_1 PARTICLE_07, 0, 0
 	jump Script_44c6
 
 Script_4c14:
 	set_field OBJSTRUCT_UNK50, $00
 	set_field OBJSTRUCT_UNK52, $00
-	unk03_cmd Func_4c28
+	set_update_func1 ASM, Func_4c28
 	set_oam $4f40, $0a ; OAM_28f40
 	set_field OBJSTRUCT_OAM_TILE_ID, $00
 	set_frame 0
@@ -1043,7 +1043,7 @@ Func_4c28:
 Script_4c81:
 	set_field OBJSTRUCT_UNK50, $01
 	set_field OBJSTRUCT_UNK52, $00
-	unk03_cmd Func_4cc4
+	set_update_func1 ASM, Func_4cc4
 	set_oam $4f40, $0a ; OAM_28f40
 	set_field OBJSTRUCT_OAM_TILE_ID, $00
 	exec_asm Func_383c
@@ -1133,7 +1133,7 @@ Func_4cc4:
 Script_4d46:
 	set_field OBJSTRUCT_UNK50, $05
 	set_field OBJSTRUCT_UNK52, $00
-	unk03_cmd Func_4d87
+	set_update_func1 ASM, Func_4d87
 	set_var_to_field OBJSTRUCT_UNK6F
 	var_jumptable 3
 	dw .script_4d5a
@@ -1205,7 +1205,7 @@ Func_4d87:
 Script_4de6:
 	exec_asm Func_35a2
 	set_field OBJSTRUCT_UNK50, $0c
-	unk03_cmd Func_4e7a
+	set_update_func1 ASM, Func_4e7a
 	set_oam $5486, $08 ; OAM_21486
 	set_var_to_field OBJSTRUCT_UNK83
 	set_field_to_var OBJSTRUCT_OAM_TILE_ID
@@ -1213,7 +1213,7 @@ Script_4de6:
 	exec_asm Func_7d8b
 	wait 6
 	play_sfx SFX_15
-	unk03_cmd Func_4e47
+	set_update_func1 ASM, Func_4e47
 	var_jumptable 3
 	dw .script_4e0e
 	dw .script_4e2c
@@ -1348,7 +1348,7 @@ Script_5631:
 
 .script_564f
 	set_field OBJSTRUCT_UNK50, $00
-	unk03_cmd Func_567d
+	set_update_func1 ASM, Func_567d
 	set_var_to_field OBJSTRUCT_UNK52
 	jump_if_not_var .script_5674
 	jump_if_var_lt $03, .script_5664
@@ -1356,10 +1356,10 @@ Script_5631:
 	jump .script_566d
 .script_5664
 	set_frame_with_orientation 8, 7
-	unk03_cmd Func_5677
+	set_update_func1 ASM, Func_5677
 .script_566d
 	script_call Script_7b1f
-	unk03_cmd Func_567d
+	set_update_func1 ASM, Func_567d
 .script_5674
 	set_frame 0
 	script_end
@@ -1427,7 +1427,7 @@ Func_567d:
 
 Script_56fe:
 	set_field OBJSTRUCT_UNK50, $01
-	unk03_cmd Func_575f
+	set_update_func1 ASM, Func_575f
 	set_var_to_field OBJSTRUCT_UNK52
 	jump_if_not_var .script_570f
 	set_frame 4
@@ -1553,7 +1553,7 @@ SECTION "Func_58c8", ROMX[$58c8], BANK[$1]
 Script_58c8:
 	set_field OBJSTRUCT_UNK39, $1d
 	set_field OBJSTRUCT_UNK50, $05
-	unk03_cmd Func_5915
+	set_update_func1 ASM, Func_5915
 	set_var_to_field OBJSTRUCT_UNK52
 	jump_if_not_var .script_58f9
 	jump_if_var_lt $03, .script_58e9
@@ -1565,10 +1565,10 @@ Script_58c8:
 	jump .script_58f2
 .script_58e9
 	set_frame_with_orientation 8, 7
-	unk03_cmd Func_590f
+	set_update_func1 ASM, Func_590f
 .script_58f2
 	script_call Script_7b1f
-	unk03_cmd Func_5915
+	set_update_func1 ASM, Func_5915
 .script_58f9
 	set_frame 31
 .script_58fb
@@ -1654,7 +1654,7 @@ Func_5915:
 Script_59aa:
 	set_field OBJSTRUCT_UNK50, $05
 	exec_asm Func_481b
-	unk03_cmd Func_59b7
+	set_update_func1 ASM, Func_59b7
 	set_frame 17
 	script_end
 
@@ -1727,7 +1727,7 @@ SECTION "Func_5c8b", ROMX[$5c8b], BANK[$1]
 
 Script_5c8b:
 	set_field OBJSTRUCT_UNK50, $0d
-	unk03_cmd Func_5c9b
+	set_update_func1 ASM, Func_5c9b
 .loop
 	set_frame_wait 25, 20
 	set_frame_wait 26, 20
@@ -1778,7 +1778,7 @@ SECTION "Func_5db5", ROMX[$5db5], BANK[$1]
 Script_5db5:
 	set_field OBJSTRUCT_UNK50, $00
 	set_field OBJSTRUCT_UNK52, $00
-	unk03_cmd Func_5dc9
+	set_update_func1 ASM, Func_5dc9
 	set_oam $4f40, $0a ; OAM_28f40
 	set_field OBJSTRUCT_OAM_TILE_ID, $00
 	set_frame 0
@@ -1831,7 +1831,7 @@ Func_5dc9:
 Script_5e2e:
 	set_field OBJSTRUCT_UNK50, $01
 	set_field OBJSTRUCT_UNK52, $00
-	unk03_cmd Func_5e71
+	set_update_func1 ASM, Func_5e71
 	set_oam $4f40, $0a ; OAM_28f40
 	set_field OBJSTRUCT_OAM_TILE_ID, $00
 	exec_asm Func_383c
@@ -1926,7 +1926,7 @@ Func_5e71:
 Script_5eff:
 	set_field OBJSTRUCT_UNK50, $05
 	set_field OBJSTRUCT_UNK52, $00
-	unk03_cmd Func_5f40
+	set_update_func1 ASM, Func_5f40
 	set_var_to_field OBJSTRUCT_UNK6F
 	var_jumptable 3
 	dw .script_5f13
@@ -2009,7 +2009,7 @@ Script_5fd6:
 	set_field OBJSTRUCT_UNK51, $03
 	set_field OBJSTRUCT_UNK50, $0c
 	play_sfx SFX_3E
-	unk03_cmd Func_6095
+	set_update_func1 ASM, Func_6095
 	set_x_vel_dir -2.0
 	set_y_vel -1.0
 	set_frame_wait 31, 1
@@ -2023,8 +2023,8 @@ Script_5fd6:
 	set_frame_wait 1, 2
 	set_frame_wait 2, 2
 	set_frame_wait 3, 2
-	set_field OBJSTRUCT_OAM_FLAGS, $10
-	unk03_cmd Func_60b7
+	set_field OBJSTRUCT_OAM_FLAGS, OAM_PAL1
+	set_update_func1 ASM, Func_60b7
 	exec_asm Func_1aa5
 	jump_if_not_var .script_6022
 	set_x_vel_dir 1.5
@@ -2033,7 +2033,7 @@ Script_5fd6:
 	set_x_vel_dir 3.0
 .script_6025
 	set_oam $5214, $0a ; OAM_29214
-	set_field OBJSTRUCT_OAM_FLAGS, $00
+	set_field OBJSTRUCT_OAM_FLAGS, OAM_PAL0
 
 	repeat 3
 	set_frame_wait 1, 2
@@ -2042,9 +2042,9 @@ Script_5fd6:
 	set_frame_wait 2, 2
 	repeat_end
 
-	unk22_cmd Script_607e
+	set_update_func2 SCRIPT, Script_607e
 	set_field OBJSTRUCT_UNK51, $02
-	unk03_cmd Func_611f
+	set_update_func1 ASM, Func_611f
 	exec_asm Func_1aa5
 	jump_if_not_var .script_6052
 	set_x_vel_dir 0.75
@@ -2056,9 +2056,9 @@ Script_5fd6:
 	set_frame 31
 
 	repeat 2
-	set_field OBJSTRUCT_OAM_FLAGS, $10
+	set_field OBJSTRUCT_OAM_FLAGS, OAM_PAL1
 	wait 2
-	set_field OBJSTRUCT_OAM_FLAGS, $00
+	set_field OBJSTRUCT_OAM_FLAGS, OAM_PAL0
 	wait 2
 	repeat_end
 
@@ -2068,11 +2068,11 @@ Script_5fd6:
 SECTION "Func_607e", ROMX[$607e], BANK[$1]
 
 Script_607e:
-	create_object_rel_1 $03, -6, 0
+	create_object_rel_1 PARTICLE_03, -6, 0
 	wait 4
-	create_object_rel_1 $03, -6, -4
+	create_object_rel_1 PARTICLE_03, -6, -4
 	wait 4
-	create_object_rel_1 $03, -6, 0
+	create_object_rel_1 PARTICLE_03, -6, 0
 	script_end
 
 Func_6095:
@@ -2142,7 +2142,7 @@ SECTION "Func_611f", ROMX[$611f], BANK[$1]
 Func_611f:
 	ld a, [sa000Unk70]
 	or a
-	ld e, OBJSTRUCT_UNK20
+	ld e, $20
 	ld bc, $280
 	jr z, .asm_612f
 	ld e, $08
@@ -2174,7 +2174,7 @@ Script_6154:
 	dw Script_6b91
 .script_616e
 	set_field OBJSTRUCT_UNK50, $00
-	unk03_cmd Func_619c
+	set_update_func1 ASM, Func_619c
 	set_var_to_field OBJSTRUCT_UNK52
 	jump_if_not_var .script_6193
 	jump_if_var_lt $03, .script_6183
@@ -2182,10 +2182,10 @@ Script_6154:
 	jump .script_618c
 .script_6183
 	set_frame_with_orientation 27, 26
-	unk03_cmd Func_6196
+	set_update_func1 ASM, Func_6196
 .script_618c
 	script_call Script_7b1f
-	unk03_cmd Func_619c
+	set_update_func1 ASM, Func_619c
 .script_6193
 	set_frame 0
 	script_end
@@ -2255,7 +2255,7 @@ Func_619c:
 
 Script_6221:
 	set_field OBJSTRUCT_UNK50, $01
-	unk03_cmd Func_6282
+	set_update_func1 ASM, Func_6282
 	set_var_to_field OBJSTRUCT_UNK52
 	jump_if_not_var .script_6232
 	set_frame 8
@@ -2382,7 +2382,7 @@ SECTION "Func_63f0", ROMX[$63f0], BANK[$1]
 
 Script_63f0:
 	set_field OBJSTRUCT_UNK50, $05
-	unk03_cmd Func_643b
+	set_update_func1 ASM, Func_643b
 	set_var_to_field OBJSTRUCT_UNK52
 	jump_if_not_var .script_641e
 	jump_if_var_lt $03, .script_640e
@@ -2394,10 +2394,10 @@ Script_63f0:
 	jump .script_6417
 .script_640e
 	set_frame_with_orientation 27, 26
-	unk03_cmd Func_6435
+	set_update_func1 ASM, Func_6435
 .script_6417
 	script_call Script_7b1f
-	unk03_cmd Func_643b
+	set_update_func1 ASM, Func_643b
 .script_641e
 	set_frame 4
 .script_6420
@@ -2485,12 +2485,12 @@ Func_643b:
 
 Func_64d4:
 	ld a, [sa000Unk5b]
-	cp $01
-	jr z, .asm_64dd
+	cp PARASOL
+	jr z, .parasol
 .asm_64db
 	and a
 	ret
-.asm_64dd
+.parasol
 	ld e, OBJSTRUCT_Y_VEL
 	ld a, [de]
 	sub $80
@@ -2507,7 +2507,7 @@ SECTION "Func_691d", ROMX[$691d], BANK[$1]
 
 Script_691d:
 	set_field OBJSTRUCT_UNK50, $0d
-	unk03_cmd Func_692d
+	set_update_func1 ASM, Func_692d
 .loop
 	set_frame_wait 30, 20
 	set_frame_wait 31, 20
@@ -2559,7 +2559,7 @@ SECTION "Func_6a4d", ROMX[$6a4d], BANK[$1]
 Script_6a4d:
 	set_field OBJSTRUCT_UNK50, $00
 	set_field OBJSTRUCT_UNK52, $00
-	unk03_cmd Func_6a5a
+	set_update_func1 ASM, Func_6a5a
 	set_frame 0
 	script_end
 
@@ -2612,7 +2612,7 @@ Func_6a5a:
 Script_6ac3:
 	set_field OBJSTRUCT_UNK50, $01
 	set_field OBJSTRUCT_UNK52, $00
-	unk03_cmd Func_6aff
+	set_update_func1 ASM, Func_6aff
 	exec_asm Func_383c
 	var_jumptable 6
 	dw .script_6ade
@@ -2707,7 +2707,7 @@ Func_6aff:
 Script_6b91:
 	set_field OBJSTRUCT_UNK50, $05
 	set_field OBJSTRUCT_UNK52, $00
-	unk03_cmd Func_6bbc
+	set_update_func1 ASM, Func_6bbc
 	set_var_to_field OBJSTRUCT_UNK6F
 	var_jumptable 3
 	dw .script_6ba5
@@ -2807,7 +2807,7 @@ Script_729d:
 	exec_asm Func_72be
 	set_field OBJSTRUCT_UNK80, $00
 	set_field OBJSTRUCT_UNK81, $0a
-	unk03_cmd Func_72e5
+	set_update_func1 ASM, Func_72e5
 	set_field OBJSTRUCT_UNK39, $1e
 	set_field OBJSTRUCT_UNK3D, $01
 	play_sfx SFX_01
@@ -3022,7 +3022,7 @@ Func_73c2:
 
 Script_73fb:
 	play_sfx SFX_NONE
-	unk03_cmd Func_7407
+	set_update_func1 ASM, Func_7407
 	set_frame_wait 13, 8
 	jump Script_44bf
 
@@ -3038,7 +3038,7 @@ Func_7407:
 
 Script_741a:
 	play_sfx SFX_02
-	unk03_cmd Func_743b
+	set_update_func1 ASM, Func_743b
 	set_frame_wait 24, 3
 	set_frame_wait 33, 2
 	set_frame_wait 34, 1
@@ -3087,7 +3087,7 @@ Script_7484:
 
 Script_7488:
 	set_field OBJSTRUCT_UNK50, $00
-	unk03_cmd Func_74b0
+	set_update_func1 ASM, Func_74b0
 	script_call Script_3a5c
 	exec_asm $7496
 	script_end
@@ -3164,7 +3164,7 @@ Func_74b0:
 
 Script_7525:
 	set_field OBJSTRUCT_UNK50, $01
-	unk03_cmd Func_7567
+	set_update_func1 ASM, Func_7567
 	script_call Script_3a5c
 Script_752f:
 	exec_asm $383c
@@ -3266,7 +3266,7 @@ Func_756d:
 Script_75f5:
 	set_field OBJSTRUCT_UNK50, $03
 	play_sfx SFX_0D
-	unk03_cmd Func_7604
+	set_update_func1 ASM, Func_7604
 	exec_asm Func_37ff
 	jump Script_752f
 
@@ -3277,7 +3277,7 @@ Func_7604:
 
 Script_760d:
 	set_field OBJSTRUCT_UNK50, $04
-	unk03_cmd Func_7630
+	set_update_func1 ASM, Func_7630
 	set_y_vel -3.562
 	play_sfx SFX_04
 	jump Script_7623
@@ -3350,7 +3350,7 @@ Func_7630:
 
 Script_76a8:
 	set_field OBJSTRUCT_UNK50, $05
-	unk03_cmd Func_76b5
+	set_update_func1 ASM, Func_76b5
 	script_call Script_3a5c
 	set_frame 21
 	script_end
@@ -3396,7 +3396,7 @@ Script_770c:
 	exec_asm Func_35a2
 	set_field OBJSTRUCT_UNK51, $00
 	set_field OBJSTRUCT_UNK50, $0a
-	unk03_cmd Func_7741
+	set_update_func1 ASM, Func_7741
 	set_field OBJSTRUCT_UNK58, $ff
 	exec_asm Func_3a18
 	jump_if_var .script_772d
@@ -3445,7 +3445,7 @@ Func_7741:
 Script_777f:
 	exec_asm Func_35a2
 	set_field OBJSTRUCT_UNK50, $0b
-	unk03_cmd Func_780b
+	set_update_func1 ASM, Func_780b
 	exec_asm Func_39f0
 	var_jumptable 3
 	dw Script_779f
@@ -3461,7 +3461,7 @@ Script_7794:
 
 Script_779f:
 	set_field OBJSTRUCT_UNK58, $ff
-	set_field OBJSTRUCT_UNK5B, $ff
+	set_field OBJSTRUCT_UNK5B, NO_COPY_ABILITY
 	set_field OBJSTRUCT_UNK5C, $00
 	set_field OBJSTRUCT_UNK51, $00
 	play_sfx SFX_03
@@ -3480,8 +3480,8 @@ Script_77b9:
 	exec_asm Func_1067
 	stop_movement
 	exec_asm Func_357f
-	unk03_cmd Func_7811
-	exec_func_f77 $01
+	set_update_func1 ASM, Func_7811
+	create_particle PARTICLE_01
 	set_frame_wait 4, 8
 .script_77dc
 	wait 1
@@ -3534,12 +3534,12 @@ SECTION "Func_7815", ROMX[$7815], BANK[$1]
 Script_7815:
 	script_call Script_7484
 	exec_asm Func_3a48
-	create_object_rel_1 $07, 0, 0
+	create_object_rel_1 PARTICLE_07, 0, 0
 	jump Script_7471
 
 Script_7824:
 	set_field OBJSTRUCT_UNK50, $00
-	unk03_cmd Func_7832
+	set_update_func1 ASM, Func_7832
 	script_call Script_3a5c
 	exec_asm Func_7496
 	script_end
@@ -3598,7 +3598,7 @@ Func_7832:
 
 Script_78a6:
 	set_field OBJSTRUCT_UNK50, $01
-	unk03_cmd Func_78d6
+	set_update_func1 ASM, Func_78d6
 	script_call Script_3a5c
 	exec_asm $383c
 	var_jumptable 6
@@ -3690,7 +3690,7 @@ Func_78d6:
 Script_7966:
 	set_field OBJSTRUCT_UNK50, $05
 	set_field OBJSTRUCT_UNK52, $00
-	unk03_cmd Func_7989
+	set_update_func1 ASM, Func_7989
 	set_var_to_field OBJSTRUCT_UNK6F
 	var_jumptable 3
 	dw .script_797a
@@ -3928,7 +3928,7 @@ Func_7b09:
 Script_7b1f:
 	set_field OBJSTRUCT_UNK52, $00
 	play_sfx SFX_05
-	exec_func_f77 $00
+	create_particle PARTICLE_00
 	wait 6
 	script_ret
 
